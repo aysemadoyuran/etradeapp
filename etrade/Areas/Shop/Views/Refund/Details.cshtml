@@ -1,0 +1,683 @@
+@{
+    ViewData["Title"] = "İade Talep Detayı";
+}
+@Html.AntiForgeryToken()
+
+<style>
+    .status-update-alert {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+        min-width: 300px;
+    }
+    body {
+        background-color: #f8f9fa;
+    }
+    .card {
+        border-radius: 0.5rem;
+        transition: all 0.3s ease;
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    }
+    .card-header {
+        background-color: #f8f9fa;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        padding: 0.75rem 1rem;
+    }
+    .card-body {
+        padding: 1rem;
+    }
+    .badge {
+        font-size: 0.85rem;
+        padding: 0.5em 1em;
+        font-weight: 500;
+        letter-spacing: 0.5px;
+    }
+    .bg-warning-soft {
+        background-color: rgba(255, 193, 7, 0.1) !important;
+    }
+    .bg-success-soft {
+        background-color: rgba(25, 135, 84, 0.1) !important;
+    }
+    .bg-danger-soft {
+        background-color: rgba(220, 53, 69, 0.1) !important;
+    }
+    .bg-info-soft {
+        background-color: rgba(13, 202, 240, 0.1) !important;
+    }
+    .bg-primary-soft {
+        background-color: rgba(13, 110, 253, 0.1) !important;
+    }
+    .bg-secondary-soft {
+        background-color: rgba(108, 117, 125, 0.1) !important;
+    }
+    .table th {
+        font-weight: 600;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #6c757d;
+        background-color: #f8f9fa !important;
+    }
+    .font-monospace {
+        font-family: 'Roboto Mono', monospace;
+    }
+    #ibanWarning {
+        border-left: 4px solid #0dcaf0;
+        background-color: rgba(13, 202, 240, 0.05);
+        border-radius: 0.5rem;
+    }
+    .alert-heading {
+        font-size: 1rem;
+        font-weight: 600;
+    }
+    .btn-success {
+        background-color: #198754;
+        border-color: #198754;
+    }
+    .btn-outline-danger {
+        color: #dc3545;
+        border-color: #dc3545;
+    }
+    .btn-outline-danger:hover {
+        background-color: #dc3545;
+        color: white;
+    }
+    .btn-outline-secondary {
+        color: #6c757d;
+        border-color: #6c757d;
+    }
+    .btn-outline-secondary:hover {
+        background-color: #6c757d;
+        color: white;
+    }
+    /* YATAY TIMELINE STILLERİ */
+    .timeline-container {
+        position: relative;
+        overflow-x: auto;
+        padding: 15px 0;
+    }
+    .timeline-horizontal {
+        display: flex;
+        position: relative;
+        min-width: 600px;
+    }
+    .timeline-horizontal::before {
+        content: '';
+        position: absolute;
+        left: 20px;
+        right: 20px;
+        top: 50%;
+        height: 2px;
+        background-color: #e9ecef;
+        z-index: 1;
+        transform: translateY(-50%);
+    }
+    .timeline-step-horizontal {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        position: relative;
+        flex: 1;
+        min-width: 100px;
+        z-index: 2;
+    }
+    .timeline-icon-horizontal {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #fff;
+        border: 2px solid #e9ecef;
+        margin-bottom: 8px;
+        position: relative;
+    }
+    .timeline-content-horizontal {
+        text-align: center;
+        padding: 0 8px;
+    }
+    .timeline-step-horizontal.completed .timeline-icon-horizontal {
+        background-color: #198754;
+        color: white;
+        border-color: #198754;
+    }
+    .timeline-step-horizontal.current .timeline-icon-horizontal {
+        background-color: #0d6efd;
+        color: white;
+        border-color: #0d6efd;
+    }
+    .timeline-step-horizontal:not(.completed):not(.current) .timeline-icon-horizontal {
+        color: #6c757d;
+    }
+    .timeline-step-horizontal .badge {
+        font-size: 0.65rem;
+        padding: 0.2em 0.4em;
+        margin-top: 4px;
+    }
+    /* İade sebebi stilleri */
+    .reason-badge {
+        max-width: 200px;
+        white-space: normal;
+        overflow: visible;
+        display: inline-block;
+        vertical-align: middle;
+        background-color: #f8f9fa !important;
+        color: #212529 !important;
+        border: 1px solid #dee2e6;
+        padding: 0.35em 0.65em;
+        border-radius: 0.25rem;
+        font-size: 0.85rem;
+    }
+    /* Tamamı iade edildi badge */
+    .fully-refunded-badge {
+        background-color: rgba(25, 135, 84, 0.1) !important;
+        color: #198754 !important;
+        border: 1px solid #198754;
+        font-size: 0.75rem;
+        padding: 0.25em 0.5em;
+    }
+    /* Responsive adjustments */
+    @@media (max-width: 768px) {
+        .card-header {
+            padding: 0.5rem;
+        }
+        .card-body {
+            padding: 0.75rem;
+        }
+        .timeline-horizontal {
+            min-width: 100%;
+        }
+        .timeline-step-horizontal {
+            min-width: 80px;
+        }
+    }
+        .price-comparison {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .original-price {
+        text-decoration: line-through;
+        color: #6c757d;
+        font-size: 0.9em;
+    }
+    .refunded-price {
+        color: #dc3545;
+        font-weight: 500;
+    }
+    .fully-refunded {
+        color: #198754;
+        font-weight: 500;
+    }
+</style>
+
+<div class="container px-3">
+    <div class="d-flex justify-content-between align-items-center mb-3 mt-3">
+        <div>
+            <a href="/Shop/Refund/List" class="btn btn-outline-secondary btn-sm me-2">
+                <i class="fas fa-arrow-left me-1"></i> Geri Dön
+            </a>
+            <h1 class="h5 mb-0 text-gray-900 fw-semibold d-inline-block">
+                <i class="fas fa-exchange-alt me-2 text-primary"></i> İade Talep Detayı <span id="orderNumber" class="text-muted"></span>
+            </h1>
+        </div>
+        <span id="statusBadge" class="badge rounded-pill"></span>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white border-0 py-2">
+                    <h6 class="m-0 fw-semibold text-gray-800">
+                        <i class="fas fa-user-circle me-2 text-muted"></i> Müşteri Bilgileri
+                    </h6>
+                </div>
+                <div class="card-body py-2" id="customerInfo">
+                    <div class="text-center py-4">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Yükleniyor...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white border-0 py-2">
+                    <h6 class="m-0 fw-semibold text-gray-800">
+                        <i class="fas fa-receipt me-2 text-muted"></i> Sipariş Bilgileri
+                    </h6>
+                </div>
+                <div class="card-body py-2" id="orderInfo">
+                    <div class="text-center py-4">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Yükleniyor...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="ibanWarning" class="alert alert-info border-0 shadow-sm mt-3 d-none">
+        <div class="d-flex align-items-center">
+            <i class="fas fa-info-circle me-2 fs-4"></i>
+            <div>
+                <h6 class="alert-heading mb-1">Kapıda Ödeme Uyarısı</h6>
+                <p class="mb-0">İade ücreti belirttiğiniz IBAN bilgisine yatırılacaktır.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm mt-3">
+        <div class="card-header bg-white border-0 py-2">
+            <h6 class="m-0 fw-semibold text-gray-800">
+                <i class="fas fa-box-open me-2 text-muted"></i> İade Edilen Ürünler
+            </h6>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="border-0">Ürün</th>
+                            <th class="border-0">Renk/Beden</th>
+                            <th class="border-0">Adet</th>
+                            <th class="border-0">Birim Fiyat</th>
+                            <th class="border-0">Toplam</th>
+                        </tr>
+                    </thead>
+                    <tbody id="refundItems"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm mt-3">
+        <div class="card-header bg-white border-0 py-2">
+            <h6 class="m-0 fw-semibold text-gray-800">
+                <i class="fas fa-info-circle me-2 text-muted"></i> İade Bilgileri
+            </h6>
+        </div>
+        <div class="card-body py-2" id="refundInfo">
+            <div class="text-center py-4">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Yükleniyor...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm mt-3 mb-4">
+        <div class="card-header bg-white border-0 py-2">
+            <h6 class="m-0 fw-semibold text-gray-800">
+                <i class="fas fa-history me-2 text-muted"></i> İade Süreci
+            </h6>
+        </div>
+        <div class="card-body p-2">
+            <div class="timeline-container">
+                <div class="timeline-horizontal" id="refundTimeline"></div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js"></script>
+
+    <script>
+    $(document).ready(function() {
+        const refundId = window.location.pathname.split('/').pop();
+        let paymentMethod = '';
+        
+        const statusClasses = {
+            'Beklemede': 'bg-warning-soft text-warning',
+            'Onaylandı': 'bg-success-soft text-success',
+            'Reddedildi': 'bg-danger-soft text-danger',
+            'KargoyaVerildi': 'bg-info-soft text-info',
+            'Inceleniyor': 'bg-primary-soft text-primary',
+            'KabulEdildi': 'bg-success-soft text-success',
+            'KabulEdilmedi': 'bg-danger-soft text-danger',
+            'UrunTeslimEdildi': 'bg-success-soft text-success',
+            'ParaIadesiYapildi': 'bg-success-soft text-success'
+        };
+
+        const statusTextMap = {
+            'Beklemede': 'Beklemede',
+            'Onaylandı': 'Onaylandı',
+            'Reddedildi': 'Reddedildi',
+            'KargoyaVerildi': 'Kargoya Verildi',
+            'Inceleniyor': 'İnceleniyor',
+            'KabulEdildi': 'Kabul Edildi',
+            'KabulEdilmedi': 'İade Kabul Edilmedi',
+            'UrunTeslimEdildi': 'Ürün Teslim Edildi',
+            'ParaIadesiYapildi': 'Para İadesi Yapıldı'
+        };
+
+        const statusFlow = {
+            'Beklemede': ['Onaylandı', 'Reddedildi'],
+            'Onaylandı': ['KargoyaVerildi'],
+            'KargoyaVerildi': ['Inceleniyor'],
+            'Inceleniyor': ['KabulEdildi', 'KabulEdilmedi'],
+            'KabulEdildi': ['ParaIadesiYapildi'],
+            'KabulEdilmedi': ['UrunTeslimEdildi']
+        };
+
+        const statusActions = {
+            'Beklemede': [
+                { text: 'Onayla', status: 'Onaylandı', class: 'btn-success', icon: 'fa-check' },
+                { text: 'Reddet', status: 'Reddedildi', class: 'btn-outline-danger', icon: 'fa-times' }
+            ],
+            'Onaylandı': [
+                { text: 'Kargoya Verildi', status: 'KargoyaVerildi', class: 'btn-info', icon: 'fa-truck' }
+            ],
+            'KargoyaVerildi': [
+                { text: 'İncelemeye Al', status: 'Inceleniyor', class: 'btn-primary', icon: 'fa-search' }
+            ],
+            'Inceleniyor': [
+                { text: 'İadeyi Kabul Et', status: 'KabulEdildi', class: 'btn-success', icon: 'fa-check-circle' },
+                { text: 'İadeyi Reddet', status: 'KabulEdilmedi', class: 'btn-outline-danger', icon: 'fa-times-circle' }
+            ],
+            'KabulEdildi': [
+                { text: 'Para İadesi Yapıldı', status: 'ParaIadesiYapildi', class: 'btn-success', icon: 'fa-money-bill-wave' }
+            ],
+            'KabulEdilmedi': [
+                { text: 'Ürün Teslim Edildi', status: 'UrunTeslimEdildi', class: 'btn-success', icon: 'fa-box-open' }
+            ]
+        };
+
+        loadRefundDetails();
+
+        function loadRefundDetails() {
+            $.ajax({
+                url: `/Shop/Refund/GetRefundDetails/${refundId}`,
+                method: 'GET',
+                success: function(response) {
+                    if (response) {
+                        paymentMethod = response.order.paymentMethod;
+                        renderCustomerInfo(response.customer);
+                        renderOrderInfo(response.order, response.refund);
+                        renderRefundItems(response.items);
+                        renderRefundInfo(response.refund);
+                        updateStatusBadge(response.refund.status);
+                        renderActionButtons(response.refund.status);
+                        renderTimeline(response.refund.status);
+                        
+                        // Kapıda ödeme kontrolü
+                        if (paymentMethod === 'Kapıda Ödeme') {
+                            $('#ibanWarning').removeClass('d-none');
+                        }
+                    }
+                },
+                error: function(xhr) {
+                    showNotification('error', 'Veriler yüklenirken bir hata oluştu');
+                }
+            });
+        }
+
+        function renderCustomerInfo(customer) {
+            const html = `
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-2">
+                            <h6 class="text-muted small mb-1">Ad Soyad</h6>
+                            <p class="fw-medium mb-0">${customer.fullName}</p>
+                        </div>
+                        <div class="mb-2">
+                            <h6 class="text-muted small mb-1">Telefon</h6>
+                            <p class="fw-medium mb-0">${customer.phone}</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-2">
+                            <h6 class="text-muted small mb-1">Adres</h6>
+                            <p class="fw-medium mb-0">${customer.address}</p>
+                            <p class="text-muted small mb-0">${customer.district}/${customer.city}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+            $('#customerInfo').html(html);
+        }
+
+        function renderOrderInfo(order, refund) {
+            const orderDate = new Date(order.orderDate).toLocaleDateString('tr-TR', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+
+            // Ödeme yöntemi kontrolü
+            const paymentStatus = order.paymentMethod === 'Kapıda Ödeme' ? 
+                '<span class="badge bg-warning text-white">Kapıda Ödeme</span>' : 
+                '<span class="badge bg-success">Ödendi</span>';
+
+            // Tamamı iade edildi kontrolü
+            const totalAmountDisplay = order.totalAmount === 0 ? 
+                `<span class="fw-medium mb-0">0.00 TL <span class="badge fully-refunded-badge ms-2">Tamamı İade Edildi</span></span>` :
+                `<span class="fw-medium mb-0">${order.totalAmount.toFixed(2)} TL</span>`;
+
+            const html = `
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-2">
+                            <h6 class="text-muted small mb-1">Sipariş Tarihi</h6>
+                            <p class="fw-medium mb-0">${orderDate}</p>
+                        </div>
+                        <div class="mb-2">
+                            <h6 class="text-muted small mb-1">Sipariş No</h6>
+                            <p class="fw-medium mb-0">${order.orderCode}</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-2">
+                            <h6 class="text-muted small mb-1">Toplam Tutar</h6>
+                            ${totalAmountDisplay}
+                        </div>
+                        <div class="mb-2">
+                            <h6 class="text-muted small mb-1">Ödeme Durumu</h6>
+                            <p class="fw-medium mb-0">${paymentStatus}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+            $('#orderInfo').html(html);
+        }
+
+        function renderRefundItems(items) {
+            let html = '';
+            items.forEach(item => {
+                const total = item.quantity * item.unitPrice;
+                html += `
+                    <tr class="border-top">
+                        <td class="align-middle">
+                            <div class="d-flex align-items-center">
+                                <div class="ms-2">
+                                    <h6 class="mb-0 fw-medium">${item.productName}</h6>
+                                    <small class="text-muted">SKU: ${item.productCode || '-'}</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="align-middle"><span class="badge bg-light text-dark">${item.color || '-'} / ${item.size || '-'}</span></td>
+                        <td class="align-middle">${item.quantity}</td>
+                        <td class="align-middle">${item.unitPrice.toFixed(2)} TL</td>
+                        <td class="align-middle fw-medium">${total.toFixed(2)} TL</td>
+                    </tr>
+                `;
+            });
+            $('#refundItems').html(html);
+        }
+
+        function renderRefundInfo(refund) {
+            let ibanHtml = '';
+            if (refund.iban) {
+                ibanHtml = `
+                    <div class="mb-2">
+                        <h6 class="text-muted small mb-1">IBAN</h6>
+                        <p class="fw-medium font-monospace mb-0">${formatIBAN(refund.iban)}</p>
+                    </div>
+                `;
+            }
+
+            const requestDate = new Date(refund.requestDate).toLocaleDateString('tr-TR', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+
+            const html = `
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-2">
+                            <h6 class="text-muted small mb-1">İade Durumu</h6>
+                            <p class="fw-medium mb-0">${statusTextMap[refund.status] || refund.status}</p>
+                        </div>
+                        <div class="mb-2">
+                            <h6 class="text-muted small mb-1">Son İşlem Tarihi</h6>
+                            <p class="fw-medium mb-0">${requestDate}</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        ${ibanHtml}
+                    </div>
+                </div>
+            `;
+            $('#refundInfo').html(html);
+        }
+
+        function updateStatusBadge(status) {
+            const statusText = statusTextMap[status] || status;
+            const statusClass = statusClasses[status] || 'bg-secondary-soft text-secondary';
+            $('#statusBadge').text(statusText).addClass(statusClass);
+        }
+
+        function renderActionButtons(currentStatus) {
+            const actions = statusActions[currentStatus] || [];
+            let html = '';
+
+            actions.forEach(action => {
+                html += `
+                    <button class="btn ${action.class} px-3 py-2 status-action" data-status="${action.status}">
+                        <i class="fas ${action.icon} me-1"></i> ${action.text}
+                    </button>
+                `;
+            });
+
+            $('#statusButtons').html(html);
+
+            $('.status-action').click(function() {
+                const newStatus = $(this).data('status');
+                updateRefundStatus(newStatus);
+            });
+        }
+
+        function renderTimeline(status) {
+            const steps = [
+                { id: 'Beklemede', title: 'Talep Oluşturuldu', icon: 'fa-file-alt' },
+                { id: 'Onaylandı', title: 'Onaylandı', icon: 'fa-check' },
+                { id: 'KargoyaVerildi', title: 'Kargoya Verildi', icon: 'fa-truck' },
+                { id: 'Inceleniyor', title: 'İnceleniyor', icon: 'fa-search' },
+                { id: 'KabulEdildi', title: 'Kabul Edildi', icon: 'fa-check-circle' },
+                { id: 'ParaIadesiYapildi', title: 'Para İadesi', icon: 'fa-money-bill-wave' }
+            ];
+
+            // Reddedilme durumu için alternatif akış
+            if (status === 'KabulEdilmedi' || status === 'Reddedildi' || status === 'UrunTeslimEdildi') {
+                steps.splice(4, 2, 
+                    { id: 'KabulEdilmedi', title: 'Reddedildi', icon: 'fa-times-circle' },
+                    { id: 'UrunTeslimEdildi', title: 'Teslim Edildi', icon: 'fa-box-open' }
+                );
+            }
+
+            let html = '';
+            let isCurrentFound = false;
+
+            steps.forEach(step => {
+                const isCompleted = !isCurrentFound && step.id !== status;
+                const isCurrent = step.id === status;
+                
+                if (isCurrent) isCurrentFound = true;
+
+                html += `
+                    <div class="timeline-step-horizontal ${isCompleted ? 'completed' : ''} ${isCurrent ? 'current' : ''}">
+                        <div class="timeline-icon-horizontal">
+                            <i class="fas ${isCompleted ? 'fa-check' : step.icon}"></i>
+                        </div>
+                        <div class="timeline-content-horizontal">
+                            <h6 class="mb-0 small">${step.title}</h6>
+                            ${isCurrent ? '<span class="badge bg-primary mt-1">Şu anki</span>' : ''}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            $('#refundTimeline').html(html);
+        }
+
+        function formatIBAN(iban) {
+            return iban.replace(/(.{4})/g, '$1 ').trim();
+        }
+
+        function updateRefundStatus(newStatus) {
+            Swal.fire({
+                title: 'Emin misiniz?',
+                text: `İade durumunu "${statusTextMap[newStatus] || newStatus}" olarak güncellemek istiyor musunuz?`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Evet, Güncelle',
+                cancelButtonText: 'Vazgeç',
+                customClass: {
+                    confirmButton: 'btn btn-success me-2',
+                    cancelButton: 'btn btn-outline-secondary'
+                },
+                buttonsStyling: false
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: '/Shop/Refund/UpdateRefundStatus',
+                        method: 'POST',
+                        headers: {
+                            'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                        },
+                        data: {
+                            refundId: refundId,
+                            newStatus: newStatus
+                        },
+                        success: function(response) {
+                            if (response.success) {
+                                showNotification('success', 'İade durumu başarıyla güncellendi');
+                                loadRefundDetails();
+                            } else {
+                                showNotification('error', response.message || 'Durum güncellenirken bir hata oluştu');
+                            }
+                        },
+                        error: function() {
+                            showNotification('error', 'Sunucu hatası oluştu');
+                        }
+                    });
+                }
+            });
+        }
+
+        function showNotification(type, message) {
+            toastr[type](message, '', {
+                closeButton: true,
+                tapToDismiss: false,
+                positionClass: 'toast-top-right',
+                timeOut: 5000
+            });
+        }
+    });
+    </script>
+}

@@ -1,0 +1,124 @@
+{
+  "Topbar": {
+    "Links": [
+      {
+        "Text": "Anasayfa",
+        "Url": "/Shop/Home/Index"
+      },
+      {
+        "Text": "Ürünlerimiz",
+        "Url": "/Shop/Product/List"
+      },
+      {
+        "Text": "Kategoriler",
+        "Url": "/Shop/Category/Index"
+      },
+      {
+        "Text": "Para Puanlarım",
+        "Url": "/Shop/Coin/Index"
+      },
+      {
+        "Text": "Fırsatlar",
+        "Url": "/Shop/Coupon/Index"
+      }
+    ]
+  },
+  "Footer": {
+    "Address": "Abide-i Hürriyet Cad. No:123",
+    "ButtonTitle": "İletişime Geç",
+    "ButtonUrl": "/Shop/Contact/Index",
+    "Mail": "info@modave.com",
+    "Phone": "0 555 555 55 55"
+  },
+  "SiteMaps": {
+    "Links": [
+      {
+        "Text": "Siparişleriniz",
+        "Url": "/Shop/Order/Index"
+      },
+      {
+        "Text": "Ürünlerimiz",
+        "Url": "/Shop/Product/List"
+      },
+      {
+        "Text": "Favorileriniz",
+        "Url": "/Shop/Favorite/Index"
+      },
+      {
+        "Text": "İletisim",
+        "Url": "/Shop/Contact/Index"
+      },
+      {
+        "Text": "Kariyer",
+        "Url": "/Shop/Career/Index"
+      }
+    ]
+  },
+  "Policies": {
+    "Links": [
+      {
+        "Text": "Kargo Süreci",
+        "Url": "/Shop/Home/Index"
+      },
+      {
+        "Text": "İade ve Geri Ödeme",
+        "Url": "/Shop/Home/Index"
+      },
+      {
+        "Text": "Gizlilik Politikası",
+        "Url": "/Shop/Home/Index"
+      },
+      {
+        "Text": "Şartlar ve Koşullar",
+        "Url": "/Shop/Home/Index"
+      },
+      {
+        "Text": "SSS",
+        "Url": "/Shop/Home/Index"
+      }
+    ]
+  },
+  "MobileMenu": {
+    "AddressTitle": "Mağaza Adresi",
+    "Address": "Abide-i Hürriyet Cad. No:123",
+    "ButtonTitle": "İletişime Geç",
+    "ButtonUrl": "/Shop/Contact/Index",
+    "Mail": "info@modave.com",
+    "Phone": "0 555 555 55 55",
+    "Links": [
+      {
+        "Text": "Anasayfa",
+        "Url": "/Shop/Home/Index"
+      },
+      {
+        "Text": "Ürünlerimiz",
+        "Url": "/Shop/Product/List"
+      },
+      {
+        "Text": "Kategoriler",
+        "Url": "/Shop/Category/Index"
+      },
+      {
+        "Text": "Para Puanlarım",
+        "Url": "/Shop/Coin/Index"
+      },
+      {
+        "Text": "Fırsatlar",
+        "Url": "/Shop/Coupon/Index"
+      },
+      {
+        "Text": "Profilim",
+        "Url": "/Shop/Profile/MyAccount"
+      }
+    ]
+  },
+  "InvoiceInfo": {
+    "logoPath": "/path/to/logo.png",
+    "storeName": "ModaVe",
+    "cityCountry": "İstanbul, Türkiye",
+    "contactInfo": {
+      "tel": "+90 212 345 67 89",
+      "email": "info@modave.com"
+    }
+  }
+}

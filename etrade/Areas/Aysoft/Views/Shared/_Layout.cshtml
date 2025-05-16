@@ -1,0 +1,314 @@
+@{
+    var isCustomerAuthenticated = User.Identity.IsAuthenticated &&
+    User.Claims.Any(c => c.Type == "CustomerAuth" && c.Value == "true");
+}
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+<!-- Mirrored from quiety.themetags.com/services.html by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 06 May 2025 08:58:52 GMT -->
+
+<head>
+    <!--required meta tags-->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!--twitter og-->
+    <meta name="twitter:site" content="@@themetags">
+    <meta name="twitter:creator" content="@@themetags">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Quiety - Creative SAAS Technology & IT Solutions Bootstrap 5 HTML Template">
+    <meta name="twitter:description"
+        content="Quiety creative Saas, software technology, Saas agency & business Bootstrap 5 Html template. It is best and famous software company and Saas website template.">
+    <meta name="twitter:image" content="#">
+
+    <!--facebook og-->
+    <meta property="og:url" content="#">
+    <meta name="twitter:title" content="Quiety - Creative SAAS Technology & IT Solutions Bootstrap 5 HTML Template">
+    <meta property="og:description"
+        content="Quiety creative Saas, software technology, Saas agency & business Bootstrap 5 Html template. It is best and famous software company and Saas website template.">
+    <meta property="og:image" content="#">
+    <meta property="og:image:secure_url" content="#">
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="600">
+
+    <!--meta-->
+    <meta name="description"
+        content="Quiety creative Saas, software technology, Saas agency & business Bootstrap 5 Html template. It is best and famous software company and Saas website template.">
+    <meta name="author" content="ThemeTags">
+
+    <!--favicon icon-->
+    <link rel="icon" href="assets/img/favicon.png" type="image/png" sizes="16x16">
+
+    <!--title-->
+    <title>Services - Software & IT Solutions HTML Template</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+    <!-- Font -->
+    <link
+        href="../fonts.googleapis.com/css2c73a.css?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&amp;display=swap"
+        rel="stylesheet">
+
+    <link href="../fonts.googleapis.com/css21efa.css?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap"
+        rel="stylesheet">
+    <link href="../fonts.googleapis.com/css21e5a.css?family=Lily+Script+One&amp;display=swap" rel="stylesheet">
+    <!-- Font -->
+
+    <!--build:css-->
+    <link rel="stylesheet" href="/temp/customer/assets/css/main.css">
+    <!-- endbuild -->
+
+    <!--custom css start-->
+    <link rel="stylesheet" href="/temp/customer/assets/css/custom.css">
+    <!--custom css end-->
+
+</head>
+
+<body>
+
+    <!--preloader start-->
+    <div id="preloader" class="bg-light-subtle">
+        <div class="preloader-wrap">
+            <img src="/temp/customer/assets/img/favicon.png" alt="logo" class="img-fluid preloader-icon">
+            <div class="loading-bar"></div>
+        </div>
+    </div>
+    <!--preloader end-->
+    <!--main content wrapper start-->
+    <div class="main-wrapper">
+<header class="main-header w-100 z-10">
+    <nav class="navbar navbar-expand-xl navbar-light sticky-header">
+        <div class="container d-flex align-items-center justify-content-lg-between position-relative">
+            <a href="/Aysoft/Home/Index" class="navbar-brand d-flex align-items-center mb-md-0 text-decoration-none">
+                <img src="/temp/customer/assets/img/logo-white.png" alt="logo" class="img-fluid logo-white" style="height:45px" />
+                <img src="/temp/customer/assets/img/logo-color.png" alt="logo" class="img-fluid logo-color" style="height:45px" />
+            </a>
+
+            <a class="navbar-toggler position-absolute right-0 border-0" href="#offcanvasWithBackdrop" role="button">
+                <i class="flaticon-menu" data-bs-toggle="offcanvas" data-bs-target="#offcanvasWithBackdrop" aria-controls="offcanvasWithBackdrop"></i>
+            </a>
+            
+            <div class="clearfix"></div>
+            
+            <div class="collapse navbar-collapse justify-content-center">
+                <ul class="nav col-12 col-md-auto justify-content-center main-menu">
+                    <li><a href="/Aysoft/Home/Index" class="nav-link">Anasayfa</a></li>
+
+                    @if (isCustomerAuthenticated)
+                    {
+                        <li><a href="/Aysoft/License/Status" class="nav-link">Lisans Durumu</a></li>
+                        <li><a href="/Aysoft/License/Frozen" class="nav-link">Erişimi Aç</a></li>
+                        <li><a href="/Aysoft/Demo/Result" class="nav-link">Talep Sonucunuz</a></li>
+                    }
+                    else
+                    {
+                        <li><a href="/Aysoft/License/Pricing" class="nav-link">Fiyatlandırma</a></li>
+                        <li><a href="/Aysoft/Demo/Request" class="nav-link">Deneme Sürümü</a></li>
+                    }
+                </ul>
+
+                <div class="action-btns text-end me-5 me-lg-0 d-none d-md-block d-lg-block">
+                    @if (isCustomerAuthenticated)
+                    {
+                        <span class="me-2">Hoşgeldiniz, @User.Identity.Name</span>
+                        <form asp-area="Aysoft" asp-controller="Account" asp-action="Logout" method="get" class="d-inline">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-link text-decoration-none p-0">
+                                <i class="bx bx-log-out fs-18 align-middle me-1"></i>
+                                <span class="align-middle">Çıkış Yap</span>
+                            </button>
+                        </form>
+                    }
+                    else
+                    {
+                        <a href="/Aysoft/Account/Login" class="btn btn-link text-decoration-none me-2">Müşteri Girişi</a>
+                    }
+                    <a href="/Aysoft/Contact/Index" class="btn btn-primary">Bize Ulaşın</a>
+                    <a href="javascript:void(0)" class="btn btn-link p-1 tt-theme-toggle">
+                        <div class="tt-theme-light" data-bs-toggle="tooltip" data-bs-placement="left" data-bs-title="Light">
+                            <i class="flaticon-sun-1 fs-lg"></i>
+                        </div>
+                        <div class="tt-theme-dark" data-bs-toggle="tooltip" data-bs-placement="left" data-bs-title="Dark">
+                            <i class="flaticon-moon-1 fs-lg"></i>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Offcanvas Menu Start -->
+    <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasWithBackdrop">
+        <div class="offcanvas-header d-flex align-items-center mt-4">
+            <a href="/Aysoft/Home/Index" class="d-flex align-items-center mb-md-0 text-decoration-none">
+                <img src="/temp/customer/assets/img/logo-color.png" alt="logo" class="img-fluid ps-2" />
+            </a>
+            <button type="button" class="close-btn text-danger" data-bs-dismiss="offcanvas" aria-label="Close">
+                <i class="flaticon-cancel"></i>
+            </button>
+        </div>
+        
+        <div class="offcanvas-body">
+            <ul class="nav col-12 col-md-auto justify-content-center main-menu">
+                <li><a href="/Aysoft/Home/Index" class="nav-link">Anasayfa</a></li>
+
+                @if (isCustomerAuthenticated)
+                {
+                    <li><a href="/Aysoft/License/Status" class="nav-link">Lisans Durumu</a></li>
+                    <li><a href="/Aysoft/Access/Open" class="nav-link">Erişimi Aç</a></li>
+                    <li><a href="/Aysoft/Demo/Result" class="nav-link">Talep Sonucunuz</a></li>
+                }
+                else
+                {
+                    <li><a href="/Aysoft/Pricing" class="nav-link">Fiyatlandırma</a></li>
+                    <li><a href="/Aysoft/Demo/Request" class="nav-link">Deneme Sürümü</a></li>
+                }
+            </ul>
+
+            <div class="action-btns mt-4 ps-3">
+                @if (isCustomerAuthenticated)
+                {
+                    <span class="d-block mb-2">Hoşgeldiniz, @User.Identity.Name</span>
+                                    <a class="d-inline" asp-area="Aysoft" asp-controller="Account" asp-action="Logout">
+                                        <i class="bx bx-log-out fs-18 align-middle me-1"></i><span
+                                            class="align-middle">Çıkış
+                                            Yap</span>
+                                    </a>
+                }
+                else
+                {
+                    <a href="/Aysoft/Account/Login" class="btn btn-outline-primary me-2">Giriş Yap</a>
+                }
+                <a href="request-demo.html" class="btn btn-primary">Bize Ulaşın</a>
+            </div>
+        </div>
+    </div>
+    <!-- Offcanvas Menu End -->
+</header>
+
+        <!--page header section start-->
+
+        @RenderBody()
+        <!--footer section start-->
+<footer class="footer-section">
+    <!--footer top start-->
+    <div class="footer-top footer-light ptb-120">
+        <div class="container">
+            <div class="row justify-content-between">
+                <div class="col-md-8 col-lg-4 mb-md-4 mb-lg-0">
+                    <div class="footer-single-col">
+                        <div class="footer-single-col mb-4">
+                            <img src="/temp/customer/assets/img/logo-white.png" alt="logo" class="img-fluid logo-white" style="height:45px">
+                            <img src="/temp/customer/assets/img/logo-color.png" alt="logo" class="img-fluid logo-color" style="height:45px">
+                        </div>
+                        <p>En son haberlerimiz, makalelerimiz ve kaynaklarımız haftalık olarak e-posta adresinize gönderilecektir.</p>
+
+                        <form class="newsletter-form position-relative d-block d-lg-flex d-md-flex">
+                            <input type="text" class="input-newsletter form-control me-2" 
+                                   placeholder="E-posta adresiniz" name="email" required="" autocomplete="off">
+                            <input type="submit" value="Abone Ol" data-wait="Lütfen bekleyin..." 
+                                   class="btn btn-primary mt-3 mt-lg-0 mt-md-0">
+                        </form>
+                        <div class="ratting-wrap mt-4">
+                            <h6 class="mb-0">10/10 Genel Puan</h6>
+                            <ul class="list-unstyled rating-list list-inline mb-0">
+                                <li class="list-inline-item"><i class="fas fa-star text-warning"></i></li>
+                                <li class="list-inline-item"><i class="fas fa-star text-warning"></i></li>
+                                <li class="list-inline-item"><i class="fas fa-star text-warning"></i></li>
+                                <li class="list-inline-item"><i class="fas fa-star text-warning"></i></li>
+                                <li class="list-inline-item"><i class="fas fa-star text-warning"></i></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-12 col-lg-7 mt-4 mt-md-0 mt-lg-0">
+                    <div class="row">
+                        <div class="col-md-4 col-lg-4 mt-4 mt-md-0 mt-lg-0">
+                            <div class="footer-single-col">
+                                <h3>Ana Sayfalar</h3>
+                                <ul class="list-unstyled footer-nav-list mb-lg-0">
+                                    <li><a href="index-2.html" class="text-decoration-none">Ana Sayfa</a></li>
+                                    <li><a href="about-us.html" class="text-decoration-none">Hakkımızda</a></li>
+                                    <li><a href="services.html" class="text-decoration-none">Hizmetler</a></li>
+                                    <li><a href="career.html" class="text-decoration-none">Kariyer</a></li>
+                                    <li><a href="integrations.html" class="text-decoration-none">Entegrasyonlar</a></li>
+                                    <li><a href="integration-single.html" class="text-decoration-none">Entegrasyon Detay</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="col-md-4 col-lg-4 mt-4 mt-md-0 mt-lg-0">
+                            <div class="footer-single-col">
+                                <h3>Sayfalar</h3>
+                                <ul class="list-unstyled footer-nav-list mb-lg-0">
+                                    <li><a href="pricing.html" class="text-decoration-none">Fiyatlandırma</a></li>
+                                    <li><a href="blog.html" class="text-decoration-none">Blog</a></li>
+                                    <li><a href="blog-single.html" class="text-decoration-none">Blog Detay</a></li>
+                                    <li><a href="contact-us.html" class="text-decoration-none">İletişim</a></li>
+                                    <li><a href="career-single.html" class="text-decoration-none">Kariyer Detay</a></li>
+                                    <li><a href="service-single.html" class="text-decoration-none">Hizmet Detay</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="col-md-4 col-lg-4 mt-4 mt-md-0 mt-lg-0">
+                            <div class="footer-single-col">
+                                <h3>Şablon</h3>
+                                <ul class="list-unstyled footer-nav-list mb-lg-0">
+                                    <li><a href="contact-us.html" class="text-decoration-none">İletişim</a></li>
+                                    <li><a href="support.html" class="text-decoration-none">Destek</a></li>
+                                    <li><a href="support-single.html" class="text-decoration-none">Destek Detay</a></li>
+                                    <li><a href="team.html" class="text-decoration-none">Ekibimiz</a></li>
+                                    <li><a href="client-review.html" class="text-decoration-none">Müşteri Yorumları</a></li>
+                                    <li><a href="career-single.html" class="text-decoration-none">Kariyer Detay</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--footer top end-->
+
+    <!--footer bottom start-->
+    <div class="footer-bottom footer-light py-4">
+        <div class="container">
+            <div class="row justify-content-between align-items-center">
+                <div class="col-md-7 col-lg-7">
+                    <div class="copyright-text">
+                        <p class="mb-lg-0 mb-md-0">&copy; 2023 Tüm Hakları Saklıdır. <a href="https://sirketiniz.com" class="text-decoration-none"> Aysoft</a> tarafından geliştirilmiştir.</p>
+                    </div>
+                </div>
+                <div class="col-md-4 col-lg-4">
+                    <div class="footer-single-col text-start text-lg-end text-md-end">
+                        <ul class="list-unstyled list-inline footer-social-list mb-0">
+                            <li class="list-inline-item"><a href="#"><i class="fab fa-facebook-f"></i></a></li>
+                            <li class="list-inline-item"><a href="#"><i class="fab fa-instagram"></i></a></li>
+                            <li class="list-inline-item"><a href="#"><i class="fab fa-twitter"></i></a></li>
+                            <li class="list-inline-item"><a href="#"><i class="fab fa-linkedin"></i></a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--footer bottom end-->
+</footer>
+<!--footer section end-->
+
+    </div>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!--build:js-->
+    <script src="/temp/customer/assets/js/vendors/bootstrap.bundle.min.js"></script>
+    <script src="/temp/customer/assets/js/vendors/swiper-bundle.min.js"></script>
+    <script src="/temp/customer/assets/js/vendors/jquery.magnific-popup.min.js"></script>
+    <script src="/temp/customer/assets/js/vendors/parallax.min.js"></script>
+    <script src="/temp/customer/assets/js/vendors/aos.js"></script>
+    <script src="/temp/customer/assets/js/vendors/massonry.min.js"></script>
+    <script src="/temp/customer/assets/js/app.js"></script>
+    <!--endbuild-->
+    @RenderSection("Scripts", required: false)
+</body>
+
+
+<!-- Mirrored from quiety.themetags.com/services.html by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 06 May 2025 08:58:52 GMT -->
+
+</html>

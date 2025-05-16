@@ -1,0 +1,525 @@
+@{
+    ViewData["Title"] = "İade Talebi Oluştur";
+}
+
+<div class="container mt-4">
+    <!-- Header -->
+    <div class="text-center mb-4">
+        <div class="d-inline-block p-3 rounded-circle bg-primary mb-2">
+            <i class="fas fa-undo-alt text-white fa-lg"></i>
+        </div>
+        <h1 class="h3 fw-bold">İade Talebi</h1>
+        <p class="text-muted small">Sipariş #@ViewData["OrderId"]</p>
+    </div>
+
+    <input type="hidden" id="orderId" value="@ViewData["OrderId"]" />
+    <input type="hidden" id="paymentToken" value="@ViewData["PaymentToken"]" />
+
+    <!-- IBAN and Name Input for Cash on Delivery -->
+    <div id="ibanContainer" class="card border-0 shadow-sm mb-4" style="display: none;">
+        <div class="card-body">
+            <div class="d-flex align-items-center mb-3">
+                <i class="fas fa-money-bill-wave me-2 text-primary"></i>
+                <h2 class="h5 mb-0">Banka Bilgileri</h2>
+            </div>
+            <div class="alert alert-warning small mb-3">
+                <i class="fas fa-info-circle me-1"></i> Kapıda ödeme yaptığınız için iade tutarının size aktarılabilmesi için aşağıdaki bilgileri girmeniz gerekmektedir.
+            </div>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Ad Soyad</label>
+                    <input type="text" id="fullNameInput" class="form-control" placeholder="Ad ve soyadınız" required>
+                    <div class="invalid-feedback">Lütfen geçerli bir ad soyad giriniz</div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">IBAN Numaranız</label>
+                    <input type="text" id="ibanInput" class="form-control" placeholder="TRXX XXXX XXXX XXXX XXXX XXXX XX" required>
+                    <div class="invalid-feedback">Lütfen geçerli bir IBAN numarası giriniz</div>
+                    <small class="text-muted">Örnek: TR33 0006 1005 1978 6457 8413 26</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Product List -->
+        <div class="col-lg-8">
+            <div class="d-flex align-items-center mb-3">
+                <i class="fas fa-box-open me-2 text-primary"></i>
+                <h2 class="h5 mb-0">Ürünleriniz</h2>
+            </div>
+
+            <div class="row" id="orderItemsList">
+                <!-- Products will be loaded here -->
+            </div>
+        </div>
+
+        <!-- Refund Summary -->
+        <div class="col-lg-4">
+            <div class="sticky-top" style="top: 15px;">
+                <div class="d-flex align-items-center mb-3">
+                    <i class="fas fa-receipt me-2 text-primary"></i>
+                    <h2 class="h5 mb-0">İade Özeti</h2>
+                </div>
+
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-3">
+                        <div id="summaryItems" class="mb-3" style="min-height: 180px;">
+                            <div class="text-center py-4 text-muted">
+                                <i class="fas fa-info-circle fa-2x mb-2"></i>
+                                <p class="mb-0 small">İade etmek istediğiniz ürünleri seçin</p>
+                            </div>
+                        </div>
+
+                        <button id="submitRefundBtn" class="btn btn-primary w-100 py-2" disabled>
+                            <i class="fas fa-paper-plane me-1"></i> İade Talebini Gönder
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .product-card {
+        cursor: pointer;
+        transition: all 0.2s;
+        height: 100%;
+        font-size: 0.9rem;
+    }
+
+    .product-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1) !important;
+    }
+
+    .product-card.active {
+        border-color: #4361ee !important;
+        background-color: #f8f9fe;
+    }
+
+    .product-checkbox {
+        position: absolute;
+        opacity: 0;
+    }
+
+    .custom-checkbox {
+        position: absolute;
+        top: 0.75rem;
+        right: 0.75rem;
+        width: 1.1rem;
+        height: 1.1rem;
+        border: 2px solid #adb5bd;
+        border-radius: 0.2rem;
+    }
+
+    .product-checkbox:checked~.custom-checkbox {
+        background-color: #4361ee;
+        border-color: #4361ee;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23fff' stroke-linecap='round' stroke-linecap='round' stroke-width='3' d='M6 10l3 3l6-6'/%3e%3c/svg%3e");
+    }
+
+    .refund-details {
+        display: none;
+        animation: fadeIn 0.3s;
+        font-size: 0.85rem;
+    }
+
+    .card-title {
+        font-size: 1rem;
+        font-weight: 600;
+    }
+
+    .summary-item:not(:last-child) {
+        border-bottom: 1px solid #eee;
+        padding-bottom: 0.5rem;
+        margin-bottom: 0.5rem;
+        font-size: 0.85rem;
+    }
+
+    .form-label {
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+
+    .form-control,
+    .form-select {
+        font-size: 0.85rem;
+        padding: 0.4rem 0.75rem;
+    }
+
+    .is-invalid {
+        border-color: #dc3545 !important;
+    }
+
+    .invalid-feedback {
+        color: #dc3545;
+        font-size: 0.75rem;
+        margin-top: 0.25rem;
+    }
+</style>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    $(document).ready(function () {
+        const orderId = $("#orderId").val();
+        const paymentToken = $("#paymentToken").val();
+        let formIsValid = false;
+
+        // Kapıda ödeme kontrolü
+        if (paymentToken === "Kapıda Ödeme") {
+            $('#ibanContainer').show();
+        }
+
+        // Sipariş detaylarını yükle
+        $.ajax({
+            url: `/Shop/Refund/GetOrderDetails/${orderId}`,
+            method: 'GET',
+            success: function (data) {
+                if (data?.orderItems?.length > 0) {
+                    renderProducts(data.orderItems);
+                } else {
+                    $('#orderItemsList').html(`
+                        <div class="col-12">
+                            <div class="alert alert-info">Bu siparişte iade edilebilecek ürün bulunamadı.</div>
+                        </div>
+                    `);
+                }
+            },
+            error: function () {
+                $('#orderItemsList').html(`
+                    <div class="col-12">
+                        <div class="alert alert-danger">Ürün bilgileri alınırken bir hata oluştu.</div>
+                    </div>
+                `);
+            }
+        });
+
+        // Ürün listesini render et
+        function renderProducts(items) {
+            let html = '';
+
+            items.forEach((item, index) => {
+                html += `
+                    <div class="col-md-6 mb-4">
+                        <div class="card product-card p-3 h-100 position-relative" data-product-id="${item.productVariantId}">
+                            <input type="checkbox" 
+                                   id="product-${item.productVariantId}" 
+                                   class="product-checkbox" 
+                                   value="${item.productVariantId}" 
+                                   data-name="${item.productName}" 
+                                   data-max="${item.quantity}"
+                                   data-price="${item.price}" />
+                        
+                            <label for="product-${item.productVariantId}" class="custom-checkbox"></label>
+                        
+                            <div class="card-body p-0">
+                                <h5 class="card-title">${item.productName}</h5>
+                                <div class="d-flex justify-content-between text-muted mb-3">
+                                    <span>${item.price} TL</span>
+                                    <span>${item.quantity} adet</span>
+                                </div>
+                            
+                                <div class="refund-details">
+                                    <div class="mb-3">
+                                        <label class="form-label">İade Adeti</label>
+                                        <input type="number" 
+                                               class="form-control quantity-input" 
+                                               min="1" 
+                                               max="${item.quantity}" 
+                                               value="1" />
+                                        <div class="invalid-feedback">Lütfen geçerli bir adet giriniz</div>
+                                    </div>
+                                
+                                    <div class="mb-3">
+                                        <label class="form-label">İade Sebebi</label>
+                                        <select class="form-select reason-select" required>
+                                            <option value="">Seçiniz</option>
+                                            <option value="Yanlış Ürün">Yanlış Ürün</option>
+                                            <option value="Kusurlu Ürün">Kusurlu Ürün</option>
+                                            <option value="Beklentimi Karşılamadı">Beklentimi Karşılamadı</option>
+                                            <option value="Diğer">Diğer</option>
+                                        </select>
+                                        <div class="invalid-feedback">Lütfen bir sebep seçiniz</div>
+                                    </div>
+                                
+                                    <div class="mb-3 other-reason" style="display: none;">
+                                        <label class="form-label">Sebep Detayı</label>
+                                        <textarea class="form-control reason-text" rows="2"></textarea>
+                                        <div class="invalid-feedback">Lütfen sebep detayını giriniz</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            $('#orderItemsList').html(html);
+
+            // Diğer seçeneği için event
+            $(document).on('change', '.reason-select', function () {
+                const otherReasonDiv = $(this).closest('.card-body').find('.other-reason');
+                otherReasonDiv.toggle($(this).val() === 'Diğer');
+                validateForm();
+            });
+        }
+
+        // Checkbox değişikliklerini yönet
+        $(document).on('change', '.product-checkbox', function () {
+            const card = $(this).closest('.product-card');
+            const detailsDiv = card.find('.refund-details');
+
+            if ($(this).is(':checked')) {
+                card.addClass('active');
+                detailsDiv.slideDown();
+            } else {
+                card.removeClass('active');
+                detailsDiv.slideUp();
+                detailsDiv.find('.is-invalid').removeClass('is-invalid');
+            }
+
+            updateSummary();
+            validateForm();
+        });
+
+        // Kartın herhangi bir yerine tıklanabilirlik
+        $(document).on('click', '.product-card', function (e) {
+            if (!$(e.target).is('input') && !$(e.target).is('label') && !$(e.target).is('select') && !$(e.target).is('textarea')) {
+                const checkbox = $(this).find('.product-checkbox');
+                checkbox.prop('checked', !checkbox.prop('checked')).trigger('change');
+            }
+        });
+
+        // Miktar değişikliklerini kontrol et
+        $(document).on('change', '.quantity-input', function () {
+            const max = $(this).attr('max');
+            const value = parseInt($(this).val());
+
+            if (isNaN(value) || value < 1) {
+                $(this).val(1);
+            } else if (value > parseInt(max)) {
+                $(this).val(max);
+            }
+
+            validateForm();
+            updateSummary();
+        });
+
+        // IBAN ve Ad Soyad validasyonu
+        $(document).on('input', '#ibanInput, #fullNameInput', function() {
+            validateForm();
+        });
+
+        // Sebep detayı değişikliklerini kontrol et
+        $(document).on('input', '.reason-text', function() {
+            validateForm();
+        });
+
+        // Form validasyonu
+        function validateForm() {
+            formIsValid = true;
+            let atLeastOneSelected = false;
+
+            // IBAN ve Ad Soyad kontrolü (sadece kapıda ödeme için)
+            if (paymentToken === "Kapıda Ödeme") {
+                const ibanInput = $('#ibanInput');
+                const fullNameInput = $('#fullNameInput');
+                
+                if (!fullNameInput.val() || fullNameInput.val().trim().length < 3) {
+                    fullNameInput.addClass('is-invalid');
+                    formIsValid = false;
+                } else {
+                    fullNameInput.removeClass('is-invalid');
+                }
+                
+                if (!ibanInput.val() || ibanInput.val().trim().length < 10) {
+                    ibanInput.addClass('is-invalid');
+                    formIsValid = false;
+                } else {
+                    ibanInput.removeClass('is-invalid');
+                }
+            }
+
+            $('.product-checkbox:checked').each(function () {
+                atLeastOneSelected = true;
+                const card = $(this).closest('.product-card');
+
+                // Miktar validasyonu
+                const quantityInput = card.find('.quantity-input');
+                if (!quantityInput.val() || parseInt(quantityInput.val()) < 1) {
+                    quantityInput.addClass('is-invalid');
+                    formIsValid = false;
+                } else {
+                    quantityInput.removeClass('is-invalid');
+                }
+
+                // Sebep validasyonu
+                const reasonSelect = card.find('.reason-select');
+                if (!reasonSelect.val()) {
+                    reasonSelect.addClass('is-invalid');
+                    formIsValid = false;
+                } else {
+                    reasonSelect.removeClass('is-invalid');
+
+                    // Diğer seçilirse sebep detayı validasyonu
+                    if (reasonSelect.val() === 'Diğer') {
+                        const reasonText = card.find('.reason-text');
+                        if (!reasonText.val() || reasonText.val().trim() === '') {
+                            reasonText.addClass('is-invalid');
+                            formIsValid = false;
+                        } else {
+                            reasonText.removeClass('is-invalid');
+                        }
+                    }
+                }
+            });
+
+            if (!atLeastOneSelected) {
+                formIsValid = false;
+            }
+
+            $('#submitRefundBtn').prop('disabled', !formIsValid);
+
+            return formIsValid;
+        }
+
+        // Özeti güncelle
+        function updateSummary() {
+            let selectedItems = [];
+            let totalRefund = 0;
+            let html = '';
+
+            $('.product-checkbox:checked').each(function () {
+                const productId = $(this).val();
+                const productName = $(this).data('name');
+                const price = parseFloat($(this).data('price'));
+                const quantity = parseInt($(this).closest('.product-card').find('.quantity-input').val());
+                const reason = $(this).closest('.product-card').find('.reason-select').val();
+
+                const itemTotal = price * quantity;
+                totalRefund += itemTotal;
+
+                selectedItems.push({
+                    productVariantId: productId,
+                    quantity: quantity,
+                    reason: reason
+                });
+
+                html += `
+                    <div class="summary-item d-flex justify-content-between">
+                        <span>${productName} <small class="text-muted">x${quantity}</small></span>
+                        <span>${itemTotal.toFixed(2)} TL</span>
+                    </div>
+                `;
+            });
+
+            if (selectedItems.length > 0) {
+                html += `
+                    <div class="summary-item d-flex justify-content-between fw-bold pt-2 mt-2 border-top">
+                        <span>Toplam İade</span>
+                        <span>${totalRefund.toFixed(2)} TL</span>
+                    </div>
+                `;
+                $('#summaryItems').html(html);
+            } else {
+                $('#summaryItems').html(`
+                    <div class="text-center py-5 text-muted">
+                        <i class="fas fa-info-circle fa-3x mb-3"></i>
+                        <p class="mb-0">İade etmek istediğiniz ürünleri seçin</p>
+                    </div>
+                `);
+            }
+
+            validateForm();
+        }
+
+        // İade talebini gönder
+        $('#submitRefundBtn').click(function () {
+            if (!validateForm()) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Eksik Bilgi',
+                    text: 'Lütfen tüm zorunlu alanları doldurunuz.',
+                    confirmButtonText: 'Tamam'
+                });
+                return;
+            }
+
+            const selectedItems = [];
+
+            $('.product-checkbox:checked').each(function () {
+                const productId = $(this).val();
+                const quantity = parseInt($(this).closest('.product-card').find('.quantity-input').val());
+                const price = parseFloat($(this).data('price'));
+                const reason = $(this).closest('.product-card').find('.reason-select').val();
+                const otherReason = $(this).closest('.product-card').find('.reason-text').val();
+
+                selectedItems.push({
+                    ProductVariantId: parseInt(productId),
+                    Quantity: quantity,
+                    UnitPrice: price,
+                    Reason: reason === 'Diğer' ? otherReason : reason,
+                    ReasonType: reason
+                });
+            });
+
+            const btn = $(this);
+            btn.prop('disabled', true);
+            btn.html('<i class="fas fa-spinner fa-spin me-1"></i> Gönderiliyor...');
+
+            const refundRequest = {
+                OrderId: parseInt($("#orderId").val()),
+                PaymentMethodId: 1,
+                Items: selectedItems
+            };
+
+            // Kapıda ödeme için IBAN ve Ad Soyad ekle
+            if (paymentToken === "Kapıda Ödeme") {
+                refundRequest.Iban = $("#ibanInput").val();
+                refundRequest.FullName = $("#fullNameInput").val();
+            }
+
+            $.ajax({
+                url: '/Shop/Refund/CreateRefund',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(refundRequest),
+                success: function (response) {
+                    if (response.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Başarılı',
+                            text: response.message || 'İade talebiniz başarıyla oluşturuldu!',
+                            confirmButtonText: 'Tamam',
+                            willClose: () => {
+                                window.location.href = '/Shop/Order/Index';
+                            }
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Hata',
+                            text: response.message || 'İade talebi oluşturulamadı.',
+                            confirmButtonText: 'Tamam'
+                        });
+                        btn.prop('disabled', false);
+                        btn.html('<i class="fas fa-paper-plane me-1"></i> İade Talebini Gönder');
+                    }
+                },
+                error: function (xhr) {
+                    const errorMsg = xhr.responseJSON?.message || 'İade talebi gönderilirken bir hata oluştu.';
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Hata',
+                        text: errorMsg,
+                        confirmButtonText: 'Tamam'
+                    });
+                    btn.prop('disabled', false);
+                    btn.html('<i class="fas fa-paper-plane me-1"></i> İade Talebini Gönder');
+                }
+            });
+        });
+    });
+</script>

@@ -1,0 +1,193 @@
+@{
+    ViewData["Title"] = "Terminated License Details";
+}
+
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header bg-danger text-white">
+            <h3 class="card-title">Sonlandırılmış Lisans Detayları</h3>
+            <div class="card-tools">
+                <button type="button" class="btn btn-light btn-sm" onclick="window.history.back()">
+                    <i class="fas fa-arrow-left"></i> Geri Dön
+                </button>
+            </div>
+        </div>
+        <div class="card-body">
+            <div id="loadingSpinner" class="text-center">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="sr-only">Yükleniyor...</span>
+                </div>
+                <p>Detaylar Yükleniyor...</p>
+            </div>
+            
+            <div id="licenseDetails" style="display: none;">
+                <!-- License Info -->
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <h4 class="border-bottom pb-2">Lisans Bilgileri</h4>
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <p><strong>Başlangıç Tarihi:</strong> <span id="startDate"></span></p>
+                            </div>
+                            <div class="col-sm-6">
+                                <p><strong>Bitiş Tarihi:</strong> <span id="endDate"></span></p>
+                            </div>
+                            <div class="col-sm-6">
+                                <p><strong>Sonlandırılma Tarihi:</strong> <span id="deletionDate"></span></p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Customer Info -->
+                    <div class="col-md-6">
+                        <h4 class="border-bottom pb-2">Müşteri Bilgileri</h4>
+                        <p><strong>Ad Soyad:</strong> <span id="customerName"></span></p>
+                        <p><strong>Mağaza Adı:</strong> <span id="storeName"></span></p>
+                        <p><strong>Email:</strong> <span id="customerEmail"></span></p>
+                        <p><strong>Adres:</strong> <span id="customerAddress"></span></p>
+                    </div>
+                </div>
+                
+                <!-- Cancellation Request -->
+                <div id="cancellationSection" class="mb-4" style="display: none;">
+                    <h4 class="border-bottom pb-2">İptal Talebi</h4>
+                    <div class="alert alert-warning">
+                        <p><strong>Talep Tarihi:</strong> <span id="requestDate"></span></p>
+                        <p><strong>Gerekçe:</strong></p>
+                        <div class="p-3 bg-light rounded">
+                            <p id="cancellationReason" class="mb-0"></p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Payment History -->
+                <div class="mb-4">
+                    <h4 class="border-bottom pb-2">Ödeme Geçmişi</h4>
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th>Başlangıç Tarihi</th>
+                                    <th>Bitiş Tarihi</th>
+                                    <th>Tutar</th>
+                                </tr>
+                            </thead>
+                            <tbody id="paymentTableBody">
+                                <!-- Payments will be inserted here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="errorMessage" class="alert alert-danger" style="display: none;"></div>
+        </div>
+    </div>
+</div>
+<style>
+    .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.border-bottom {
+    border-bottom: 1px solid #dee2e6 !important;
+}
+
+.table th {
+    white-space: nowrap;
+}
+
+.alert-warning {
+    background-color: #fff3cd;
+    border-color: #ffeeba;
+}
+
+.bg-light {
+    background-color: #f8f9fa !important;
+}
+</style>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Get license ID from URL
+            const pathSegments = window.location.pathname.split('/');
+            const licenseId = pathSegments[pathSegments.length - 1];
+            
+            if (!licenseId || isNaN(licenseId)) {
+                showError("Invalid License ID in URL");
+                return;
+            }
+
+            
+            // Fetch license details
+            $.ajax({
+                url: '/Tenant/Drop/GetTerminatedLicenseDetail?id=' + licenseId,
+                type: 'GET',
+                dataType: 'json',
+                success: function(response) {
+                    if (response.success) {
+                        displayLicenseDetails(response);
+                    } else {
+                        showError(response.message || "Failed to load license details");
+                    }
+                },
+                error: function(xhr, status, error) {
+                    showError("An error occurred while fetching license details: " + error);
+                }
+            });
+        });
+        
+        function displayLicenseDetails(data) {
+            // Hide spinner and show content
+            $('#loadingSpinner').hide();
+            $('#licenseDetails').fadeIn();
+            
+            // License info
+            $('#startDate').text(data.license.startDate);
+            $('#endDate').text(data.license.endDate);
+            $('#deletionDate').text(data.license.deletionDate || 'N/A');
+            
+            // Customer info
+            $('#customerName').text(data.customer.name || 'N/A');
+            $('#storeName').text(data.customer.storename || 'N/A');
+            $('#customerEmail').text(data.customer.email || 'N/A');
+            $('#customerAddress').text(data.customer.address || 'N/A');
+            
+            // Cancellation request
+            if (data.cancelRequest) {
+                $('#cancellationSection').show();
+                $('#requestDate').text(data.cancelRequest.requestDate);
+                $('#cancellationReason').text(data.cancelRequest.description || 'No reason provided');
+            }
+            
+            // Payment history
+            const paymentTableBody = $('#paymentTableBody');
+            paymentTableBody.empty();
+            
+            if (data.payments && data.payments.length > 0) {
+                data.payments.forEach(payment => {
+                    const statusClass = payment.isPaid ? 'badge-success' : 'badge-danger';
+                    const statusText = payment.isPaid ? 'Paid' : 'Unpaid';
+                    
+                    paymentTableBody.append(`
+                        <tr>
+                            <td>${payment.startdate}</td>
+                            <td>${payment.enddate}</td>
+                            <td>${payment.amount.toFixed(2)}</td>
+                        </tr>
+                    `);
+                });
+            } else {
+                paymentTableBody.append('<tr><td colspan="5" class="text-center">No payment records found</td></tr>');
+            }
+        }
+        
+        function showError(message) {
+            $('#loadingSpinner').hide();
+            $('#errorMessage').text(message).show();
+        }
+    </script>
+}

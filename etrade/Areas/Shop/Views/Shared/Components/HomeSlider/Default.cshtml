@@ -1,0 +1,45 @@
+@model List<etrade.Entity.Slider>
+
+<section class="flat-spacing pt-0">
+    <div class="container">
+        <div class="tf-grid-layout md-col-2">
+            @if (Model.Count > 0)
+            {
+                var slider1 = Model[0];
+                <div class="collection-default hover-img">
+                    <a class="img-style">
+                        <img class="lazyload" data-src="@slider1.ImageUrl" src="@slider1.ImageUrl" alt="@slider1.Title">
+                    </a>
+                    <div class="content">
+                        <h3 class="title wow fadeInUp">
+                            <a href="@slider1.ButtonUrl" class="link">@slider1.TopTitle</a>
+                        </h3>
+                        <p class="desc wow fadeInUp">@slider1.Title</p>
+                        <div class="wow fadeInUp">
+                            <a href="@slider1.ButtonUrl" class="btn-line">@slider1.ButtonTitle</a>
+                        </div>
+                    </div>
+                </div>
+            }
+
+            @if (Model.Count > 1)
+            {
+                var slider2 = Model[1];
+                <div class="collection-position hover-img">
+                    <a class="img-style">
+                        <img class="lazyload" data-src="@slider2.ImageUrl" src="@slider2.ImageUrl" alt="@slider2.Title">
+                    </a>
+                    <div class="content">
+                        <h3 class="title wow fadeInUp">
+                            <a href="@slider2.ButtonUrl" class="link text-white">@slider2.TopTitle</a>
+                        </h3>
+                        <p class="desc text-white wow fadeInUp">@slider2.Title</p>
+                        <div class="wow fadeInUp">
+                            <a href="@slider2.ButtonUrl" class="btn-line style-white">@slider2.ButtonTitle</a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</section>

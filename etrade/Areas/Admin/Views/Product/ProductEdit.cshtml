@@ -1,0 +1,696 @@
+@model etrade.Models.ProductViewModel
+
+@{
+    var allCategories = ViewBag.Categories as List<etrade.Entity.Category> ?? new List<etrade.Entity.Category>();
+    var allSubCategories = ViewBag.SubCategories as List<etrade.Entity.SubCategory> ?? new List<etrade.Entity.SubCategory>();
+    var allColors = ViewBag.Colors as List<etrade.Entity.Color> ?? new List<etrade.Entity.Color>();
+    var allSizes = ViewBag.Sizes as List<etrade.Entity.Size> ?? new List<etrade.Entity.Size>();
+    var colorImages = ViewBag.ColorImages as IEnumerable<etrade.Models.ColorImageViewModel> ?? new List<etrade.Models.ColorImageViewModel>();
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close">
+        </button>
+    </div>
+}
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close">
+        </button>
+    </div>
+}
+
+<div class="text-end mb-3">
+    <a class="btn btn-purple" href="/Admin/Product/ProductList">Değişiklikleri Tamamla</a>
+</div>
+<div class="card">
+    <div class="card-body">
+                <div class="container mt-4">
+            <ul class="nav nav-tabs">
+                <li class="nav-item">
+                    <button class="nav-link" id="basicTab" data-bs-toggle="tab" data-bs-target="#basic">
+                        <i class='bx bx-box' ></i> &nbsp; Temel Bilgiler
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link" id="variantsTab" data-bs-toggle="tab" data-bs-target="#variants">
+                        <i class='bx bx-palette'></i> &nbsp; Renkler ve Fotoğraflar
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link" id="stockTab" data-bs-toggle="tab" data-bs-target="#stock">
+                        <i class='bx bx-purchase-tag-alt'></i> &nbsp; Beden ve Stok Bilgisi
+                    </button>
+                </li>
+            </ul>
+            
+
+            <div class="tab-content mt-3">
+                <!-- Temel Bilgiler Sekmesi -->
+                <div class="tab-pane fade show active" id="basic">
+                    <form id="productForm" method="post" enctype="multipart/form-data" action="/Admin/Product/Update">
+                        <input type="hidden" name="Id" value="@Model.Id" />
+
+                        <div class="form-group mb-3">
+                            <label for="Name">Ürün Adı:</label>
+                            <input type="text" class="form-control" id="Name" name="Name" value="@Model.Name" />
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                        
+                                <div class="form-group mb-3">
+                                    <label for="CategoryId">Kategori:</label>
+                                    <select class="form-select" id="CategoryId" name="CategoryId" onchange="filterSubCategories()">
+                                        <option value="">Kategori Seç</option>
+                                        @foreach (var category in allCategories)
+                                        {
+                                            <option value="@category.Id" selected="@(category.Id == Model.CategoryId ? "selected" : null)">
+                                                @category.Name
+                                            </option>
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="SubCategoryId">Alt Kategori:</label>
+                                    <select class="form-select" id="SubCategoryId" name="SubCategoryId">
+                                        <option value="">Alt Kategori Seç</option>
+                                        <!-- Alt kategoriler burada dinamik olarak yüklenecek -->
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label for="Price">Fiyat:</label>
+                            <input type="number" class="form-control" id="Price" name="Price" value="@Model.Price" step="0.01" />
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label for="Description">Açıklama:</label>
+                            <textarea class="form-control" id="Description" name="Description">@Html.Raw(Model.Description)</textarea>
+                        </div>
+
+
+                        <button type="submit" class="btn btn-primary">Değişiklikleri Kaydet</button>
+                    </form>
+                </div>
+
+                <!-- Renkler ve Fotoğraflar Sekmesi -->
+                <div class="tab-pane fade" id="variants">
+                    <form method="post" enctype="multipart/form-data" action="@Url.Action("AddColorAndPhotos", "Product", new { area = "Admin" })">
+                    
+                        <input type="hidden" name="productId" value="@Model.Id" /> <!-- Doğru id gönderilsin -->
+                        <div class="row">
+                            <h5>Ürüne Yeni Renk ve Fotoğraf Ekle</h5>
+                            <div class="col-md-5">
+                                <select class="form-select mb-3" id="ColorId" name="colorId"> <!-- name="colorId" olarak güncellendi -->
+                                    <option value="">Renk Seçiniz...</option>
+                                    @foreach (var color in allColors)
+                                    {
+                                        <option value="@color.Id">@color.Name</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <input type="file" name="photos" class="form-control" multiple /> <!-- name="photos" olarak güncellendi -->
+                            </div>
+                            <div class="col-md-1">
+                                <button type="submit" class="btn btn-success">Kaydet</button>
+                            </div>
+                        </div>
+                    </form>
+                    
+                    
+                    <h5>Ürüne Ait Renkler ve Fotoğraflar</h5>
+                    <div id="colorImagesContainer" data-product-id="@Model.Id" data-product-id="@Model.ColorId" >
+                        @await Html.PartialAsync("_ColorImagesPartial", Model.ColorImages)
+                    </div>
+                </div>
+
+                <!-- Beden ve Stok Bilgisi Sekmesi -->
+                <div class="tab-pane fade" id="stock">
+                    <div class="mb-3">
+                        <h5>Yeni Beden ve Stok Ekle</h5>
+
+                        <form action="/Admin/Product/AddVariant" method="post">
+                            <input type="hidden" name="ProductId" value="@Model.Id" />
+
+                        <div class="row">
+
+                                <div class="col-md-4">
+                                    
+                                    <select id="colorDropdown" class="form-select" name="ColorId">
+                                        <option value="">Bir renk seçin...</option>
+                                        @foreach (var color in Model.ColorImages)
+                                        {
+                                            <option value="@color.ColorId">@color.ColorName</option>
+                                        }
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <select class="form-select" name="SizeId">
+                                        <option value="">Bir beden seçin...</option>
+                                        
+                                        @foreach (var size in allSizes)
+                                        {
+                                            <option value="@size.Id">@size.Name</option>
+                                        }
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <input type="number" class="form-control" name="Stock" min="0" placeholder="Stok Bilgisi" />
+                                </div>
+                                <div class="col-md-1">
+                                    <button class="btn btn-info ">Kaydet</button>
+                                </div>     
+                            </div>
+                        </form>
+                    </div>
+                <br>
+                    <h5>Ürüne Ait Beden ve Stok Bilgisi</h5>
+@if (Model.Variants != null && Model.Variants.Any())
+{
+    <table class="table">
+
+        <tbody>
+            @foreach (var colorGroup in Model.Variants.GroupBy(v => v.ColorId))
+            {
+                var color = Model.ColorImages.FirstOrDefault(c => c.ColorId == colorGroup.Key);
+                if (color != null)
+                {
+                    <tr>
+                        <td colspan="5" class="text-center bg-light"><strong>@color.ColorName</strong></td>
+                    </tr>
+                    @foreach (var variant in colorGroup)
+                    {
+                        <tr>
+                            <form method="post" action="/Admin/Product/UpdateVariants">
+                                <input type="hidden" name="ProductId" value="@Model.Id" />
+                                <input type="hidden" name="VariantId" value="@variant.Id" />
+                                
+                                <td>
+                                    <select class="form-select" name="ColorId">
+                                        <option value="@color.ColorId" selected>@color.ColorName</option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <select class="form-select" name="SizeId">
+                                        @foreach (var size in allSizes)
+                                        {
+                                            <option value="@size.Id" selected="@(size.Id == variant.SizeId ? "selected" : null)">@size.Name</option>
+                                        }
+                                    </select>
+                                </td>
+                                <td>
+                                    <input type="number" class="form-control" name="Stock" value="@variant.Stock" min="0" />
+                                </td>
+                                <td>
+                                    <button type="submit" class="btn btn-primary">Değişiklikleri Kaydet</button>
+                                </td>
+                            </form>
+                            <td>
+                                <button type="button" class="btn btn-danger delete-variant" data-id="@variant.Id" data-productid="@Model.Id">Sil</button>
+
+                            </td>
+
+                        </tr>
+                    }
+                }
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <div class="alert alert-warning">Bu ürün için beden ve stok bilgisi bulunmamaktadır.</div>
+}
+
+
+                    
+                    
+
+                </div>
+                
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Modal for Image Preview and Delete -->
+<div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="imageModalLabel">Fotoğraf Görüntüle</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <img id="modalImage" src="" alt="Fotoğraf" class="img-fluid" />
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" id="confirmDelete">Sil</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        document.querySelectorAll(".delete-variant").forEach(button => {
+            button.addEventListener("click", function () {
+                const variantId = this.getAttribute("data-id");
+                const productId = this.getAttribute("data-productid");
+
+                Swal.fire({
+                    title: "Emin misiniz?",
+                    text: "Bu varyantı silmek istediğinize emin misiniz?",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#d33",
+                    cancelButtonColor: "#3085d6",
+                    confirmButtonText: "Evet, sil!",
+                    cancelButtonText: "İptal"
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        fetch(`/Admin/Product/DeleteVariant`, {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/x-www-form-urlencoded"
+                            },
+                            body: `VariantId=${variantId}`
+                        })
+                        .then(response => {
+                            if (response.ok) {
+                                Swal.fire({
+                                    title: "Silindi!",
+                                    text: "Varyant başarıyla silindi.",
+                                    icon: "success",
+                                    timer: 2000,
+                                    showConfirmButton: false
+                                }).then(() => {
+                                    location.reload(); // Sayfayı yenile
+                                });
+                            } else {
+                                Swal.fire("Hata!", "Silme işlemi başarısız oldu.", "error");
+                            }
+                        })
+                        .catch(() => {
+                            Swal.fire("Hata!", "Bir şeyler yanlış gitti.", "error");
+                        });
+                    }
+                });
+            });
+        });
+    });
+</script>
+
+
+<script>
+    // Sayfa yüklendiğinde mevcut kategori ve alt kategori değerlerini ayarla
+    document.addEventListener("DOMContentLoaded", function () {
+        const selectedCategoryId = "@Model.CategoryId"; // Razor modelinden kategori ID'sini al
+        const selectedSubCategoryId = "@Model.SubCategoryId"; // Razor modelinden alt kategori ID'sini al
+        const categorySelect = document.getElementById("CategoryId");
+        const subCategorySelect = document.getElementById("SubCategoryId");
+
+        // Eğer kategori seçiliyse, alt kategorileri yükle
+        if (selectedCategoryId) {
+            fetch(`/Admin/Product/GetSubCategories?categoryId=${selectedCategoryId}`)
+                .then(response => response.json())
+                .then(subCategories => {
+                    subCategorySelect.innerHTML = "<option value=''>Alt kategori seçin</option>";
+                    subCategories.forEach(subCategory => {
+                        const option = document.createElement("option");
+                        option.value = subCategory.id;
+                        option.textContent = subCategory.name;
+                        subCategorySelect.appendChild(option);
+                    });
+
+                    // Eğer bir alt kategori ID'si mevcutsa, bu alt kategoriyi seçili hale getir
+                    if (selectedSubCategoryId) {
+                        subCategorySelect.value = selectedSubCategoryId;
+                    }
+
+                    subCategorySelect.disabled = false; // Alt kategori seçimini aktif et
+                })
+                .catch(() => {
+                    subCategorySelect.innerHTML = "<option value=''>Alt kategoriler yüklenemedi</option>";
+                });
+        } else {
+            subCategorySelect.innerHTML = "<option value=''>İlk önce ana kategori seçin</option>";
+            subCategorySelect.disabled = true; // Alt kategori seçimini devre dışı bırak
+        }
+
+        // Kategori değiştiğinde alt kategorileri güncelle
+        categorySelect.addEventListener("change", function () {
+            const categoryId = this.value;
+            subCategorySelect.innerHTML = "<option value=''>Alt kategori yükleniyor...</option>"; // Yükleme mesajı
+
+            if (categoryId) {
+                fetch(`/Admin/Product/GetSubCategories?categoryId=${categoryId}`)
+                    .then(response => response.json())
+                    .then(subCategories => {
+                        subCategorySelect.innerHTML = "<option value=''>Alt kategori seçin</option>";
+                        subCategories.forEach(subCategory => {
+                            const option = document.createElement("option");
+                            option.value = subCategory.id;
+                            option.textContent = subCategory.name;
+                            subCategorySelect.appendChild(option);
+                        });
+                        subCategorySelect.disabled = false; // Alt kategori seçimini aktif et
+                    })
+                    .catch(() => {
+                        subCategorySelect.innerHTML = "<option value=''>Alt kategoriler yüklenemedi</option>";
+                    });
+            } else {
+                subCategorySelect.innerHTML = "<option value=''>İlk önce ana kategori seçin</option>";
+                subCategorySelect.disabled = true; // Alt kategori seçimini devre dışı bırak
+            }
+        });
+    });
+</script>
+
+<script>
+    $(document).ready(function () {
+    // Beden ve Stok Bilgisi sekmesine tıklandığında sayfayı yenile
+    $("#stockTab").on("click", function () {
+        location.reload();
+    });
+});
+
+    $(document).ready(function () {
+        // Sayfa yüklendiğinde localStorage'dan aktif sekmeyi al
+        const activeTab = localStorage.getItem('activeTab');
+
+        if (activeTab) {
+            $('.nav-link').removeClass('active');
+            $(activeTab).addClass('active');
+            $(`${activeTab}`).tab('show');
+
+            const activeTabContent = $(activeTab).data('bs-target');
+            $('.tab-pane').removeClass('show active');
+            $(activeTabContent).addClass('show active');
+        } else {
+            $('#basicTab').addClass('active');
+            $('#basic').addClass('show active');
+        }
+
+        // Kullanıcı yeni sekmeye tıkladığında localStorage'a kaydet
+        $('.nav-link').on('click', function () {
+            const activeTab = $(this).attr('id');
+            localStorage.setItem('activeTab', `#${activeTab}`);
+        });
+
+        // 🔥 Sayfa yüklendiğinde renk bazlı görsel sayılarını al
+        loadImageCounts();
+    });
+
+    // 📌 Modal ile silme işlemleri için değişkenler
+    let imageToDelete = '';
+    let colorIdToDelete = '';
+    let productIdToDelete = '';
+    let productIdFromHtml = $('#colorImagesContainer').data('product-id');
+
+    let imageCounts = {}; // Renk bazlı görsel sayısını saklayacağımız nesne
+
+    function loadImageCounts() {
+        $.ajax({
+            url: '/Admin/Product/GetColorImageCounts',
+            type: 'GET',
+            data: { productId: productIdFromHtml },
+            success: function (response) {
+                imageCounts = response.imageCounts || {}; // Nesne olarak sakla
+                console.log("📸 Renk bazlı başlangıç görsel sayıları:", imageCounts);
+            },
+            error: function () {
+                console.error("❌ Görsel sayıları alınırken hata oluştu!");
+            }
+        });
+    }
+
+    // 📌 Modal açma ve bilgileri kaydetme
+    function openModal(imageUrl, colorId, productId) {
+        imageToDelete = imageUrl;
+        colorIdToDelete = colorId;
+        productIdToDelete = productIdFromHtml; 
+        console.log("📌 Modal Açıldı - Atanan productId:", productIdToDelete);
+        $('#modalImage').attr('src', imageUrl);
+        $('#imageModal').modal('show');
+    }
+
+    // 📌 Modal kapanınca verileri güncelle
+    $('#imageModal').on('hidden.bs.modal', function () {
+        console.log("📢 Modal kapandı, veriler yenileniyor...");
+        if (productIdToDelete) {
+            updateColorImagesSection(productIdToDelete);
+        }
+    });
+
+    // 📌 Renkler ve fotoğraflar bölümünü AJAX ile güncelle
+    function updateColorImagesSection(productId) {
+        console.log("🔍 GetColorImages için gönderilen productId:", productId);
+
+        $.ajax({
+            url: '/Admin/Product/GetColorImages',
+            type: 'GET',
+            data: { productId: productId, _t: new Date().getTime() },
+            beforeSend: function () {
+                console.log("✅ AJAX çağrısı başlatıldı...");
+                $("#noDataMessage").hide();
+            },
+            success: function (data) {
+                let container = $("#colorImagesContainer");
+
+                console.log("✅ Dönen API yanıtı (GetColorImages):", data);
+
+                if (!data.trim()) {
+                    console.warn("⚠️ API boş HTML döndürdü! (Silinen resim sonrası)");
+                    container.html('<p id="noDataMessage">Bu ürüne ait görsel bulunmamaktadır.</p>');
+                    return;
+                }
+
+                container.html(data);
+                $("#noDataMessage").toggle(container.html().includes("Veri bulunamadı"));
+            },
+            error: function () {
+                console.error("❌ Veriler alınırken hata oluştu!");
+                $("#noDataMessage").show();
+            }
+        });
+    }
+
+    // 📌 Tekli görsel silme işlemi
+    $(document).on("click", "#confirmDelete", function (event) {
+        event.preventDefault();
+
+        if (!imageToDelete || !colorIdToDelete) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Hata!',
+                text: 'Silinecek görsel veya renk bilgileri eksik!',
+                showConfirmButton: true
+            });
+            return;
+        }
+
+        console.log("📤 Silme isteği gönderiliyor... Image URL:", imageToDelete);
+
+        let colorImageCount = imageCounts[colorIdToDelete] || 0;
+
+        if (colorImageCount > 1) {
+            deleteImage();
+            imageCounts[colorIdToDelete]--; // Renk bazlı sayıyı azalt
+        } else {
+            Swal.fire({
+                title: 'Son görseli siliyorsunuz!',
+                text: 'Bu, bu renge ait son görsel! Eğer silerseniz, renk de kaldırılacaktır.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Evet, sil!',
+                cancelButtonText: 'Vazgeç'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    deleteImage();
+                    imageCounts[colorIdToDelete]--; 
+                }
+            });
+        }
+    });
+    $(document).on("click", "#deleteAllButton", function () {
+        let colorId = $(this).data("color-id");
+            let productId = $("#colorImagesContainer").data("product-id"); // Ürün ID
+    console.log("Product ID:", productId);
+    console.log("Color ID:", colorId);
+
+
+
+    if (!colorId || !productId) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Hata!',
+            text: 'Silinecek renk bilgisi bulunamadı!',
+            showConfirmButton: true
+        });
+        return;
+    }
+
+    Swal.fire({
+        title: 'Emin misiniz?',
+        text: 'Bu işlem, bu renge ait tüm görselleri, bedenleri ve stokları silecektir!',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Evet, Sil!',
+        cancelButtonText: 'Vazgeç'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            $.ajax({
+                url: '/Admin/Product/DeleteAllColorImages',
+                method: 'POST',
+                data: { productId: productId, colorId: colorId, _t: new Date().getTime() },
+                beforeSend: function () {
+                    console.log("🛠️ Silme işlemi başlatıldı... ProductID:", productId, "ColorID:", colorId);
+                },
+                success: function (response) {
+                    if (response.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Başarılı!',
+                            text: 'Tüm görseller, bedenler ve stoklar silindi.',
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+
+                        // 📌 Arayüzde bu renge ait tüm verileri kaldır
+                        $(`#colorImagesContainer [data-color-id='${colorId}']`).remove();
+                        $(`#stockTable tr[data-color-id='${colorId}']`).remove();
+
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Hata!',
+                            text: response.message || 'Silme işlemi başarısız oldu!',
+                            showConfirmButton: true
+                        });
+                    }
+                },
+                error: function () {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Hata!',
+                        text: 'Silme işlemi sırasında bir hata oluştu!',
+                        showConfirmButton: true
+                    });
+                }
+            });
+        }
+    });
+});
+
+
+    // 📌 Silme işlemi
+    function deleteImage() {
+        $.ajax({
+            url: '/Admin/Product/DeleteImage',
+            method: 'POST',
+            data: { imageUrl: imageToDelete, _t: new Date().getTime() },
+            success: function (response) {
+                if (response.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Başarılı!',
+                        text: 'Resim başarıyla silindi.',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+
+                    $('#imageModal').modal('hide');
+
+                    if (!response.hasRemainingImages) {
+                        console.warn("⚠️ Bu renge ait başka görsel yok, renk kaldırılıyor!");
+                        $(`#colorImagesContainer [data-color-id='${colorIdToDelete}']`).remove();
+                        $(`#stockTable tr[data-color-id='${colorIdToDelete}']`).remove();
+
+                        $.ajax({
+                            url: '/Admin/Product/DeleteColorStocks',
+                            method: 'POST',
+                            data: { 
+                                colorId: colorIdToDelete, 
+                                productId: productIdToDelete, 
+                                _t: new Date().getTime() 
+                            },
+                            success: function (stockResponse) {
+                                console.log("✅ Dönen API yanıtı (DeleteColorStocks):", stockResponse);
+                                if (stockResponse.success) {
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: 'Başarılı!',
+                                        text: 'Renge ait tüm stoklar silindi!',
+                                        timer: 2000,
+                                        showConfirmButton: false
+                                    });
+                                } else {
+                                    Swal.fire({
+                                        icon: 'error',
+                                        title: 'Hata!',
+                                        text: stockResponse.message,
+                                        showConfirmButton: true
+                                    });
+                                }
+                            },
+                            error: function () {
+                                console.error("❌ Beden ve stok bilgileri silinirken hata oluştu!");
+                            }
+                        });
+
+                    } else {
+                        setTimeout(() => updateColorImagesSection(productIdToDelete), 1000);
+                    }
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Hata!',
+                        text: 'Resim bulunamadı!',
+                        showConfirmButton: true
+                    });
+                }
+            },
+            error: function () {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Hata!',
+                    text: 'Silme işlemi sırasında bir hata oluştu!',
+                    showConfirmButton: true
+                });
+            }
+        });
+    }
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/7.6.0/tinymce.min.js" integrity="sha512-/4EpSbZW47rO/cUIb0AMRs/xWwE8pyOLf8eiDWQ6sQash5RP1Cl8Zi2aqa4QEufjeqnzTK8CLZWX7J5ZjLcc1Q==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script>
+    tinymce.init({
+        selector: '#Description'
+    });
+</script>
+<script>
+    document.getElementById("Price").addEventListener("input", function(event) {
+        let inputValue = event.target.value;
+
+        // Virgül yerine nokta koy
+        event.target.value = inputValue.replace(",", ".");
+    });
+</script>

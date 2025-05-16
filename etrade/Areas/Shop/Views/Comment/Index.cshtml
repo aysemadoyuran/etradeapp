@@ -1,0 +1,353 @@
+@model List<Product>
+@{
+    ViewData["Title"] = "Değerlendirmelerim";
+}
+
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-5">
+        <h1 class="h3 fw-semibold text-dark">Ürün Değerlendirmelerim</h1>
+    </div>
+
+    <!-- Sekmeler -->
+    <div class="mb-4">
+        <ul class="nav nav-pills review-tabs" id="reviewsTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="reviews-tab" data-bs-toggle="pill" data-bs-target="#reviews"
+                    type="button" role="tab">
+                    <i class="fas fa-star me-2"></i>Değerlendirmeler
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="pending-tab" data-bs-toggle="pill" data-bs-target="#pending" type="button"
+                    role="tab">
+                    <i class="fas fa-clock me-2"></i>Beklemede
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="approved-tab" data-bs-toggle="pill" data-bs-target="#approved"
+                    type="button" role="tab">
+                    <i class="fas fa-check-circle me-2"></i>Onaylanan
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="rejected-tab" data-bs-toggle="pill" data-bs-target="#rejected"
+                    type="button" role="tab">
+                    <i class="fas fa-times-circle me-2"></i>Reddedilen
+                </button>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Sekme İçerikleri -->
+    <div class="tab-content bg-white rounded-3 shadow-sm p-4">
+        <!-- Değerlendirmeler Sekmesi -->
+        <div class="tab-pane fade show active" id="reviews" role="tabpanel">
+            @if (Model != null && Model.Count > 0)
+            {
+                <div class="row g-4">
+                    @foreach (var product in Model)
+                    {
+                        <div class="col-md-6">
+                            <div class="card border-0 shadow-sm h-100">
+                                <div class="card-body d-flex align-items-center p-3">
+                                    <div class="flex-shrink-0 me-3">
+                                        <img src="@product.ColorImages.FirstOrDefault()?.ImageUrl" alt="@product.Name"
+                                            class="rounded-2" style="width: 80px; height: 80px; object-fit: cover;">
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <strong class="card-title mb-1">@product.Name</strong>
+                                        <div class="d-flex align-items-center">
+                                            <div class="rating-display small text-warning me-2">
+                                                @for (int i = 1; i <= 5; i++)
+                                                {
+                                                    <i class="@(i <= product.AverageRating ? "fas" : "far") fa-star"></i>
+                                                }
+                                            </div>
+                                            <span class="text-muted small">@product.AverageRating.ToString("0.0")</span>
+                                        </div>
+                                    </div>
+                                    <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal"
+                                        data-bs-target="#commentModal" data-productid="@product.Id">
+                                        <i class="fas fa-pencil-alt"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-5">
+                    <i class="fas fa-box-open fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">Henüz değerlendirebileceğiniz bir ürün bulunmamaktadır.</h5>
+                </div>
+            }
+        </div>
+
+        <!-- Diğer sekme içerikleri -->
+        <div class="tab-pane fade" id="pending" role="tabpanel">
+            @await Component.InvokeAsync("CommentList", new {status = "Beklemede"})
+        </div>
+
+        <div class="tab-pane fade" id="approved" role="tabpanel">
+            @await Component.InvokeAsync("CommentList", new {status = "Onaylandı"})
+        </div>
+
+        <div class="tab-pane fade" id="rejected" role="tabpanel">
+            @await Component.InvokeAsync("CommentList", new {status = "Reddedildi"})
+        </div>
+    </div>
+</div>
+
+<!-- Yorum Modal -->
+<div class="modal fade" id="commentModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title">Ürün Değerlendirmesi</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body pt-0">
+                <form id="commentForm" method="post">
+                    <input type="hidden" id="productId" name="productId">
+
+                    <div class="mb-4">
+                        <label class="form-label">Puanınız</label>
+                        <div class="rating-input">
+                            <input type="radio" id="star5" name="rating" value="5">
+                            <label for="star5"><i class="fas fa-star"></i></label>
+                            <input type="radio" id="star4" name="rating" value="4">
+                            <label for="star4"><i class="fas fa-star"></i></label>
+                            <input type="radio" id="star3" name="rating" value="3">
+                            <label for="star3"><i class="fas fa-star"></i></label>
+                            <input type="radio" id="star2" name="rating" value="2">
+                            <label for="star2"><i class="fas fa-star"></i></label>
+                            <input type="radio" id="star1" name="rating" value="1">
+                            <label for="star1"><i class="fas fa-star"></i></label>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="commentText" class="form-label">Yorumunuz</label>
+                        <textarea class="form-control" id="commentText" name="commentText" rows="5"
+                            placeholder="Ürün hakkındaki düşüncelerinizi paylaşın..."></textarea>
+                    </div>
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label for="image1" class="form-label">Fotoğraf Ekle (Opsiyonel)</label>
+                            <input type="file" class="form-control" id="image1" name="image1" accept="image/*">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="image2" class="form-label">Fotoğraf Ekle (Opsiyonel)</label>
+                            <input type="file" class="form-control" id="image2" name="image2" accept="image/*">
+                        </div>
+                    </div>
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary py-2">
+                            <i class="fas fa-paper-plane me-2"></i>Değerlendirmeyi Gönder
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- CSS -->
+<style>
+    /* Genel stiller */
+    body {
+        background-color: #f8f9fa;
+    }
+
+    /* Sekme stilleri */
+    .review-tabs .nav-link {
+        color: #6c757d;
+        padding: 0.75rem 1.25rem;
+        border-radius: 0.5rem;
+        margin-right: 0.5rem;
+        transition: all 0.3s ease;
+    }
+
+    .review-tabs .nav-link.active {
+        background-color: #f8f9fa;
+        color: #dc3545;
+        font-weight: 500;
+    }
+
+    .review-tabs .nav-link i {
+        margin-right: 0.5rem;
+    }
+
+    /* Rating stilleri */
+    .rating-input {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .rating-input input {
+        display: none;
+    }
+
+    .rating-input label {
+        font-size: 1.5rem;
+        color: #ddd;
+        cursor: pointer;
+        transition: color 0.2s;
+    }
+
+    .rating-input input:checked~label,
+    .rating-input label:hover,
+    .rating-input label:hover~label {
+        color: #ffc107;
+    }
+
+    .rating-input input:checked+label {
+        color: #ffc107;
+    }
+
+    .rating-display {
+        color: #ffc107;
+    }
+
+    /* Kart stilleri */
+    .card {
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1) !important;
+    }
+
+    /* Modal stilleri */
+    .modal-content {
+        border-radius: 0.75rem;
+    }
+
+    /* Responsive ayarlar */
+    @@media (max-width: 768px) {
+        .review-tabs .nav-link {
+            padding: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .review-tabs .nav-link i {
+            margin-right: 0.25rem;
+        }
+    }
+</style>
+
+<!-- JavaScript -->
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            // Modal gösterilirken ürün ID'sini ayarla
+            $('#commentModal').on('show.bs.modal', function (event) {
+                var button = $(event.relatedTarget);
+                var productId = button.data('productid');
+                $('#productId').val(productId);
+            });
+
+            // Form gönderimi
+            $('#commentForm').on('submit', function (e) {
+                e.preventDefault();
+                var formData = new FormData(this);
+
+                $.ajax({
+                    url: '/Shop/Comment/AddComment',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function (response) {
+                        if (response.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Başarılı!',
+                                text: response.message,
+                                confirmButtonColor: '#dc3545'
+                            }).then(() => {
+                                $('#commentModal').modal('hide');
+                                location.reload();
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Hata!',
+                                text: response.message,
+                                confirmButtonColor: '#dc3545'
+                            });
+                        }
+                    },
+                    error: function () {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Hata!',
+                            text: 'Bir hata oluştu, lütfen tekrar deneyin.',
+                            confirmButtonColor: '#dc3545'
+                        });
+                    }
+                });
+            });
+
+            // Dropdown çakışma sorunu çözümü
+            $('.dropdown-toggle').on('click', function () {
+                $(this).dropdown('toggle');
+            });
+        });
+
+        // Yorum silme fonksiyonu
+        function deleteComment(commentId) {
+            Swal.fire({
+                title: 'Emin misiniz?',
+                text: "Bu yorumu silmek istediğinizden emin misiniz?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Evet, sil!',
+                cancelButtonText: 'Vazgeç'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: '/Shop/Comment/Delete',
+                        type: 'POST',
+                        data: { id: commentId },
+                        success: function (response) {
+                            if (response.success) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Silindi!',
+                                    text: 'Yorumunuz başarıyla silindi.',
+                                    confirmButtonColor: '#dc3545'
+                                }).then(() => {
+                                    $('#comment-' + commentId).remove();
+                                });
+                            } else {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Hata!',
+                                    text: response.message,
+                                    confirmButtonColor: '#dc3545'
+                                });
+                            }
+                        },
+                        error: function () {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Hata!',
+                                text: 'İşlem sırasında bir hata oluştu.',
+                                confirmButtonColor: '#dc3545'
+                            });
+                        }
+                    });
+                }
+            });
+        }
+    </script>
+}

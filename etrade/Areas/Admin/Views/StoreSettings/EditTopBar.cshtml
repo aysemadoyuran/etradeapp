@@ -1,0 +1,335 @@
+@{
+    ViewData["Title"] = "Topbar Düzenle";
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-12 col-xl-12">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white border-0 pt-4">
+                    <h2 class="h4 fw-bold text-primary">Topbar Düzenle</h2>
+                </div>
+                <div class="card-body px-4 px-md-5 py-4">
+                    <form id="editTopbarForm" class="needs-validation" novalidate>
+                        <!-- Linkler Bölümü -->
+                        <div class="mb-4">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="bg-primary rounded p-2 me-3">
+                                    <i class="fas fa-link text-white"></i>
+                                </div>
+                                <h5 class="fw-semibold mb-0">Topbar Linkleri</h5>
+                            </div>
+
+                            <div id="topbar-link-list" class="mb-3">
+                                <!-- Linkler buraya eklenecek -->
+                            </div>
+
+                            <button type="button" id="addTopbarLinkBtn"
+                                class="btn btn-outline-primary d-flex align-items-center">
+                                <i class="fas fa-plus me-2"></i> Yeni Link Ekle
+                            </button>
+                        </div>
+
+                        <!-- Kaydet Butonu -->
+                        <div class="d-grid mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg py-2">
+                                <i class="fas fa-save me-2"></i> Kaydet
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Font Awesome for icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<!-- Bootstrap CSS -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- SweetAlert2 -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.js"></script>
+
+<style>
+    .card {
+        border-radius: 12px;
+        overflow: hidden;
+        border: none;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    }
+
+    .card-header {
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .form-control {
+        border-radius: 8px;
+        border: 1px solid #e0e0e0;
+        padding: 10px 15px;
+        transition: all 0.3s;
+    }
+
+    .form-control:focus {
+        border-color: #86b7fe;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
+    }
+
+    .btn-primary {
+        background-color: #0d6efd;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-weight: 500;
+        transition: all 0.3s;
+    }
+
+    .btn-primary:hover {
+        background-color: #0b5ed7;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(13, 110, 253, 0.25);
+    }
+
+    .btn-outline-primary {
+        border-radius: 8px;
+    }
+
+    .invalid-feedback {
+        font-size: 0.85rem;
+    }
+
+    .link-item {
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 16px;
+        margin-bottom: 12px;
+        border: 1px solid #e0e0e0;
+        transition: all 0.3s;
+    }
+
+    .link-item:hover {
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .input-group-text {
+        background-color: #f1f5f9;
+        border-color: #e0e0e0;
+    }
+
+    .sortable-handle {
+        cursor: move;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #6c757d;
+        background-color: #f1f5f9;
+        border-radius: 6px;
+        padding: 10px;
+        margin-right: 10px;
+    }
+
+    .link-actions {
+        display: flex;
+        gap: 8px;
+    }
+</style>
+
+<script>
+    $(document).ready(function () {
+        // Form validation
+        (function () {
+            'use strict'
+            var forms = document.querySelectorAll('.needs-validation')
+            Array.prototype.slice.call(forms)
+                .forEach(function (form) {
+                    form.addEventListener('submit', function (event) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        
+                        if (!form.checkValidity()) {
+                            form.classList.add('was-validated');
+                            return;
+                        }
+                        
+                        // Form submit işlemi AJAX ile yapılacak
+                        submitTopbarForm();
+                    }, false)
+                })
+        })()
+
+        // Load topbar links
+        function loadTopbarLinks() {
+            $.ajax({
+                url: '/Admin/StoreSettings/GetTopBarLinks',
+                method: 'GET',
+                dataType: 'json',
+                success: function (data) {
+                    $('#topbar-link-list').empty();
+                    if (data && data.length > 0) {
+                        data.forEach((link, index) => {
+                            addTopbarLinkItem(index, link.text, link.url);
+                        });
+                    }
+                },
+                error: function (err) {
+                    console.error("Topbar links load error:", err);
+                    showError('Linkler yüklenirken hata oluştu.');
+                }
+            });
+        }
+
+        // Add new topbar link item
+        function addTopbarLinkItem(index, text = '', url = '') {
+            const linkItem = $(`
+                <div class="link-item" data-index="${index}">
+                    <div class="d-flex align-items-start">
+                        <div class="sortable-handle me-3">
+                            <i class="fas fa-arrows-alt"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="row g-3">
+                                <div class="col-md-5">
+                                    <label class="form-label">Link Başlığı <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control link-text" 
+                                           value="${text}" placeholder="Örneğin: Hakkımızda" required>
+                                    <div class="invalid-feedback">Lütfen başlık giriniz</div>
+                                </div>
+                                <div class="col-md-5">
+                                    <label class="form-label">Link URL <span class="text-danger">*</span></label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-link"></i></span>
+                                        <input type="text" class="form-control link-url" 
+                                               value="${url}" placeholder="https://ornek.com/hakkimizda" required>
+                                    </div>
+                                    <div class="invalid-feedback">Lütfen geçerli bir URL giriniz</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="link-actions ms-3">
+                            <button type="button" class="btn btn-outline-danger remove-link">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `);
+
+            $('#topbar-link-list').append(linkItem);
+            return linkItem;
+        }
+
+        // Add new link button
+        $('#addTopbarLinkBtn').on('click', function () {
+            const index = $('#topbar-link-list .link-item').length;
+            addTopbarLinkItem(index);
+        });
+
+        // Remove link button
+        $(document).on('click', '.remove-link', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const linkItem = $(this).closest('.link-item');
+            const text = linkItem.find('.link-text').val();
+            const url = linkItem.find('.link-url').val();
+
+            Swal.fire({
+                title: 'Emin misiniz?',
+                text: "Bu linki silmek istediğinizden emin misiniz?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Evet, sil!',
+                cancelButtonText: 'İptal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: '/Admin/StoreSettings/RemoveLinkFromTopBar',
+                        type: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify({ text: text, url: url }),
+                        success: function (response) {
+                            linkItem.fadeOut(300, function () {
+                                $(this).remove();
+                                reindexTopbarLinks();
+                            });
+                            showSuccess('Link başarıyla silindi.');
+                        },
+                        error: function (xhr) {
+                            showError('Silme işlemi başarısız: ' + (xhr.responseJSON?.message || 'Bilinmeyen hata'));
+                        }
+                    });
+                }
+            });
+        });
+
+        // Re-index links
+        function reindexTopbarLinks() {
+            $('#topbar-link-list .link-item').each(function (index) {
+                $(this).attr('data-index', index);
+            });
+        }
+
+        // Form submit handler
+        function submitTopbarForm() {
+            const links = [];
+            $('#topbar-link-list .link-item').each(function () {
+                const text = $(this).find('.link-text').val();
+                const url = $(this).find('.link-url').val();
+                if (text && url) {
+                    links.push({ Text: text, Url: url });
+                }
+            });
+
+            $.ajax({
+                url: '/Admin/StoreSettings/UpdateTopBarLinks',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(links),
+                success: function (res) {
+                    showSuccess(res.message || 'Topbar başarıyla güncellendi.');
+                },
+                error: function (err) {
+                    console.error("Save error:", err);
+                    showError('Kaydetme hatası: ' + (err.responseJSON?.message || err.responseText || 'Bilinmeyen hata'));
+                }
+            });
+        }
+
+        // Show success message
+        function showSuccess(message) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Başarılı!',
+                text: message,
+                timer: 2000,
+                showConfirmButton: false
+            });
+        }
+
+        // Show error message
+        function showError(message) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Hata!',
+                text: message
+            });
+        }
+
+        // Initialize sortable
+        $("#topbar-link-list").sortable({
+            handle: ".sortable-handle",
+            update: function (event, ui) {
+                reindexTopbarLinks();
+            }
+        });
+
+        // Load initial data
+        loadTopbarLinks();
+    });
+</script>
+
+<!-- jQuery UI for sortable -->
+<script src="https://code.jquery.com/ui/1.13.1/jquery-ui.min.js"></script>

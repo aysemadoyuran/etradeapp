@@ -1,0 +1,652 @@
+@model List<ProductDto>
+@{
+    // ViewData'dan verileri al
+    var colors = ViewData["Colors"] as List<etrade.Entity.Color>;
+    var sizes = ViewData["Sizes"] as List<etrade.Entity.Size>;
+    var categories = ViewData["Categories"] as List<etrade.Entity.Category>;
+    var categorySubCategoryMap = ViewData["CategorySubCategoryMap"] as Dictionary<int, List<etrade.Entity.SubCategory>>;
+}
+
+@Html.AntiForgeryToken()
+
+<section class="flat-spacing">
+    <div class="container">
+        <!-- Modern Arama Çubuğu -->
+        <div class="search-container">
+            <div class="search-box">
+                <input type="text" id="liveSearchInput" class="search-input" placeholder="Ürün ara..." autocomplete="off">
+            </div>
+            <div class="search-counter" id="searchCounter">@Model.Count ürün bulundu</div>
+        </div>
+
+        <div class="tf-shop-control d-flex justify-content-between align-items-center">
+            <button id="filterShop" class="filterShop tf-btn-filter">
+                <span class="icon icon-filter"></span>
+                <span class="text">Filtreler</span>
+                @if(ViewContext.HttpContext.Request.Query.Count > 0)
+                {
+                    <span class="filter-badge">@ViewContext.HttpContext.Request.Query.Count</span>
+                }
+            </button>
+
+            <div class="dropdown">
+                <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="sortDropdown"
+                    data-bs-toggle="dropdown" aria-expanded="false">
+                    @(ViewData["SelectedSortOrder"]?.ToString() switch
+                    {
+                        "a-z" => "Alfabetik, A-Z",
+                        "z-a" => "Alfabetik, Z-A",
+                        "price-low-high" => "Fiyat, düşükten yükseğe",
+                        "price-high-low" => "Fiyat, yüksekten düşüğe",
+                        _ => "Sırala"
+                    })
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="sortDropdown">
+                    <li><a class="dropdown-item select-item" href="#" data-sort-value="a-z">Alfabetik, A-Z</a></li>
+                    <li><a class="dropdown-item select-item" href="#" data-sort-value="z-a">Alfabetik, Z-A</a></li>
+                    <li><a class="dropdown-item select-item" href="#" data-sort-value="price-low-high">Fiyat, düşükten yükseğe</a></li>
+                    <li><a class="dropdown-item select-item" href="#" data-sort-value="price-high-low">Fiyat, yüksekten düşüğe</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="wrapper-control-shop">
+            <div class="meta-filter-shop">
+                <div id="product-count-grid" class="count-text">@Model.Count ürün bulundu</div>
+                <div id="product-count-list" class="count-text"></div>
+                <div id="applied-filters" class="applied-filters-container">
+                    @if(ViewContext.HttpContext.Request.Query.Count > 0)
+                    {
+                        <div class="active-filters">
+                            @foreach(var query in ViewContext.HttpContext.Request.Query)
+                            {
+                                if(query.Key != "sortOrder" && query.Key != "page")
+                                {
+                                    <span class="active-filter">
+                                        @(query.Key switch
+                                        {
+                                            "categoryIds" => "Kategori: ",
+                                            "subCategoryIds" => "Alt Kategori: ",
+                                            "colorIds" => "Renk: ",
+                                            "sizeIds" => "Beden: ",
+                                            _ => ""
+                                        })
+                                        @foreach(var value in query.Value)
+                                        {
+                                            <span class="filter-value">
+                                                @(query.Key switch
+                                                {
+                                                    "categoryIds" => categories.FirstOrDefault(c => c.Id == int.Parse(value))?.Name,
+                                                    "subCategoryIds" => categorySubCategoryMap.SelectMany(x => x.Value).FirstOrDefault(s => s.Id == int.Parse(value))?.Name,
+                                                    "colorIds" => colors.FirstOrDefault(c => c.Id == int.Parse(value))?.Name,
+                                                    "sizeIds" => sizes.FirstOrDefault(s => s.Id == int.Parse(value))?.Name,
+                                                    _ => value
+                                                })
+                                                <span class="remove-filter" data-filter="@query.Key" data-value="@value">&times;</span>
+                                            </span>
+                                        }
+                                    </span>
+                                }
+                            }
+                        </div>
+                        <button id="remove-all" class="remove-all-filters text-btn-uppercase">Tüm Filtreleri Temizle
+                            <i class="icon icon-close"></i></button>
+                    }
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xl-3">
+                    <div class="sidebar-filter canvas-filter left">
+                        <div class="canvas-wrapper">
+                            <div class="canvas-header d-flex d-xl-none">
+                                <h5>Filtrele</h5>
+                                <span class="icon-close close-filter"></span>
+                            </div>
+                            <div class="canvas-body">
+                                <form method="get" action="@Url.Action("List", "Product")" class="filter-form">
+                                    <div class="widget-facet facet-categories">
+                                        <div class="filter-group">
+                                            <div class="filter-header" onclick="toggleFilter('category')">
+                                                <h6>Kategori</h6>
+                                                <span class="arrow">▼</span>
+                                            </div>
+                                            <div class="filter-content show" id="category">
+                                                @if (categories != null)
+                                                {
+                                                    foreach (var category in categories)
+                                                    {
+                                                        var isCategoryChecked = ViewContext.HttpContext.Request.Query["categoryIds"].Contains(category.Id.ToString());
+                                                        <label class="filter-item">
+                                                            <input type="checkbox" name="categoryIds" value="@category.Id" 
+                                                                   @(isCategoryChecked ? "checked" : "")>
+                                                            <span class="checkmark"></span>
+                                                            <strong>@category.Name</strong>
+                                                        </label>
+
+                                                        @if (categorySubCategoryMap != null &&
+                                                                                                        categorySubCategoryMap.ContainsKey(category.Id) &&
+                                                                                                        categorySubCategoryMap[category.Id].Any())
+                                                        {
+                                                            <div class="sub-category-list" style="margin-left: 15px;">
+                                                                @foreach (var subCategory in categorySubCategoryMap[category.Id])
+                                                                {
+                                                                    var isSubCategoryChecked = ViewContext.HttpContext.Request.Query["subCategoryIds"].Contains(subCategory.Id.ToString());
+                                                                    <label class="filter-item">
+                                                                        <input type="checkbox" name="subCategoryIds"
+                                                                            value="@subCategory.Id" @(isSubCategoryChecked ? "checked" : "")>
+                                                                        <span class="checkmark"></span>
+                                                                        @subCategory.Name
+                                                                    </label>
+                                                                }
+                                                            </div>
+                                                        }
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    <p>Kategori bulunamadı.</p>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="widget-facet facet-size">
+                                        <div class="filter-group">
+                                            <div class="filter-header" onclick="toggleFilter('color')">
+                                                <h6>Renk</h6>
+                                                <span class="arrow">▼</span>
+                                            </div>
+                                            <div class="filter-content show" id="color">
+                                                @if (colors != null)
+                                                {
+                                                    <div class="color-filter-container">
+                                                        @foreach (var color in colors)
+                                                        {
+                                                            var isColorChecked = ViewContext.HttpContext.Request.Query["colorIds"].Contains(color.Id.ToString());
+                                                            <label class="color-filter-item" title="@color.Name">
+                                                                <input type="checkbox" name="colorIds" value="@color.Id" 
+                                                                       @(isColorChecked ? "checked" : "")>
+                                                                <span class="color-swatch" style="background-color:@color.ColorCode !important;"></span>
+                                                                <span class="color-name">@color.Name</span>
+                                                            </label>
+                                                        }
+                                                    </div>
+                                                }
+                                                else
+                                                {
+                                                    <p>Renk bulunamadı.</p>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="widget-facet facet-color">
+                                        <div class="filter-group">
+                                            <div class="filter-header" onclick="toggleFilter('size')">
+                                                <h6>Beden</h6>
+                                                <span class="arrow">▼</span>
+                                            </div>
+                                            <div class="filter-content show" id="size">
+                                                @if (sizes != null)
+                                                {
+                                                    <div class="size-filter-container">
+                                                        @foreach (var size in sizes)
+                                                        {
+                                                            var isSizeChecked = ViewContext.HttpContext.Request.Query["sizeIds"].Contains(size.Id.ToString());
+                                                            <label class="size-filter-item">
+                                                                <input type="checkbox" name="sizeIds" value="@size.Id" 
+                                                                       @(isSizeChecked ? "checked" : "")>
+                                                                <span class="size-box">@size.Name</span>
+                                                            </label>
+                                                        }
+                                                    </div>
+                                                }
+                                                else
+                                                {
+                                                    <p>Beden bulunamadı.</p>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="filter-buttons">
+                                        <a href="/Shop/Product/List" class="btn btn-secondary clear-btn">
+                                            <i class="icon icon-close"></i> Temizle
+                                        </a>
+                                        <button type="submit" class="btn btn-primary filter-btn">
+                                            <i class="icon icon-filter"></i> Filtrele
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-9 col-md-12 col-sm-12">
+                    <div class="tf-list-layout wrapper-shop">
+                        <div class="container">
+                            <div class="row" id="productContainer">
+                                @foreach (var product in Model)
+{
+    <div class="col-md-4 col-sm-6 mb-4 product-item" 
+         data-name="@product.Name.ToLower()" 
+         data-code="@product.ProductCode.ToLower()">
+        <div class="card-product card-product-size wow fadeInUp">
+            <div class="card-product-wrapper">
+                @if(product.OriginalPrice != null && product.OriginalPrice > product.Price)
+                {
+                    <div class="discount-badge">
+                        İNDİRİM
+                    </div>
+                }
+
+                <a href="/Shop/Product/Details?id=@product.Id" class="product-img">
+                    @if (product.ImageUrls != null && product.ImageUrls.Count > 0)
+                    {
+                        <img class="lazyload img-product"
+                             data-src="@product.ImageUrls.FirstOrDefault()"
+                             src="@product.ImageUrls.FirstOrDefault()" alt="@product.Name">
+                        @if (product.ImageUrls.Count > 1)
+                        {
+                            <img class="lazyload img-hover"
+                                 data-src="@product.ImageUrls.ElementAtOrDefault(1)"
+                                 src="@product.ImageUrls.ElementAtOrDefault(1)" alt="@product.Name">
+                        }
+                    }
+                </a>
+
+                <div class="variant-wrap size-list">
+                    <ul class="variant-box">
+                        @foreach (var size in product.Variants.OrderBy(v => v.SizeId).Select(v => v.SizeName).Distinct())
+                        {
+                            <li class="size-item">@size</li>
+                        }
+                    </ul>
+                </div>
+
+                <div class="list-product-btn">
+                    @{
+                        List<int> favoriteProductIds = ViewBag.FavoriteProductIds as List<int> ?? new List<int>();
+                        bool isFavorite = favoriteProductIds.Contains(product.Id);
+                    }
+
+                    <a href="javascript:void(0);" class="box-icon wishlist btn-icon-action @(isFavorite ? "favorited" : "")"
+                       data-product-id="@product.Id" onclick="addToFavorites(this)">
+                        @if (isFavorite)
+                        {
+                            <span class="fas fa-heart" style="color: red;"></span>
+                            <span class="tooltip">Favorilerden Çıkar</span>
+                        }
+                        else
+                        {
+                            <span class="far fa-heart"></span>
+                            <span class="tooltip">Favorilere Ekle</span>
+                        }
+                    </a>
+                    <a href="/Shop/Product/Details?id=@product.Id"
+                       class="box-icon quickview tf-btn-loading">
+                        <span class="icon icon-eye"></span>
+                        <span class="tooltip">Görüntüle</span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="card-product-info">
+                <a href="/Shop/Product/Details?id=@product.Id" class="title link">
+                    @product.ProductCode - @product.Name
+                </a>
+
+                <span class="price">
+                    @if (product.OriginalPrice != null && product.OriginalPrice != 0.00m)
+                    {
+                        <span class="old-price">@product.OriginalPrice ₺</span>
+                        <span style="color: red;"><strong>@product.Price ₺</strong></span>
+                    }
+                    else
+                    {
+                        <span>@product.Price ₺</span>
+                    }
+                </span>
+
+                <!-- Ortalama puan ve yorum sayısı -->
+                <div class="product-rating mt-1 mb-1">
+@{
+    var rating = product.AverageRating ?? 0;
+}
+
+@for (int i = 1; i <= 5; i++)
+{
+    if (i <= Math.Floor(rating))
+    {
+        <i class="fa fa-star text-warning"></i>
+    }
+    else if (i - rating < 1)
+    {
+        <i class="fa fa-star-half-alt text-warning"></i>
+    }
+    else
+    {
+        <i class="fa fa-star text-secondary"></i>
+    }
+}
+<span class="ms-1 text-muted">(@product.CommentCount yorum)</span>
+                </div>
+
+                <ul class="list-color-product">
+                    @foreach (var variant in product.Variants.Select(v => v.Color).DistinctBy(c => c.Id))
+                    {
+                        <li>
+                            <span class="color-swatch" 
+                                  style="background-color:@variant.ColorCode !important;
+                                         width:16px; height:16px; border-radius:50%; 
+                                         display:inline-block; border:1px solid #ddd;"
+                                  title="@variant.Name"></span>
+                        </li>
+                    }
+                </ul>
+            </div>
+        </div>
+    </div>
+}
+                            </div>
+                            <div class="no-results-message" id="noResultsMessage" style="display: none;">
+                                <div class="text-center py-5">
+                                    <i class="icon icon-search" style="font-size: 48px; color: #ccc;"></i>
+                                    <h4 class="mt-3">Ürün bulunamadı</h4>
+                                    <p class="text-muted">Aradığınız kriterlere uygun ürün bulunamadı</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<link rel="stylesheet" href="~/css/ProductList.css" asp-append-version="true">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+ <style>
+    /* Renk Yuvarlakları için Özel CSS */
+    .color-swatch {
+        display: inline-block;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        border: 1px solid #ddd;
+        margin-right: 5px;
+        vertical-align: middle;
+    }
+    
+    /* Filtredeki renk yuvarlakları */
+    .color-filter-container .color-swatch {
+        width: 30px;
+        height: 30px;
+        margin-bottom: 5px;
+    }
+    
+    /* Seçili renk yuvarlağı */
+    .color-filter-item input:checked + .color-swatch {
+        box-shadow: 0 0 0 2px #333;
+        transform: scale(1.1);
+    }
+    
+    /* Ürün kartındaki renk yuvarlakları */
+    .list-color-product {
+        display: flex;
+        gap: 5px;
+        padding: 0;
+        margin: 5px 0 0 0;
+    }
+    
+    .list-color-product li {
+        list-style: none;
+    }
+    
+    /* Diğer stiller */
+    .search-container {
+        margin-bottom: 30px;
+    }
+    
+    .search-box {
+        position: relative;
+        max-width: 600px;
+        margin: 0 auto;
+    }
+    
+    .search-input {
+        width: 100%;
+        height: 50px;
+        padding: 12px 20px;
+        border: 2px solid #e0e0e0;
+        border-radius: 30px;
+        font-size: 16px;
+        outline: none;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    
+    .search-input:focus {
+        border-color: #333;
+        box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+    }
+    
+    .search-counter {
+        text-align: center;
+        margin-top: 10px;
+        font-size: 14px;
+        color: #666;
+    }
+    
+    .color-filter-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+        gap: 10px;
+        padding: 10px 0;
+    }
+    
+    .color-filter-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        cursor: pointer;
+        position: relative;
+    }
+    
+    .color-name {
+        font-size: 11px;
+        text-align: center;
+        word-break: break-word;
+        width: 100%;
+    }
+    
+    .size-filter-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
+        gap: 8px;
+        padding: 10px 0;
+    }
+    
+    .size-box {
+        display: inline-block;
+        padding: 8px 5px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        cursor: pointer;
+        text-align: center;
+        font-size: 13px;
+        transition: all 0.2s;
+    }
+    
+    .size-filter-item input:checked ~ .size-box {
+        background-color: #333;
+        color: white;
+        border-color: #333;
+        font-weight: bold;
+    }
+    
+    .discount-badge {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background-color: #ff4444;
+        color: white;
+        padding: 3px 8px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: bold;
+        z-index: 3;
+    }
+    
+    .no-results-message {
+        display: none;
+        padding: 40px 0;
+    }
+    
+    .card-product-wrapper {
+        position: relative;
+    }
+</style>
+
+ <script>
+    $(document).ready(function() {
+        // Arama fonksiyonu
+        function performSearch() {
+            const searchTerm = $('#liveSearchInput').val().toLowerCase().trim();
+            let visibleCount = 0;
+            
+            $('.product-item').each(function() {
+                const productName = $(this).data('name');
+                const productCode = $(this).data('code');
+                
+                if (productName.includes(searchTerm) || productCode.includes(searchTerm)) {
+                    $(this).show();
+                    visibleCount++;
+                } else {
+                    $(this).hide();
+                }
+            });
+            
+            $('#searchCounter').text(visibleCount + ' ürün bulundu');
+            $('#product-count-grid').text(visibleCount + ' ürün bulundu');
+            $('#noResultsMessage').toggle(visibleCount === 0 && searchTerm.length > 0);
+        }
+        
+        // Arama inputu event listener
+        $('#liveSearchInput').on('input', performSearch);
+        
+        // Filtre aç/kapa fonksiyonu
+        function toggleFilter(id) {
+            const element = document.getElementById(id);
+            element.classList.toggle('show');
+            const arrow = element.previousElementSibling.querySelector('.arrow');
+            arrow.textContent = element.classList.contains('show') ? '▼' : '►';
+        }
+        
+        // Filtre kaldırma
+        $(document).on('click', '.remove-filter', function() {
+            const filter = $(this).data('filter');
+            const value = $(this).data('value');
+            const url = new URL(window.location.href);
+            const params = new URLSearchParams(url.search);
+            
+            let values = params.get(filter) ? params.get(filter).split(',') : [];
+            values = values.filter(v => v !== value.toString());
+            
+            if(values.length > 0) {
+                params.set(filter, values.join(','));
+            } else {
+                params.delete(filter);
+            }
+            
+            window.location.search = params.toString();
+        });
+        
+        // Tüm filtreleri temizle
+        $('#remove-all').click(function() {
+            window.location.href = '@Url.Action("List", "Product")';
+        });
+        
+        // Filtre panelini aç
+        $('#filterShop').click(function() {
+            $('.sidebar-filter').addClass('open');
+        });
+        
+        // Filtre panelini kapat
+        $('.close-filter').click(function() {
+            $('.sidebar-filter').removeClass('open');
+        });
+        
+        // Sıralama seçeneği
+        $('.select-item').click(function(e) {
+            e.preventDefault();
+            const sortValue = $(this).data('sort-value');
+            const url = new URL(window.location.href);
+            url.searchParams.set('sortOrder', sortValue);
+            window.location.href = url.toString();
+        });
+        
+        // Favori ürünleri yükle
+        function loadFavoriteProducts() {
+            $.ajax({
+                url: '/Shop/Product/GetFavoriteProductIds',
+                type: 'GET',
+                success: function(response) {
+                    console.log("AJAX Yanıtı:", response);
+                    if (response && response.favoriteProductIds) {
+                        console.log("Favori Ürün ID'leri:", response.favoriteProductIds);
+                        response.favoriteProductIds.forEach(function(productId) {
+                            var button = $(".wishlist[data-product-id='" + productId + "']");
+                            button.addClass("favorited");
+                            button.find("span.fa-heart").removeClass("far").addClass("fas").css("color", "red");
+                            button.find(".tooltip").text("Favorilerden Çıkar");
+                        });
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error("AJAX İsteği Başarısız:", error);
+                }
+            });
+        }
+        
+        // Favorilere ekle/çıkar fonksiyonu
+        window.addToFavorites = function(element) {
+            const productId = $(element).data('product-id');
+            const isFavorite = $(element).hasClass('favorited');
+            const token = $('input[name="__RequestVerificationToken"]').val();
+
+            $.ajax({
+                url: '/Shop/Product/ToggleFavorite',
+                type: 'POST',
+                data: { 
+                    productId: productId,
+                    __RequestVerificationToken: token
+                },
+                success: function(response) {
+                    if (response.success) {
+                        if (isFavorite) {
+                            $(element).removeClass('favorited');
+                            $(element).find('span.fa-heart').removeClass('fas').addClass('far').css('color', '');
+                            $(element).find('.tooltip').text('Favorilere Ekle');
+                        } else {
+                            $(element).addClass('favorited');
+                            $(element).find('span.fa-heart').removeClass('far').addClass('fas').css('color', 'red');
+                            $(element).find('.tooltip').text('Favorilerden Çıkar');
+                        }
+                    } else {
+                        alert('Hata: ' + response.message);
+                    }
+                },
+                error: function(xhr) {
+                    if (xhr.status === 401) {
+                        alert('Bu işlemi yapmak için giriş yapmalısınız!');
+                    } else {
+                        alert('Bir hata oluştu: ' + xhr.statusText);
+                    }
+                }
+            });
+        };
+        
+        // Sayfa yüklendiğinde favori ürünleri yükle
+        loadFavoriteProducts();
+    });
+</script>

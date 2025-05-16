@@ -1,0 +1,379 @@
+@model IEnumerable<Coupon>
+
+@{
+    ViewData["Title"] = "Kupon Listesi";
+}
+
+<div class="container-fluid px-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="mt-4">
+            <i class="fas fa-tags me-2"></i>Kupon Listesi
+        </h1>
+            <a asp-action="Index" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i>Yeni Kupon
+            </a>
+        
+
+    </div>
+    @Html.AntiForgeryToken()
+
+    <div class="card mb-4">
+        <div class="card-header bg-white py-3">
+            <div class="row align-items-center">
+                <div class="col-md-4">
+                    <h5 class="mb-0">Tüm Kuponlar</h5>
+                </div>
+                <div class="col-md-8">
+                    <div class="row g-2">
+                        <div class="col-md-5">
+                            <div class="input-group">
+                                <input type="text" id="searchInput" class="form-control" placeholder="Kupon ara...">
+                                <button class="btn btn-outline-secondary" type="button" id="searchButton">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <select id="statusFilter" class="form-select">
+                                <option value="all">Tüm Durumlar</option>
+                                <option value="active">Aktif</option>
+                                <option value="inactive">Pasif</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <select id="sortBy" class="form-select">
+                                <option value="newest">En Yeniler</option>
+                                <option value="name">Kod (A-Z)</option>
+                                <option value="name_desc">Kod (Z-A)</option>
+                                <option value="expiry">Son Geçerlilik</option>
+                                <option value="expiry_desc">En Uzun Geçerlilik</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table id="couponsTable" class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Kupon Kodu</th>
+                            <th>Kategori</th>
+                            <th>İndirim</th>
+                            <th>Geçerlilik</th>
+                            <th>Kalan Gün</th>
+                            <th>Durum</th>
+                            <th>Kullanım</th>
+                            <th>İşlemler</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- AJAX ile dolacak -->
+                    </tbody>
+                </table>
+            </div>
+            <div class="d-flex justify-content-between align-items-center mt-4">
+                <div id="totalCount" class="text-muted"></div>
+                <nav id="pagination">
+                    <!-- Pagination AJAX ile eklenecek -->
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        let isAdmin = false;
+
+        // Admin rolünü kontrol etme fonksiyonu
+        async function checkUserRole() {
+            try {
+                const response = await fetch('/Admin/Discount/GetUserRole');
+                const data = await response.json();
+                isAdmin = data.isAdmin;
+                console.log('Admin mi:', isAdmin); // Admin durumu
+                await loadCoupons(); // Kuponları yükle
+            } catch (error) {
+                console.error('Rol bilgisi alınamadı:', error);
+                isAdmin = false; // Eğer bir hata varsa admin değil kabul edilir
+                await loadCoupons(); // Kuponları yine yükle
+            }
+        }
+
+        $(document).ready(function () {
+            checkUserRole(); // Kullanıcı rolünü kontrol et
+            // Filtreleme ve arama
+            $('#searchButton').click(loadCoupons);
+            $('#searchInput').keypress(function (e) {
+                if (e.which === 13) loadCoupons();
+            });
+            $('#statusFilter, #sortBy').change(loadCoupons);
+        });
+
+        // Kuponları yükleme fonksiyonu
+        function loadCoupons(page = 1) {
+            const search = $('#searchInput').val();
+            const status = $('#statusFilter').val();
+            const sortBy = $('#sortBy').val();
+
+            showLoading(true); // Yükleniyor göstergesini göster
+            $.get(`/Admin/Coupon/GetCoupons?page=${page}&search=${encodeURIComponent(search)}&status=${status}&sortBy=${sortBy}`)
+                .done(function (response) {
+                    console.log("API Response:", response); // Gelen veriyi görmek için
+
+                    if (response && response.data && Array.isArray(response.data)) {
+                        renderCoupons(response.data); // Kuponları render et
+                        renderPagination(response); // Sayfalama render et
+                        $('#totalCount').text(`Toplam ${response.totalCount} kayıt`); // Toplam kayıt sayısını göster
+                    } else {
+                        showAlert('warning', 'Beklenmeyen yanıt formatı');
+                        console.error('Unexpected response format:', response);
+                    }
+                })
+                .fail(function (xhr) {
+                    const errorMsg = xhr.responseJSON?.message || xhr.statusText || 'Sunucu hatası';
+                    showAlert('danger', 'Hata: ' + errorMsg);
+                    console.error('API Error:', xhr.responseJSON || xhr.responseText);
+                })
+                .always(() => showLoading(false)); // Yükleniyor göstergesini kaldır
+        }
+
+        // Kuponları listeleme fonksiyonu
+        function renderCoupons(coupons) {
+            const tbody = $('#couponsTable tbody');
+            tbody.empty();
+
+            if (!coupons || coupons.length === 0) {
+                tbody.append(`
+                        <tr>
+                            <td colspan="8" class="text-center py-4">
+                                <i class="fas fa-tag fa-2x mb-3 text-muted"></i>
+                                <p class="text-muted">Kayıtlı kupon bulunamadı</p>
+                            </td>
+                        </tr>
+                    `);
+                return;
+            }
+
+            coupons.forEach(coupon => {
+                if (!coupon) return;
+
+                // IsActive kontrolünü düzeltiyoruz
+                const isActive = coupon.isActive !== undefined ? coupon.isActive : coupon.IsActive;
+                const statusClass = isActive ? 'success' : 'secondary';
+                const statusText = isActive ? 'Aktif' : 'Pasif'; // Daha anlamlı metin
+
+                // Diğer alanlar için küçük/büyük harf uyumsuzluğu kontrolü
+                const code = coupon.code || coupon.Code || 'N/A';
+                const category = coupon.couponCategory || coupon.CouponCategory || '-';
+                const discount = coupon.discountValue || coupon.DiscountValue || '-';
+                const startDate = coupon.startDate || coupon.StartDate || '-';
+                const endDate = coupon.endDate || coupon.EndDate || '-';
+                const maxUsage = coupon.maxUsageCount || coupon.MaxUsageCount || 0;
+                const currentUsage = coupon.currentUsageCount || coupon.CurrentUsageCount || 0;
+                const daysRemaining = coupon.daysRemaining || 0;
+
+                const usagePercentage = maxUsage > 0 ? Math.round((currentUsage / maxUsage) * 100) : 0;
+                const daysRemainingClass = daysRemaining <= 3 ? 'danger' :
+                    daysRemaining <= 7 ? 'warning' : 'success';
+
+                tbody.append(`
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <span class="coupon-badge bg-primary text-white rounded-pill me-2">
+                                        ${code}
+                                    </span>
+                                </div>
+                            </td>
+                            <td>${category}</td>
+                            <td>${discount}</td>
+                            <td>
+                                <small>${startDate} - ${endDate}</small>
+                            </td>
+                            <td>
+                                <span class="badge bg-${daysRemainingClass}">
+                                    ${daysRemaining > 0 ? daysRemaining + ' gün' : 'Süresi doldu'}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="form-check form-switch d-flex justify-content-center">
+                                    <input class="form-check-input" type="checkbox" 
+                                           ${isActive ? 'checked' : ''} 
+                                           disabled
+                                           style="width: 3em; height: 1.5em;">
+                                </div>
+                            </td>
+                            <td>
+                                <div class="progress" style="height: 20px;">
+                                    <div class="progress-bar bg-info" role="progressbar" 
+                                         style="width: ${usagePercentage}%" 
+                                         aria-valuenow="${usagePercentage}" 
+                                         aria-valuemin="0" 
+                                         aria-valuemax="100">
+                                        ${currentUsage}/${maxUsage}
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                ${isAdmin ? `
+                                    <div class="d-flex gap-2">
+                                        <a href="/Admin/Coupon/Details/${coupon.id || coupon.Id}" 
+                                           class="btn btn-sm btn-outline-primary" title="Düzenle">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <button onclick="deleteCoupon(${coupon.id || coupon.Id})" 
+                                                class="btn btn-sm btn-outline-danger" title="Sil">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                ` : ''}
+                            </td>
+                        </tr>
+                    `);
+            });
+        }
+
+        // Sayfalama render fonksiyonu
+        function renderPagination(response) {
+            const pagination = $('#pagination');
+            pagination.empty();
+
+            if (!response || response.TotalPages <= 1) return;
+
+            const ul = $('<ul class="pagination pagination-sm mb-0"></ul>');
+
+            // Önceki butonu
+            ul.append(`
+                                        <li class="page-item ${response.Page === 1 ? 'disabled' : ''}">
+                                            <a class="page-link" href="#" onclick="loadCoupons(${response.Page - 1}); return false;">
+                                                <i class="fas fa-chevron-left"></i>
+                                            </a>
+                                        </li>
+                                    `);
+
+            // Sayfa numaraları
+            const startPage = Math.max(1, response.Page - 2);
+            const endPage = Math.min(response.TotalPages, response.Page + 2);
+
+            if (startPage > 1) {
+                ul.append('<li class="page-item disabled"><a class="page-link">...</a></li>');
+            }
+
+            for (let i = startPage; i <= endPage; i++) {
+                ul.append(`
+                                            <li class="page-item ${i === response.Page ? 'active' : ''}">
+                                                <a class="page-link" href="#" onclick="loadCoupons(${i}); return false;">
+                                                    ${i}
+                                                </a>
+                                            </li>
+                                        `);
+            }
+
+            if (endPage < response.TotalPages) {
+                ul.append('<li class="page-item disabled"><a class="page-link">...</a></li>');
+            }
+
+            // Sonraki butonu
+            ul.append(`
+                                        <li class="page-item ${response.Page === response.TotalPages ? 'disabled' : ''}">
+                                            <a class="page-link" href="#" onclick="loadCoupons(${response.Page + 1}); return false;">
+                                                <i class="fas fa-chevron-right"></i>
+                                            </a>
+                                        </li>
+                                    `);
+
+            pagination.append(ul);
+        }
+
+        // Kupon silme fonksiyonu
+        function deleteCoupon(id) {
+            if (confirm('Bu kuponu silmek istediğinize emin misiniz?')) {
+                // CSRF tokenını al
+                const token = $('input[name="__RequestVerificationToken"]').val();
+
+                $.ajax({
+                    url: `/Admin/Coupon/Delete/${id}`,
+                    type: 'DELETE',
+                    headers: {
+                        'RequestVerificationToken': token,
+                        'Content-Type': 'application/json'
+                    },
+                    success: function (result) {
+                        if (result.success) {
+                            showAlert('success', result.message);
+                            loadCoupons(); // Listeyi yenile
+                        } else {
+                            showAlert('warning', result.message);
+                        }
+                    },
+                    error: function (xhr) {
+                        let errorMessage = "Silme işlemi başarısız";
+                        if (xhr.responseJSON && xhr.responseJSON.message) {
+                            errorMessage = xhr.responseJSON.message;
+                        }
+                        showAlert('danger', errorMessage);
+                        console.error("Silme hatası:", xhr.responseJSON || xhr.statusText);
+                    }
+                });
+            }
+        }
+
+        // Yükleniyor göstergesi
+        function showLoading(isLoading) {
+            if (isLoading) {
+                $('#loadingSpinner').show();
+            } else {
+                $('#loadingSpinner').hide();
+            }
+        }
+
+        // Kullanıcıya alert mesajı gösterme
+        function showAlert(type, message) {
+            const alertDiv = $(`<div class="alert alert-${type} alert-dismissible fade show" role="alert">${message}</div>`);
+            $('#alertContainer').empty().append(alertDiv);
+            alertDiv.alert();
+            setTimeout(function () {
+                alertDiv.alert('close');
+            }, 5000);
+        }
+    </script>
+
+    <style>
+        .coupon-badge {
+            padding: 0.35em 0.65em;
+            font-size: 0.75em;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .progress {
+            min-width: 100px;
+            background-color: #e9ecef;
+        }
+
+        .table-hover tbody tr:hover {
+            background-color: rgba(78, 115, 223, 0.05);
+        }
+
+        .table th {
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.5px;
+            color: #6c757d;
+        }
+
+        .badge.bg-danger {
+            background-color: #dc3545 !important;
+        }
+
+        .badge.bg-warning {
+            background-color: #ffc107 !important;
+            color: #212529;
+        }
+    </style>
+}

@@ -1,0 +1,71 @@
+<section class="flat-spacing-2 pb_0">
+    <div class="container">
+        <div class="heading-section-2 wow fadeInUp">
+            <h3>Kategorilerimiz</h3>
+            <a href="/Shop/Category/Index" class="btn-line">Tüm Kategorileri Görüntüle</a>
+        </div>
+        <div class="flat-collection-circle wow fadeInUp" data-wow-delay="0.1s">
+            <div dir="ltr" class="swiper tf-sw-collection" data-preview="5" data-tablet="3" data-mobile="2" data-space-lg="20" data-space-md="20" data-space="15" data-pagination="1" data-pagination-md="1" data-pagination-lg="1">
+                <div class="swiper-wrapper">
+                    @foreach (var category in Model)
+                    {
+                        <div class="swiper-slide">
+                            <div class="collection-circle">
+                                <a href="/Shop/Product/List?categoryIds=@category.Id" class="img-style">
+                                    <img class="category-img lazyload" data-src="@category.ImageUrl" src="@category.ImageUrl" alt="collection-img">
+                                </a>
+                                <div class="collection-content text-center">
+                                    <div>
+                                        <a href="/Shop/Product/List?categoryIds=@category.Id" class="cls-title">
+                                            <h6 class="text">@category.Name</h6>
+                                        </a>
+                                    </div>
+                                    <div class="count text-secondary">@category.ProductCount Ürün</div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+                <div class="d-flex d-lg-none sw-pagination-collection sw-dots type-circle justify-content-center"></div>
+            </div>
+            <div class="nav-prev-collection d-none d-lg-flex nav-sw style-line nav-sw-left"><i class="icon icon-arrLeft"></i></div>
+            <div class="nav-next-collection d-none d-lg-flex nav-sw style-line nav-sw-right"><i class="icon icon-arrRight"></i></div>
+        </div>
+    </div>
+</section>
+
+<style>
+    .category-img {
+    width: 300px;  /* Fotoğrafın genişliği */
+    height: 250px; /* Fotoğrafın yüksekliği */
+    border-radius: 50%; /* Yuvarlak hale getirme */
+    object-fit: cover; /* Fotoğrafın içeriğini kesmeden sığdırma */
+}
+
+.collection-circle {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    margin: 0 auto;
+}
+
+.collection-content {
+    margin-top: 5px; /* İçerik ile resim arasındaki boşluk */
+}
+
+.cls-title {
+    text-decoration: none;
+    color: inherit;
+}
+
+.cls-title h6 {
+    margin: 0;
+    font-size: 14px;
+}
+
+.count {
+    font-size: 12px;
+    color: #666;
+}
+</style>

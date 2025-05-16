@@ -1,0 +1,108 @@
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Erişim Kısıtlandı</title>
+    <style>
+        body {
+            font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            text-align: center;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 500px;
+            padding: 40px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        }
+        
+        .icon {
+            font-size: 64px;
+            margin-bottom: 24px;
+            color: #ff5252;
+        }
+        
+        h1 {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #222;
+        }
+        
+        p {
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 24px;
+        }
+        
+        .action-btn {
+            display: inline-block;
+            background-color: #4a6bff;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 500;
+            margin-top: 16px;
+            transition: background-color 0.3s;
+        }
+        
+        .action-btn:hover {
+            background-color: #3a56e0;
+        }
+        
+        .contact {
+            font-size: 14px;
+            color: #888;
+            margin-top: 32px;
+        }
+        
+        .steps {
+            text-align: left;
+            margin: 24px 0;
+            padding-left: 20px;
+        }
+        
+        .steps li {
+            margin-bottom: 8px;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="icon">🔒</div>
+        <h1>Mağaza Erişimi Kısıtlandı</h1>
+        <p>Geçmiş dönem lisans ödemeleri eksik olduğu için mağaza erişiminiz geçici olarak kısıtlanmıştır.</p>
+        
+        <div class="steps">
+            <p>Erişiminizi yeniden sağlamak için:</p>
+            <ol>
+                <li>Bekleyen lisans ücretlerini ödeyin</li>
+                <li>Ödeme onayı için finans ekibimizle iletişime geçin</li>
+                <li>Ödeme sonrası erişim otomatik olarak açılacaktır</li>
+            </ol>
+        </div>
+        
+        <a href="mailto:finans@firma.com" class="action-btn">Finans Ekibiyle İletişim</a>
+        
+        <div class="contact">
+            Acil durumlarda: <a href="tel:+900000000000">0 (000) 000 00 00</a> veya <a href="mailto:destek@firma.com">destek@firma.com</a>
+        </div>
+    </div>
+</body>
+</html>

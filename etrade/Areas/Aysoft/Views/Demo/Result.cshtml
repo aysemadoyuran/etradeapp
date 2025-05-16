@@ -1,0 +1,319 @@
+@model etrade.Entity.DemoRequest
+@{
+    ViewData["Title"] = "Demo Talep Sonucu";
+
+    // Get license type from ViewBag (set in controller)
+    if (Model == null)
+    {
+        <div class="container py-5">
+            <div class="text-center py-5">
+                <i class="fas fa-info-circle fa-3x text-muted mb-4"></i>
+                <h4 class="fw-semibold text-gray-800 mb-3">Demo Talebi Bulunamadı</h4>
+                <p class="text-muted">Bu kullanıcıya ait aktif bir demo talebi bulunmamaktadır.</p>
+                <a href="/Aysoft/Demo/Request" class="btn btn-primary mt-3">
+                    <i class="fas fa-plus me-1"></i> Yeni Talep Oluştur
+                </a>
+            </div>
+        </div>
+        return; // Sayfanın geri kalanını render etme
+    }
+    var licenseType = ViewBag.LicenseType as string ?? "Demo";
+    var isFullLicense = licenseType == "Full";
+}
+<div class="container py-5 @(isFullLicense ? "position-relative" : "")">
+    @if (isFullLicense)
+    {
+        <div class="license-overlay"
+            style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(255,255,255,0.8); backdrop-filter: blur(3px); z-index: 100; display: flex; align-items: center; justify-content: center; border-radius: 0.5rem;">
+            <div class="text-center p-5 bg-white shadow rounded" style="max-width: 600px;">
+                <i class="fas fa-check-circle text-success mb-3" style="font-size: 3rem;"></i>
+                <h2 class="h4 mb-3">Lisans Satın Alındı</h2>
+                <p class="lead">Teşekkür ederiz! Lisansınız başarıyla aktif edilmiştir.</p>
+                <p>Demo sınırlamaları olmadan sistemi kullanmaya devam edebilirsiniz.</p>
+                <button class="btn btn-primary mt-3" onclick="$(this).closest('.license-overlay').fadeOut();">
+                    Devam Et <i class="fas fa-arrow-right ms-2"></i>
+                </button>
+            </div>
+        </div>
+    }
+
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <!-- Başlık ve Özet Bilgi -->
+            <div class="row mb-4">
+                <!-- Başlık -->
+                <div class="col-md-6 mb-3 mb-md-0 d-flex align-items-center">
+                    <div>
+                        <h1 class="h3 mb-2">Demo Talep Sonucunuz</h1>
+                        <p class="text-muted mb-0">Talebinizin durumunu aşağıda görüntüleyebilirsiniz</p>
+                    </div>
+                </div>
+
+                <!-- Özet Bilgi Kartı -->
+                <div class="col-md-6">
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <div class="text-muted small">Talep No</div>
+                                    <div class="fw-bold">#@Model.Id.ToString("D5")</div>
+                                </div>
+                                <span class="badge @(Model.RequestStatus == "Onaylandı" ? "bg-success" :
+                                                                            Model.RequestStatus == "Reddedildi" ? "bg-danger" : 
+                                                                            "bg-warning text-dark")">
+                                    @Model.RequestStatus
+                                </span>
+                            </div>
+                            @if (isFullLicense)
+                            {
+                                <div class="mt-2">
+                                    <span class="badge bg-success">
+                                        <i class="fas fa-crown me-1"></i> Lisanslı Ürün
+                                    </span>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Durum Detay Kartı -->
+            <div class="card mb-4">
+                <div class="card-body p-4">
+                    @if (ViewBag.Message != null)
+                    {
+                        <div class="alert alert-info mb-4">
+                            <i class="fas fa-info-circle me-2"></i> @ViewBag.Message
+                        </div>
+                    }
+
+                    <div class="row">
+                        <!-- Talep Bilgileri -->
+                        <div class="col-md-6 mb-3">
+                            <h3 class="h6 mb-3">Talep Bilgileri</h3>
+                            <ul class="list-unstyled">
+                                <li class="mb-2">
+                                    <span class="text-muted">Tarih:</span>
+                                    <div>@Model.RequestDate.ToString("dd.MM.yyyy HH:mm")</div>
+                                </li>
+                                <li class="mb-2">
+                                    <span class="text-muted">Demo Süresi:</span>
+                                    <div>@Model.DemoDays gün</div>
+                                </li>
+                                @if (isFullLicense)
+                                {
+                                    <li class="mb-2">
+                                        <span class="text-muted">Lisans Durumu:</span>
+                                        <div class="text-success fw-bold">Lisanslı</div>
+                                    </li>
+                                }
+                            </ul>
+                        </div>
+
+                        <!-- Demo Dönemi -->
+                        <div class="col-md-6 mb-3">
+                            <h3 class="h6 mb-3">Demo Dönemi</h3>
+                            <ul class="list-unstyled">
+                                <li class="mb-2">
+                                    <span class="text-muted">Başlangıç:</span>
+                                    <div>@(Model.DemoStartDate.HasValue ?
+                                                                                Model.DemoStartDate.Value.ToString("dd.MM.yyyy") : "-")</div>
+                                </li>
+                                <li class="mb-2">
+                                    <span class="text-muted">Bitiş:</span>
+                                    <div>@(Model.DemoEndDate.HasValue ? Model.DemoEndDate.Value.ToString("dd.MM.yyyy") :
+                                                                                "-")</div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Şifre Değiştirme -->
+                    @if (Model.RequestStatus == "Tamamlandı")
+                    {
+                        <div class="mb-4 border-top pt-4">
+                            <h3 class="h5 mb-3">Demo Hesap Bilgileri</h3>
+
+                            @if (isFullLicense)
+                            {
+                                <div class="alert alert-success">
+                                    <i class="fas fa-check-circle me-2"></i>
+                                    Lisansınız aktif edilmiştir. Artık demo sınırlamaları olmadan sistemi kullanabilirsiniz.
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="alert alert-warning">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>
+                                    Lütfen aşağıdaki hesaplar için şifrelerinizi değiştiriniz.
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <div class="card">
+                                            <div class="card-body">
+                                                <h4 class="h6 mb-3">Customer Hesabı</h4>
+                                                <p class="small text-muted">Kullanıcı Adı: <code>customer@customer.com</code>
+                                                </p>
+
+                                                <form id="customerPasswordForm" class="mt-3">
+                                                    <div class="mb-3">
+                                                        <label for="customerNewPassword" class="form-label">Yeni Şifre</label>
+                                                        <input type="password" class="form-control" id="customerNewPassword"
+                                                            required>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label for="customerConfirmPassword" class="form-label">Şifre
+                                                            Tekrar</label>
+                                                        <input type="password" class="form-control" id="customerConfirmPassword"
+                                                            required>
+                                                    </div>
+                                                    <button type="submit" class="btn btn-primary btn-sm">Şifreyi
+                                                        Değiştir</button>
+                                                    <div id="customerMessage" class="mt-2"></div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <div class="card">
+                                            <div class="card-body">
+                                                <h4 class="h6 mb-3">Editor Hesabı</h4>
+                                                <p class="small text-muted">Kullanıcı Adı: <code>editor@editor.com</code></p>
+
+                                                <form id="adminPasswordForm" class="mt-3">
+                                                    <div class="mb-3">
+                                                        <label for="adminNewPassword" class="form-label">Yeni Şifre</label>
+                                                        <input type="password" class="form-control" id="adminNewPassword"
+                                                            required>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label for="adminConfirmPassword" class="form-label">Şifre
+                                                            Tekrar</label>
+                                                        <input type="password" class="form-control" id="adminConfirmPassword"
+                                                            required>
+                                                    </div>
+                                                    <button type="submit" class="btn btn-primary btn-sm">Şifreyi
+                                                        Değiştir</button>
+                                                    <div id="adminMessage" class="mt-2"></div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="alert alert-info mt-3">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    Şifrelerinizi değiştirdikten sonra sistemimizi kullanmaya başlayabilirsiniz.
+                                </div>
+                            }
+                        </div>
+                    }
+
+                    <!-- Notlar -->
+                    @if (!string.IsNullOrEmpty(Model.RequestNote))
+                    {
+                        <div class="mb-4">
+                            <h3 class="h6 mb-2">Notlar</h3>
+                            <div class="bg-light p-3 rounded">@Model.RequestNote</div>
+                        </div>
+                    }
+
+                    <!-- Butonlar -->
+                    <div class="d-flex flex-column flex-md-row justify-content-between pt-3 border-top">
+                        <a href="/Aysoft/Home/Index" class="btn btn-outline-secondary mb-2 mb-md-0">
+                            <i class="fas fa-arrow-left me-2"></i> Ana Sayfa
+                        </a>
+                        @if (!isFullLicense)
+                        {
+                            <a href="/Aysoft/License/Status" class="btn btn-success">
+                                <i class="fas fa-crown me-2"></i> Lisans Satın Al
+                            </a>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            // Customer form submit
+            $('#customerPasswordForm').submit(function (e) {
+                e.preventDefault();
+
+                var newPassword = $('#customerNewPassword').val();
+                var confirmPassword = $('#customerConfirmPassword').val();
+
+                if (newPassword !== confirmPassword) {
+                    $('#customerMessage').html('<div class="alert alert-danger">Şifreler eşleşmiyor!</div>');
+                    return;
+                }
+
+                $.ajax({
+                    url: '@Url.Action("ResetCustomerPassword", "License", new { area = "Aysoft" })',
+                    type: 'POST',
+                    data: {
+                        tenantCustomerId: @Model.TenantCustomerId,
+                        newPassword: newPassword
+                    },
+                    success: function (response) {
+                        $('#customerMessage').html('<div class="alert alert-success">' + response + '</div>');
+                        $('#customerPasswordForm')[0].reset();
+                    },
+                    error: function (xhr) {
+                        $('#customerMessage').html('<div class="alert alert-danger">' + xhr.responseText + '</div>');
+                    }
+                });
+            });
+
+            // Admin/Editor form submit
+            $('#adminPasswordForm').submit(function (e) {
+                e.preventDefault();
+
+                var newPassword = $('#adminNewPassword').val();
+                var confirmPassword = $('#adminConfirmPassword').val();
+
+                if (newPassword !== confirmPassword) {
+                    $('#adminMessage').html('<div class="alert alert-danger">Şifreler eşleşmiyor!</div>');
+                    return;
+                }
+
+                $.ajax({
+                    url: '@Url.Action("ResetEditorPassword", "License", new { area = "Aysoft" })',
+                    type: 'POST',
+                    data: {
+                        tenantCustomerId: @Model.TenantCustomerId,
+                        newPassword: newPassword
+                    },
+                    success: function (response) {
+                        $('#adminMessage').html('<div class="alert alert-success">' + response + '</div>');
+                        $('#adminPasswordForm')[0].reset();
+                    },
+                    error: function (xhr) {
+                        $('#adminMessage').html('<div class="alert alert-danger">' + xhr.responseText + '</div>');
+                    }
+                });
+            });
+        });
+    </script>
+
+    <style>
+        .license-overlay {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        @@keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+    </style>
+}

@@ -1,0 +1,356 @@
+<div class="container mt-4">
+    <div class="card shadow-lg border-0 rounded-lg overflow-hidden">
+        <div class="card-header bg-gradient-primary text-white py-3">
+            <h4 class="mb-0"><i class="fas fa-tag me-2"></i>İndirim Düzenle</h4>
+        </div>
+        <div class="card-body p-4">
+            <form id="editDiscountForm" class="needs-validation" novalidate>
+                <div class="row g-4">
+                    <!-- İndirim Bilgileri -->
+                    <div class="col-md-6">
+                        <div class="form-floating">
+                            <input type="text" id="discountName" name="discountName" class="form-control"
+                                placeholder=" " required />
+                            <label for="discountName">İndirim Adı</label>
+                            <div class="invalid-feedback">Lütfen bir indirim adı giriniz.</div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="form-floating">
+                            <select id="discountType" name="discountType" class="form-select" required>
+                                <option value="">Seçiniz</option>
+                                <option value="Percentage">Yüzdesel</option>
+                                <option value="Fixed">Sabit</option>
+                            </select>
+                            <label for="discountType">İndirim Türü</label>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="form-floating">
+                            <input type="number" id="value" name="value" class="form-control" placeholder=" "
+                                required />
+                            <label for="value">İndirim Değeri</label>
+                            <div class="invalid-feedback">Lütfen geçerli bir değer giriniz.</div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="form-floating">
+                            <select id="conditionType" name="conditionType" class="form-select" required
+                                onchange="loadConditionValues(1)">
+                                <option value="">Seçiniz</option>
+                                <option value="Product">Ürün</option>
+                                <option value="Category">Kategori</option>
+                            </select>
+                            <label for="conditionType">Koşul Türü</label>
+                        </div>
+                    </div>
+
+                    <!-- Seçenekler -->
+                    <div class="col-12 mt-3">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-header bg-light py-2">
+                                <h5 class="mb-0">Seçenekler</h5>
+                            </div>
+                            <div class="card-body p-3">
+                                <div class="input-group mb-3">
+                                    <span class="input-group-text"><i class="fas fa-search"></i></span>
+                                    <input type="text" id="searchInput" class="form-control" placeholder="Ara..."
+                                        onkeyup="filterOptions()">
+                                </div>
+
+                                <div id="conditionOptions" class="row g-2 mb-3"
+                                    style="max-height: 300px; overflow-y: auto;"></div>
+
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <button type="button" id="prevPage" class="btn btn-outline-secondary btn-sm"
+                                        onclick="changePage(-1)">
+                                        <i class="fas fa-chevron-left me-1"></i> Önceki
+                                    </button>
+                                    <span id="pageInfo" class="text-muted small"></span>
+                                    <button type="button" id="nextPage" class="btn btn-outline-secondary btn-sm"
+                                        onclick="changePage(1)">
+                                        Sonraki <i class="fas fa-chevron-right ms-1"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tarih Aralığı -->
+                    <div class="col-md-6">
+                        <div class="form-floating">
+                            <input type="datetime-local" id="startDateTime" name="startDateTime" class="form-control"
+                                required />
+                            <label for="startDateTime">Başlangıç Tarihi</label>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="form-floating">
+                            <input type="datetime-local" id="endDateTime" name="endDateTime" class="form-control"
+                                required />
+                            <label for="endDateTime">Bitiş Tarihi</label>
+                        </div>
+                    </div>
+
+                    <!-- Aktiflik Durumu -->
+                    <div class="col-12">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="hidden" id="isActive" name="isActive"
+                                style="width: 3em; height: 1.5em;">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Butonlar -->
+                <div class="mt-4 d-flex justify-content-between">
+                    <button type="button" class="btn btn-outline-secondary" onclick="window.history.back()">
+                        <i class="fas fa-arrow-left me-2"></i> Geri Dön
+                    </button>
+                    <button type="submit" class="btn btn-primary px-4">
+                        <i class="fas fa-save me-2"></i> Güncelle
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Font Awesome ve Bootstrap Icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+
+<!-- SweetAlert2 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+    let currentPage = 1;
+    let totalPages = 1;
+    let allData = [];
+    let selectedItems = [];
+    let discountId = ''; // Global discountId değişkeni
+
+    // URL'den DiscountId'yi almak için
+    const pathParts = window.location.pathname.split('/');  // URL'yi '/' karakterine göre böler
+    discountId = pathParts[pathParts.length - 1];  // URL'nin son parçası (id kısmı)
+    console.log(discountId);  // ID'yi konsola yazdır
+
+    // Koşul değerlerini yükle
+    function loadConditionValues(page = 1) {
+        const conditionType = document.getElementById('conditionType').value;
+        const conditionOptions = document.getElementById('conditionOptions');
+        conditionOptions.innerHTML = '';
+        if (!conditionType) return;
+
+        let apiUrl = conditionType === 'Product' ? '/Admin/Discount/GetProducts' : '/Admin/Discount/GetCategories';
+
+        fetch(apiUrl)
+            .then(response => response.json())
+            .then(data => {
+                allData = data;
+                totalPages = Math.ceil(data.length / 10);
+                renderPage(page);
+            })
+            .catch(error => {
+                console.error('Veri çekme hatası:', error);
+                alert('Veri yüklenirken bir hata oluştu.');
+            });
+    }
+
+    // Sayfayı render et
+    function renderPage(page) {
+        const conditionOptions = document.getElementById('conditionOptions');
+        conditionOptions.innerHTML = '';
+
+        let start = (page - 1) * 10;
+        let end = start + 10;
+        let pageData = allData.slice(start, end);
+
+        pageData.forEach(item => {
+            const isChecked = selectedItems.includes(item.id) ? 'checked' : '';
+            const checkbox = `<div class='form-check'>
+                <input class='form-check-input' type='checkbox' name='selectedItems' value='${item.id}' id='item-${item.id}' ${isChecked} onclick="toggleItemSelection(${item.id})">
+                <label class='form-check-label' for='item-${item.id}'> ${item.name}</label>
+            </div>`;
+            conditionOptions.innerHTML += checkbox;
+        });
+
+        document.getElementById('pageInfo').textContent = `Sayfa ${currentPage} / ${totalPages}`;
+        document.getElementById('prevPage').disabled = currentPage === 1;
+        document.getElementById('nextPage').disabled = currentPage === totalPages;
+    }
+
+    // Sayfa değiştirme
+    function changePage(direction) {
+        currentPage += direction;
+        renderPage(currentPage);
+    }
+
+    // Seçilen öğeleri yönet
+    function toggleItemSelection(itemId) {
+        const index = selectedItems.indexOf(itemId);
+        if (index === -1) {
+            selectedItems.push(itemId);
+        } else {
+            selectedItems.splice(index, 1);
+        }
+        console.log("Seçilen Öğeler:", selectedItems); // Debug için
+    }
+
+    // Seçenekleri filtrele
+    function filterOptions() {
+        let query = document.getElementById('searchInput').value.toLowerCase();
+        let filteredData = allData.filter(item => item.name.toLowerCase().includes(query));
+
+        const conditionOptions = document.getElementById('conditionOptions');
+        conditionOptions.innerHTML = '';
+
+        filteredData.slice(0, 10).forEach(item => {
+            const isChecked = selectedItems.includes(item.id) ? 'checked' : '';
+            const checkbox = `<div class='form-check'>
+                <input class='form-check-input' type='checkbox' name='selectedItems' value='${item.id}' id='item-${item.id}' ${isChecked} onclick="toggleItemSelection(${item.id})">
+                <label class='form-check-label' for='item-${item.id}'> ${item.name}</label>
+            </div>`;
+            conditionOptions.innerHTML += checkbox;
+        });
+    }
+
+    // İndirim verilerini al ve formu doldur
+    function loadDiscountData() {
+        fetch(`/Admin/Discount/GetDiscountById/${discountId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const discount = data.discount;
+
+                    // Form alanlarını doldur
+                    document.getElementById('discountName').value = discount.name;
+                    document.getElementById('discountType').value = discount.discountType === 0 ? "Percentage" : "Fixed";
+                    document.getElementById('value').value = discount.value;
+                    document.getElementById('conditionType').value = discount.conditionType === 0 ? "Product" : "Category";
+                    document.getElementById('startDateTime').value = discount.startDateTime.slice(0, 16);
+                    document.getElementById('endDateTime').value = discount.endDateTime.slice(0, 16);
+                    document.getElementById('isActive').checked = discount.isActive;
+
+                    // Seçili ürünleri veya kategorileri ayarla
+                    selectedItems = []; // Önce temizle
+                    if (discount.discountProducts.length > 0) {
+                        selectedItems = discount.discountProducts.map(p => p.productId);
+                    } else if (discount.discountCategories.length > 0) {
+                        selectedItems = discount.discountCategories.map(c => c.categoryId);
+                    }
+
+                    // Koşul türüne bağlı olarak verileri getir ve seçili olanları işaretle
+                    loadConditionValues(1);
+                }
+            })
+            .catch(error => {
+                console.error('Veri yükleme hatası:', error);
+            });
+    }
+
+    // Sayfa yüklendiğinde indirim verilerini getir
+    document.addEventListener("DOMContentLoaded", loadDiscountData);
+
+    // Form gönderimini işle
+    document.getElementById('editDiscountForm').addEventListener('submit', function (event) {
+        event.preventDefault();
+
+        // Form verilerini topla
+        const formData = {
+            discountId: discountId,
+            discountName: document.getElementById('discountName').value,
+            discountType: document.getElementById('discountType').value,
+            value: parseFloat(document.getElementById('value').value),
+            conditionType: document.getElementById('conditionType').value,
+            selectedIds: selectedItems, // Seçilen öğeleri ekleyin
+            startDateTime: document.getElementById('startDateTime').value,
+            endDateTime: document.getElementById('endDateTime').value,
+            isActive: document.getElementById('isActive').checked
+        };
+
+        // Verileri logla
+        console.log("Backend'e Gönderilen Veriler:", formData);
+
+        // Fetch ile JSON gönder
+        fetch('/Admin/Discount/Update', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json' // JSON formatında olduğunu belirt
+            },
+            body: JSON.stringify(formData) // Veriyi JSON'a dönüştür
+        })
+            .then(response => {
+                if (!response.ok) {
+                    return response.text().then(text => {
+                        throw new Error('Sunucu hatası: ' + text);
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'İndirim başarıyla güncellendi.',
+                        showConfirmButton: false,
+                        timer: 1500
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'İndirim güncellenirken bir hata oluştu.',
+                        text: data.message || 'Bir hata meydana geldi.',
+                    });
+                }
+            })
+            .catch(error => {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Hata',
+                    text: error.message
+                });
+            });
+    });
+
+    // Sayfa yüklenince verileri al
+    document.addEventListener('DOMContentLoaded', loadDiscountData);
+</script>
+
+<style>
+    .form-floating>label {
+        transition: all 0.2s ease;
+    }
+
+    .card-header {
+        border-radius: 0 !important;
+    }
+
+    #conditionOptions::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    #conditionOptions::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+    }
+
+    #conditionOptions::-webkit-scrollbar-thumb {
+        background: #c1c1c1;
+        border-radius: 10px;
+    }
+
+    #conditionOptions::-webkit-scrollbar-thumb:hover {
+        background: #a8a8a8;
+    }
+
+    .form-check-input:checked {
+        background-color: #0d6efd;
+        border-color: #0d6efd;
+    }
+</style>

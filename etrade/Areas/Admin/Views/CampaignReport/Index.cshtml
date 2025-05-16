@@ -1,0 +1,273 @@
+@{
+    ViewData["Title"] = "Kampanya Raporu";
+}
+
+<div class="container">
+    <!-- Başlık ve Kampanya Skoru -->
+    <div class="row mb-4 align-items-center">
+        <div class="col-md-8">
+            <h2 class="font-weight-bold text-dark mb-0">@ViewData["Title"]</h2>
+        </div>
+        <div class="col-md-4 text-right">
+            <div class="card shadow-sm border-0 bg-light">
+                <div class="card-body py-3">
+                    <h6 class="card-title text-muted mb-1">Kampanya Skoru</h6>
+                    <p id="campaignScore" class="font-weight-bold text-warning mb-0"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Kampanya Bilgileri ve Satış Özeti -->
+    <div class="row mb-4">
+        <!-- Kampanya Bilgileri -->
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="card-title text-muted mb-4">Kampanya Bilgileri</h5>
+                    <p><strong>Kampanya Adı:</strong> <span id="campaignName"></span></p>
+                    <p><strong>Başlangıç Tarihi:</strong> <span id="campaignStartDate"></span></p>
+                    <p><strong>Bitiş Tarihi:</strong> <span id="campaignEndDate"></span></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Satış Özeti -->
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="card-title text-muted mb-4">Satış Özeti</h5>
+                    <div class="row">
+                        <div class="col-6 mb-3">
+                            <div class="card bg-light">
+                                <div class="card-body p-3 text-center">
+                                    <h6 class="card-title text-muted mb-1">Toplam Satış</h6>
+                                    <p id="totalSalesDuringCampaign" class="font-weight-bold text-success mb-0"></p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <div class="card bg-light">
+                                <div class="card-body p-3 text-center">
+                                    <h6 class="card-title text-muted mb-1">Kampanya Öncesi Ciro</h6>
+                                    <p id="totalRevenueBeforeCampaign" class="font-weight-bold text-primary mb-0"></p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="card bg-light">
+                                <div class="card-body p-3 text-center">
+                                    <h6 class="card-title text-muted mb-1">Günlük Ortalama Ciro (Kampanya)</h6>
+                                    <p id="averageDailyRevenueDuringCampaign" class="font-weight-bold text-info mb-0"></p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="card bg-light">
+                                <div class="card-body p-3 text-center">
+                                    <h6 class="card-title text-muted mb-1">Günlük Ortalama Ciro (Öncesi)</h6>
+                                    <p id="averageDailyRevenueBeforeCampaign" class="font-weight-bold text-danger mb-0"></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- En Çok Satılan Ürün ve Satış Karşılaştırması -->
+    <div class="row mb-4">
+        <!-- En Çok Satılan Ürün -->
+        <div class="col-md-4 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="card-title text-muted mb-4">En Çok Satılan Ürün</h5>
+                    <div id="mostSoldProduct">
+                        <p class="font-weight-normal">Henüz bir ürün satılmadı.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Satış Karşılaştırması -->
+        <div class="col-md-8 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="card-title text-muted mb-4"><i class="fas fa-exchange-alt"></i> Ürün Bazında Satış Karşılaştırması</h5>
+                    <table class="table table-bordered table-hover mb-0">
+                        <thead class="thead-light">
+                            <tr>
+                                <th>Ürün Adı</th>
+                                <th>Satış (Kampanya)</th>
+                                <th>Ortalama Satış (Öncesi)</th>
+                                <th>Satış Farkı</th>
+                            </tr>
+                        </thead>
+                        <tbody id="salesComparisonTable">
+                            <!-- Veriler buraya yüklenecek -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://kit.fontawesome.com/a076d05399.js"></script>
+<script>
+    $(document).ready(function () {
+        $.ajax({
+            url: '@Url.Action("GetCampaignReport", "CampaignReport","Admin")',
+            method: 'GET',
+            success: function (data) {
+                $('#campaignName').text(data.campaignName);
+                $('#campaignStartDate').text(new Date(data.campaignStartDate).toLocaleString());
+                $('#campaignEndDate').text(new Date(data.campaignEndDate).toLocaleString());
+                $('#totalSalesDuringCampaign').text(data.totalSalesDuringCampaign.toLocaleString("tr-TR", { style: "currency", currency: "TRY" }));
+                $('#totalRevenueBeforeCampaign').text(data.totalRevenueBeforeCampaign.toLocaleString("tr-TR", { style: "currency", currency: "TRY" }));
+                $('#campaignScore').text(data.campaignScore.toFixed(2) + ' %');
+                $('#averageDailyRevenueDuringCampaign').text(data.averageDailyRevenueDuringCampaign.toLocaleString("tr-TR", { style: "currency", currency: "TRY" }));
+                $('#averageDailyRevenueBeforeCampaign').text(data.averageDailyRevenueBeforeCampaign.toLocaleString("tr-TR", { style: "currency", currency: "TRY" }));
+
+                if (data.mostSoldProductDetails) {
+                    $('#mostSoldProduct').html(`
+                        <p><strong>Ürün Adı:</strong> ${data.mostSoldProductDetails.productName}</p>
+                        <p><strong>Satış Miktarı:</strong> ${data.mostSoldProductDetails.totalQuantitySold}</p>
+                        <p><strong>Toplam Ciro:</strong> ${data.mostSoldProductDetails.totalRevenue.toLocaleString("tr-TR", { style: "currency", currency: "TRY" })}</p>
+                    `);
+                }
+
+                let salesComparisonTableBody = '';
+                data.productSalesComparison.forEach(function (item) {
+                    salesComparisonTableBody += `
+                        <tr>
+                            <td>${item.productName}</td>
+                            <td>${item.salesDuringCampaign.toLocaleString("tr-TR")}</td>
+                            <td>${item.averageSalesBeforeCampaign.toLocaleString("tr-TR")}</td>
+                            <td>${item.salesDifference.toLocaleString("tr-TR")}</td>
+                        </tr>
+                    `;
+                });
+                $('#salesComparisonTable').html(salesComparisonTableBody);
+            },
+            error: function () {
+                alert("Rapor verisi alınamadı.");
+            }
+        });
+    });
+</script>
+
+<style>
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .card {
+        border: none;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        transition: transform 0.2s;
+    }
+
+    .card:hover {
+        transform: translateY(-3px);
+    }
+
+    .card-body {
+        padding: 1.5rem;
+    }
+
+    .card-title {
+        font-size: 1.1rem;
+        color: #333;
+        margin-bottom: 1rem;
+    }
+
+    .text-muted {
+        color: #6c757d !important;
+    }
+
+    .font-weight-bold {
+        font-weight: 700;
+    }
+
+    .table {
+        width: 100%;
+        margin-bottom: 0;
+        color: #333;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .table th, .table td {
+        padding: 12px;
+        text-align: center;
+        vertical-align: middle;
+        border-top: 1px solid #dee2e6;
+    }
+
+    .table thead th {
+        background-color: #f8f9fa;
+        border-bottom: 2px solid #dee2e6;
+    }
+
+    .table-hover tbody tr:hover {
+        background-color: #f1f1f1;
+    }
+
+    .row {
+        margin-bottom: 1.5rem;
+    }
+
+    .text-success {
+        color: #28a745 !important;
+    }
+
+    .text-primary {
+        color: #007bff !important;
+    }
+
+    .text-warning {
+        color: #ffc107 !important;
+    }
+
+    .text-info {
+        color: #17a2b8 !important;
+    }
+
+    .text-danger {
+        color: #dc3545 !important;
+    }
+
+    .shadow-sm {
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075) !important;
+    }
+
+    .border-0 {
+        border: 0 !important;
+    }
+
+    .text-center {
+        text-align: center !important;
+    }
+
+    .text-right {
+        text-align: right !important;
+    }
+
+    .mb-4 {
+        margin-bottom: 1.5rem !important;
+    }
+
+    .col-md-8, .col-md-4, .col-12, .col-md-6 {
+        padding: 0 15px;
+    }
+
+    .bg-light {
+        background-color: #f8f9fa !important;
+    }
+</style>

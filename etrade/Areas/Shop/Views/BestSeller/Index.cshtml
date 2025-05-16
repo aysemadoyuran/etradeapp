@@ -1,0 +1,401 @@
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<style>
+
+
+    .header {
+        background: linear-gradient(135deg, var(--primary-color), #6c8fc7);
+        color: white;
+        padding: 3rem 0;
+        margin-bottom: 2rem;
+        border-radius: 0 0 var(--border-radius) var(--border-radius);
+        box-shadow: var(--box-shadow);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: radial-gradient(circle at 70% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+    }
+
+    .header h1 {
+        font-weight: 700;
+        position: relative;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .header .lead {
+        opacity: 0.9;
+        position: relative;
+    }
+
+    .product-card {
+        transition: var(--transition);
+        border: none;
+        border-radius: var(--border-radius);
+        overflow: hidden;
+        box-shadow: var(--box-shadow);
+        margin-bottom: 25px;
+        height: 100%;
+        background: white;
+        position: relative;
+        cursor: pointer;
+    }
+
+    .product-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    .product-card::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        border-radius: var(--border-radius);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        opacity: 0;
+        transition: var(--transition);
+    }
+
+    .product-card:hover::after {
+        opacity: 1;
+    }
+
+    .product-img-container {
+        height: 100%;
+        overflow: hidden;
+        position: relative;
+        background-color: #f5f7fa;
+    }
+
+    .product-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+
+    .product-card:hover .product-img {
+        transform: scale(1.05);
+    }
+
+    .badge-sold {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        background-color: var(--secondary-color);
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        z-index: 1;
+    }
+
+    .card-body {
+        padding: 1.5rem;
+    }
+
+    .product-title {
+        font-weight: 600;
+        color: var(--dark-color);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin-bottom: 0.5rem;
+        font-size: 1rem;
+    }
+
+    .product-color {
+        font-size: 0.85rem;
+        color: #6c757d;
+        margin-bottom: 1rem;
+    }
+
+    .product-price {
+        font-weight: 700;
+        color: var(--primary-color);
+        font-size: 1.1rem;
+        letter-spacing: 0.5px;
+    }
+
+    .sold-count {
+        font-size: 0.8rem;
+        color: #adb5bd;
+        display: flex;
+        align-items: center;
+    }
+
+    .sold-count i {
+        margin-right: 5px;
+        color: var(--secondary-color);
+    }
+
+    .loading-spinner {
+        display: none;
+        text-align: center;
+        padding: 3rem;
+    }
+
+    .filter-section {
+        background-color: white;
+        padding: 1.5rem;
+        border-radius: var(--border-radius);
+        box-shadow: var(--box-shadow);
+        margin-bottom: 2.5rem;
+    }
+
+    .no-products {
+        text-align: center;
+        padding: 4rem;
+        color: #6c757d;
+    }
+
+    .no-products i {
+        font-size: 3rem;
+        color: #dee2e6;
+        margin-bottom: 1.5rem;
+    }
+
+    .input-group-text {
+        background-color: var(--soft-gray);
+        border: none;
+    }
+
+    .form-control,
+    .form-select {
+        border: 1px solid var(--soft-gray);
+        padding: 0.6rem 1rem;
+        border-radius: var(--border-radius) !important;
+    }
+
+    .form-control:focus,
+    .form-select:focus {
+        box-shadow: 0 0 0 0.25rem rgba(74, 111, 165, 0.1);
+        border-color: rgba(74, 111, 165, 0.3);
+    }
+
+    footer {
+        background-color: white;
+        padding: 2rem 0;
+        margin-top: 4rem;
+        box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.02);
+    }
+
+    .product-link {
+        text-decoration: none;
+        color: inherit;
+        display: block;
+        height: 100%;
+    }
+
+    .product-link:hover {
+        text-decoration: none;
+        color: inherit;
+    }
+
+    @@media (max-width: 768px) {
+        .product-img-container {
+            height: 90%;
+        }
+
+        .header {
+        }
+    }
+
+    /* Animations */
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .product-card {
+        animation: fadeIn 0.5s ease forwards;
+        opacity: 0;
+    }
+
+    .product-card:nth-child(1) {
+        animation-delay: 0.1s;
+    }
+
+    .product-card:nth-child(2) {
+        animation-delay: 0.2s;
+    }
+
+    .product-card:nth-child(3) {
+        animation-delay: 0.3s;
+    }
+
+    .product-card:nth-child(4) {
+        animation-delay: 0.4s;
+    }
+
+    .product-card:nth-child(5) {
+        animation-delay: 0.5s;
+    }
+
+    .product-card:nth-child(6) {
+        animation-delay: 0.6s;
+    }
+</style>
+<div class="header text-center">
+    <div class="container text-white">
+        <h3><i class="fas fa-crown me-2"></i>Çok Satan Ürünler</h3>
+    </div>
+</div>
+
+<div class="container">
+
+    <div class="loading-spinner" id="loadingSpinner">
+        <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
+            <span class="visually-hidden">Yükleniyor...</span>
+        </div>
+        <p class="mt-3">Ürünler yükleniyor...</p>
+    </div>
+
+    <div class="row g-4" id="productsContainer">
+        <!-- Ürünler buraya eklenecek -->
+    </div>
+
+    <div class="no-products d-none" id="noProducts">
+        <i class="fas fa-box-open"></i>
+        <h4 class="mt-3">Ürün bulunamadı</h4>
+        <p class="text-muted">Arama kriterlerinize uygun ürün bulunamadı.</p>
+    </div>
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        const productsContainer = document.getElementById('productsContainer');
+        const noProducts = document.getElementById('noProducts');
+        const searchInput = document.getElementById('searchInput');
+        const sortSelect = document.getElementById('sortSelect');
+        const colorSelect = document.getElementById('colorSelect');
+
+        let products = [];
+        let uniqueColors = new Set();
+
+        // Ürünleri yükle
+        loadingSpinner.style.display = 'block';
+        fetch('/Shop/BestSeller/GetBestSellers')
+            .then(response => response.json())
+            .then(data => {
+                products = data;
+                loadingSpinner.style.display = 'none';
+
+                if (products.length === 0) {
+                    noProducts.classList.remove('d-none');
+                    return;
+                }
+
+                // Renk filtreleme seçeneklerini oluştur
+                products.forEach(product => {
+                    if (product.Color && product.Color !== "Renk Yok") {
+                        uniqueColors.add(product.Color);
+                    }
+                });
+
+                // Renk seçeneklerini ekle
+                uniqueColors.forEach(color => {
+                    const option = document.createElement('option');
+                    option.value = color;
+                    option.textContent = color;
+                    colorSelect.appendChild(option);
+                });
+
+                renderProducts(products);
+            })
+            .catch(error => {
+                console.error('Error fetching products:', error);
+                loadingSpinner.style.display = 'none';
+                noProducts.classList.remove('d-none');
+                noProducts.querySelector('h4').textContent = 'Bir hata oluştu';
+                noProducts.querySelector('p').textContent = 'Ürünler yüklenirken bir hata oluştu. Lütfen daha sonra tekrar deneyin.';
+            });
+
+        // Filtreleme ve arama işlevleri
+        searchInput.addEventListener('input', filterProducts);
+        sortSelect.addEventListener('change', filterProducts);
+        colorSelect.addEventListener('change', filterProducts);
+
+        function filterProducts() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const sortValue = sortSelect.value;
+            const colorValue = colorSelect.value;
+
+            let filtered = products.filter(product =>
+                product.ProductName.toLowerCase().includes(searchTerm) &&
+                (colorValue === 'all' || product.Color === colorValue)
+            );
+
+            // Sıralama
+            switch (sortValue) {
+                case 'sold':
+                    filtered.sort((a, b) => b.TotalSold - a.TotalSold);
+                    break;
+                case 'price-high':
+                    filtered.sort((a, b) => b.Price - a.Price);
+                    break;
+                case 'price-low':
+                    filtered.sort((a, b) => a.Price - b.Price);
+                    break;
+            }
+
+            renderProducts(filtered);
+        }
+
+        function renderProducts(productsToRender) {
+            productsContainer.innerHTML = '';
+
+            if (productsToRender.length === 0) {
+                noProducts.classList.remove('d-none');
+                return;
+            } else {
+                noProducts.classList.add('d-none');
+            }
+
+            productsToRender.forEach((product, index) => {
+                const productCard = document.createElement('div');
+                productCard.className = 'col-lg-3 col-md-6 col-sm-6';
+
+                // Ürün detay sayfası linki ekledim
+                productCard.innerHTML = `
+                        <a href="/Shop/Product/Details/${product.productId}" class="product-link">
+                            <div class="card product-card h-100" style="animation-delay: ${index * 0.1}s">
+                                <div class="product-img-container">
+                                    <img src="${product.imageUrl}" class="product-img" alt="${product.productName}">
+                                    <span class="badge badge-sold text-white"><i class="fas fa-fire me-1"></i>${product.totalSold} Adet</span>
+                                </div>
+                                <div class="card-body">
+                                    <h6 class="card-title product-title" title="${product.productName}">${product.productName}</h6>
+                                    <p class="card-text product-color">Renk:${product.color}  Beden:${product.size}</p>
+                                    <div class="d-flex justify-content-between align-items-center mt-3">
+                                        <span class="product-price">${product.price} ₺</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    `;
+                productsContainer.appendChild(productCard);
+            });
+        }
+    });
+</script>

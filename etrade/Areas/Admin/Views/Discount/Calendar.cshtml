@@ -1,0 +1,699 @@
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+<style>
+    :root {
+        --primary-color: #5e72e4;
+        --secondary-color: #f7fafc;
+        --success-color: #2dce89;
+        --warning-color: #fb6340;
+        --info-color: #11cdef;
+        --dark-color: #212529;
+        --light-color: #f8f9fa;
+        --border-radius-lg: 1rem;
+        --box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    }
+
+    body {
+        background-color: #f5f7fb;
+    }
+
+    .calendar-container {
+        background: white;
+        border-radius: var(--border-radius-lg);
+        box-shadow: var(--box-shadow);
+        overflow: hidden;
+        transition: all 0.3s ease;
+        padding: 1.5rem;
+    }
+
+    .calendar-container:hover {
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+    }
+
+    .fc {
+        font-family: inherit;
+    }
+
+    .fc-toolbar-title {
+        font-weight: 600;
+        color: var(--dark-color);
+        font-size: 1.25rem;
+    }
+
+    .fc-button {
+        background-color: white !important;
+        border: 1px solid #e9ecef !important;
+        color: var(--dark-color) !important;
+        border-radius: 8px !important;
+        padding: 0.5rem 1rem !important;
+        font-weight: 500 !important;
+        text-transform: capitalize !important;
+        box-shadow: none !important;
+        transition: all 0.2s ease !important;
+        font-size: 0.875rem !important;
+    }
+
+    .fc-button:hover {
+        background-color: var(--primary-color) !important;
+        color: white !important;
+        border-color: var(--primary-color) !important;
+    }
+
+    .fc-button-active {
+        background-color: var(--primary-color) !important;
+        color: white !important;
+        border-color: var(--primary-color) !important;
+    }
+
+    .fc-daygrid-day-number {
+        color: var(--dark-color);
+        font-weight: 500;
+        font-size: 0.9rem;
+    }
+
+    .fc-day-today {
+        background-color: rgba(94, 114, 228, 0.1) !important;
+    }
+
+    .fc-daygrid-day.fc-day-today .fc-daygrid-day-number {
+        color: var(--primary-color);
+        font-weight: 700;
+    }
+
+    .campaigns-sidebar {
+        background: white;
+        border-radius: var(--border-radius-lg);
+        box-shadow: var(--box-shadow);
+        height: 100%;
+        overflow: hidden;
+        padding: 1.5rem;
+    }
+
+    .campaign-card {
+        border-left: 4px solid;
+        border-radius: 8px;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        margin-bottom: 12px;
+        cursor: pointer;
+        padding: 1rem;
+        background: white;
+    }
+
+    .campaign-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+    }
+
+    .campaign-card.upcoming {
+        border-left-color: var(--warning-color);
+    }
+
+    .campaign-card.active {
+        border-left-color: var(--success-color);
+    }
+
+    .campaign-card.completed {
+        border-left-color: var(--dark-color);
+    }
+
+    .campaign-status {
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+    }
+
+    .status-upcoming {
+        background-color: rgba(251, 99, 64, 0.1);
+        color: var(--warning-color);
+    }
+
+    .status-active {
+        background-color: rgba(45, 206, 137, 0.1);
+        color: var(--success-color);
+    }
+
+    .status-completed {
+        background-color: rgba(33, 37, 41, 0.1);
+        color: var(--dark-color);
+    }
+
+    .campaign-date {
+        font-size: 0.85rem;
+        color: #6c757d;
+        margin-top: 0.25rem;
+    }
+
+    .filter-dropdown {
+        position: relative;
+        display: inline-block;
+    }
+
+    .filter-dropdown .dropdown-btn {
+        background-color: white;
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        padding: 0.5rem 1rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: var(--dark-color);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        transition: all 0.2s ease;
+    }
+
+    .filter-dropdown .dropdown-btn:hover {
+        background-color: #f8f9fa;
+    }
+
+    .filter-dropdown .dropdown-btn i {
+        margin-right: 0.5rem;
+    }
+
+    .filter-dropdown .dropdown-menu-custom {
+        position: absolute;
+        right: 0;
+        top: 100%;
+        z-index: 1000;
+        min-width: 160px;
+        padding: 0.5rem 0;
+        margin: 0.125rem 0 0;
+        font-size: 0.875rem;
+        color: #212529;
+        text-align: left;
+        list-style: none;
+        background-color: #fff;
+        background-clip: padding-box;
+        border: 1px solid rgba(0, 0, 0, 0.15);
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        display: none;
+    }
+
+    .filter-dropdown.show .dropdown-menu-custom {
+        display: block;
+    }
+
+    .dropdown-item-custom {
+        display: block;
+        width: 100%;
+        padding: 0.5rem 1.25rem;
+        clear: both;
+        font-weight: 400;
+        color: #212529;
+        text-align: inherit;
+        text-decoration: none;
+        white-space: nowrap;
+        background-color: transparent;
+        border: 0;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .dropdown-item-custom:hover {
+        background-color: #f8f9fa;
+        color: var(--primary-color);
+    }
+
+    .dropdown-item-custom.active {
+        background-color: var(--primary-color);
+        color: white;
+    }
+
+    .add-campaign-btn {
+        background: linear-gradient(135deg, var(--primary-color) 0%, #825ee4 100%);
+        border: none;
+        border-radius: 8px;
+        padding: 0.5rem 1.5rem;
+        font-weight: 600;
+        font-size: 0.875rem;
+        box-shadow: 0 4px 12px rgba(94, 114, 228, 0.25);
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+    }
+
+    .add-campaign-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(94, 114, 228, 0.35);
+    }
+
+    .modal-content {
+        border-radius: var(--border-radius-lg);
+        border: none;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    }
+
+    .modal-header {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+
+    .modal-title {
+        font-weight: 700;
+        color: var(--primary-color);
+        font-size: 1.25rem;
+    }
+
+    .campaign-detail-item {
+        margin-bottom: 1rem;
+    }
+
+    .detail-label {
+        font-weight: 600;
+        color: var(--dark-color);
+        font-size: 0.9rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .detail-value {
+        color: #495057;
+        font-size: 0.95rem;
+    }
+
+    .fc-event {
+        border-radius: 6px !important;
+        padding: 4px 8px !important;
+        border: none !important;
+        font-size: 0.85rem !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+        cursor: pointer;
+    }
+
+    .fc-event:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+    }
+
+    .back-btn {
+        background-color: white;
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        padding: 0.5rem 1rem;
+        font-weight: 500;
+        color: var(--dark-color);
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        margin-right: 1rem;
+    }
+
+    .back-btn:hover {
+        background-color: #f8f9fa;
+        color: var(--primary-color);
+        border-color: #dee2e6;
+    }
+
+    .back-btn i {
+        margin-right: 0.5rem;
+    }
+
+    .header-container {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .header-title {
+        margin-bottom: 0;
+    }
+
+    @@media (max-width: 768px) {
+        .fc-toolbar {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .fc-toolbar-chunk {
+            margin-bottom: 0.5rem;
+        }
+
+        .header-container {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .back-btn {
+            margin-bottom: 1rem;
+            margin-right: 0;
+        }
+
+        .calendar-container, .campaigns-sidebar {
+            padding: 1rem;
+        }
+    }
+</style>
+
+<div class="container py-4">
+    <div class="header-container">
+        <a href="/Admin/Discount/List" class="btn back-btn">
+            <i class="fas fa-arrow-left"></i> Geri Dön
+        </a>
+        <h2 class="header-title">İndirim Yönetimi</h2>
+    </div>
+    
+    <div class="row g-4">
+        <!-- Main Calendar Column -->
+        <div class="col-lg-8">
+            <div class="calendar-container">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h3 class="mb-0 fw-bold">İndirim Takvimi</h3>
+                    <a href="/Admin/Discount/Index" class="btn add-campaign-btn text-white">
+                        <i class="fas fa-plus me-2"></i>Yeni İndirim
+                    </a>
+                </div>
+                <div id="calendar"></div>
+            </div>
+        </div>
+
+        <!-- Campaigns Sidebar -->
+        <div class="col-lg-4">
+            <div class="campaigns-sidebar">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h4 class="mb-0 fw-bold">Kampanyalar</h4>
+                    <div class="filter-dropdown" id="filterDropdown">
+                        <button class="btn btn-sm dropdown-btn" type="button" id="filterToggle">
+                            <i class="fas fa-filter me-1"></i> Filtrele
+                        </button>
+                        <ul class="dropdown-menu-custom" id="filterMenu">
+                            <li><a class="dropdown-item-custom filter-option active" href="#" data-filter="all">Tümü</a></li>
+                            <li><a class="dropdown-item-custom filter-option" href="#" data-filter="upcoming">Yaklaşan</a></li>
+                            <li><a class="dropdown-item-custom filter-option" href="#" data-filter="active">Aktif</a></li>
+                            <li><a class="dropdown-item-custom filter-option" href="#" data-filter="completed">Tamamlanan</a></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div id="campaignsList" class="mt-3">
+                    <!-- Campaign cards will be loaded here -->
+                    <div class="text-center py-5">
+                        <i class="fas fa-calendar-alt fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">Kampanya yükleniyor...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Campaign Detail Modal -->
+<div class="modal fade" id="campaignModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="campaignModalLabel"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="campaign-detail-item">
+                    <div class="detail-label">Tarih Aralığı</div>
+                    <div class="detail-value" id="campaignDateRange"></div>
+                </div>
+                <div class="campaign-detail-item">
+                    <div class="detail-label">Durum</div>
+                    <div class="detail-value">
+                        <span class="badge rounded-pill" id="campaignStatusBadge"></span>
+                    </div>
+                </div>
+                <div class="campaign-detail-item">
+                    <div class="detail-label">Açıklama</div>
+                    <div class="detail-value" id="campaignDescription"></div>
+                </div>
+                <div class="campaign-detail-item">
+                    <div class="detail-label">İndirim Oranı</div>
+                    <div class="detail-value" id="campaignDiscountRate"></div>
+                </div>
+            </div>
+            <div class="modal-footer border-top-0">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Kapat</button>
+                <button type="button" class="btn btn-primary" id="editCampaignBtn">
+                    <i class="fas fa-edit me-2"></i>Düzenle
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript Libraries -->
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/locales/tr.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/locale/tr.min.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Initialize calendar
+        const calendarEl = document.getElementById('calendar');
+        const campaignsList = document.getElementById('campaignsList');
+        const filterToggle = document.getElementById('filterToggle');
+        const filterMenu = document.getElementById('filterMenu');
+        const filterDropdown = document.getElementById('filterDropdown');
+
+        // Toggle filter dropdown
+        filterToggle.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            filterDropdown.classList.toggle('show');
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!filterDropdown.contains(e.target)) {
+                filterDropdown.classList.remove('show');
+            }
+        });
+
+        // Color palette for events
+        const colorPalette = [
+            "#5e72e4", "#2dce89", "#fb6340", "#f5365c", "#11cdef",
+            "#5e72e4", "#2dce89", "#fb6340", "#f5365c", "#11cdef"
+        ];
+
+        // Initialize FullCalendar
+        const calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            locale: 'tr',
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth,timeGridWeek,timeGridDay'
+            },
+            buttonText: {
+                today: 'Bugün',
+                month: 'Ay',
+                week: 'Hafta',
+                day: 'Gün'
+            },
+            events: '/Admin/Discount/GetDiscountsForCalendar',
+            eventClick: function (info) {
+                const event = info.event;
+                const modal = new bootstrap.Modal(document.getElementById('campaignModal'));
+
+                // Set modal title
+                document.getElementById('campaignModalLabel').textContent = event.title;
+
+                // Format dates
+                const startDate = moment(event.start).format('DD MM YYYY, HH:mm');
+                const endDate = moment(event.end).format('DD MM YYYY, HH:mm');
+                document.getElementById('campaignDateRange').textContent = `${startDate} - ${endDate}`;
+
+                // Set status
+                const now = moment();
+                const start = moment(event.start);
+                const end = moment(event.end);
+                let statusText, statusClass;
+
+                if (now.isBefore(start)) {
+                    statusText = 'Yaklaşan';
+                    statusClass = 'bg-warning';
+                } else if (now.isBetween(start, end)) {
+                    statusText = 'Aktif';
+                    statusClass = 'bg-success';
+                } else {
+                    statusText = 'Tamamlanan';
+                    statusClass = 'bg-secondary';
+                }
+
+                const statusBadge = document.getElementById('campaignStatusBadge');
+                statusBadge.textContent = statusText;
+                statusBadge.className = `badge rounded-pill ${statusClass}`;
+
+                // Set other details
+                document.getElementById('campaignDescription').textContent =
+                    event.extendedProps.description || 'Açıklama yok';
+                document.getElementById('campaignDiscountRate').textContent =
+                    event.extendedProps.discountRate ? `${event.extendedProps.discountRate}%` : 'Belirtilmemiş';
+
+                // Set edit button link
+                document.getElementById('editCampaignBtn').onclick = function () {
+                    window.location.href = `/Admin/Discount/Edit/${event.id}`;
+                };
+
+                modal.show();
+            },
+            eventDidMount: function (info) {
+                // Assign colors based on event title hash
+                const title = info.event.title;
+                const hash = title.split('').reduce((acc, char) => {
+                    return char.charCodeAt(0) + ((acc << 5) - acc);
+                }, 0);
+                const colorIndex = Math.abs(hash) % colorPalette.length;
+                const eventColor = colorPalette[colorIndex];
+
+                // Apply styles
+                info.el.style.backgroundColor = eventColor;
+                info.el.style.borderColor = eventColor;
+                info.el.style.color = 'white';
+
+                // Add hover effect
+                info.el.addEventListener('mouseenter', () => {
+                    info.el.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
+                    info.el.style.transform = 'translateY(-2px)';
+                });
+
+                info.el.addEventListener('mouseleave', () => {
+                    info.el.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.1)';
+                    info.el.style.transform = 'translateY(0)';
+                });
+            },
+            height: 'auto',
+            navLinks: true,
+            dayMaxEvents: true,
+            eventTimeFormat: {
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false
+            }
+        });
+
+        calendar.render();
+
+        // Load campaigns
+        async function fetchCampaigns(filter = 'all') {
+            try {
+                const response = await fetch('/Admin/Discount/GetDiscounts');
+                const campaigns = await response.json();
+
+                // Clear loading state
+                campaignsList.innerHTML = '';
+
+                if (campaigns.length === 0) {
+                    campaignsList.innerHTML = `
+                        <div class="text-center py-5">
+                            <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">Henüz kampanya bulunmamaktadır</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                // Filter campaigns
+                const now = moment();
+                let filteredCampaigns = campaigns;
+
+                if (filter !== 'all') {
+                    filteredCampaigns = campaigns.filter(campaign => {
+                        const start = moment(campaign.startDateTime);
+                        const end = moment(campaign.endDateTime);
+
+                        if (filter === 'upcoming') return now.isBefore(start);
+                        if (filter === 'active') return now.isBetween(start, end);
+                        if (filter === 'completed') return now.isAfter(end);
+                        return true;
+                    });
+                }
+
+                // Sort by start date
+                filteredCampaigns.sort((a, b) => {
+                    return new Date(a.startDateTime) - new Date(b.startDateTime);
+                });
+
+                // Render campaigns
+                filteredCampaigns.forEach(campaign => {
+                    const start = moment(campaign.startDateTime);
+                    const end = moment(campaign.endDateTime);
+
+                    let statusClass, statusText;
+
+                    if (now.isBefore(start)) {
+                        statusClass = 'upcoming';
+                        statusText = 'Yaklaşan';
+                    } else if (now.isBetween(start, end)) {
+                        statusClass = 'active';
+                        statusText = 'Aktif';
+                    } else {
+                        statusClass = 'completed';
+                        statusText = 'Tamamlanan';
+                    }
+
+                    const campaignCard = document.createElement('div');
+                    campaignCard.className = `campaign-card ${statusClass} p-3`;
+                    campaignCard.innerHTML = `
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h6 class="mb-1 fw-bold">${campaign.name}</h6>
+                                <div class="campaign-date small">
+                                    ${start.format('DD MMM')} - ${end.format('DD MMM YYYY')}
+                                </div>
+                            </div>
+                            <span class="campaign-status status-${statusClass}">${statusText}</span>
+                        </div>
+                        <div class="mt-2 small text-muted">
+                            ${campaign.description || 'Açıklama yok'}
+                        </div>
+                    `;
+
+                    // Add click event to show details
+                    campaignCard.addEventListener('click', () => {
+                        const event = calendar.getEventById(campaign.id);
+                        if (event) {
+                            calendar.dispatchEvent({
+                                type: 'eventClick',
+                                el: document.createElement('div'),
+                                event: event,
+                                jsEvent: new MouseEvent('click'),
+                                view: calendar.view
+                            });
+                        }
+                    });
+
+                    campaignsList.appendChild(campaignCard);
+                });
+
+            } catch (error) {
+                console.error('Error loading campaigns:', error);
+                campaignsList.innerHTML = `
+                    <div class="alert alert-danger">
+                        Kampanyalar yüklenirken bir hata oluştu. Lütfen sayfayı yenileyin.
+                    </div>
+                `;
+            }
+        }
+
+        // Initialize with all campaigns
+        fetchCampaigns();
+
+        // Filter event listeners
+        document.addEventListener('click', function (e) {
+            if (e.target.classList.contains('filter-option')) {
+                e.preventDefault();
+
+                // Update active state
+                document.querySelectorAll('.filter-option').forEach(opt => {
+                    opt.classList.remove('active');
+                });
+                e.target.classList.add('active');
+
+                // Filter campaigns
+                const filter = e.target.dataset.filter;
+                fetchCampaigns(filter);
+
+                // Close dropdown
+                filterDropdown.classList.remove('show');
+            }
+        });
+    });
+</script>

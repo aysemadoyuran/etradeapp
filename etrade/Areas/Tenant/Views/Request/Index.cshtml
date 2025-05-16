@@ -1,0 +1,197 @@
+<div class="card shadow border-0">
+    <div class="card-header bg-white border-bottom">
+        <h5 class="mb-0">İptal Talepleri Yönetimi</h5>
+        <p class="text-muted mb-0">Sistemdeki tüm iptal taleplerini buradan yönetebilirsiniz</p>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table id="cancellationRequestsTable" class="table table-hover align-middle">
+                <thead class="thead-light">
+                    <tr>
+                        <th class="text-center">#</th>
+                        <th>Lisans ID</th>
+                        <th>Alan Adı</th>
+                        <th>Talep Nedeni</th>
+                        <th>Talep Tarihi</th>
+                        <th class="text-center">Onay Durumu</th>
+                        <th class="text-center">Tamamlandı mı?</th>
+                        <th class="text-center">İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .card {
+            border-radius: 0.5rem;
+            overflow: hidden;
+        }
+        
+        .table {
+            margin-bottom: 0;
+        }
+        
+        .table th {
+            font-weight: 600;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #6c757d;
+            vertical-align: middle;
+            padding: 1rem 0.75rem;
+            background-color: #f8f9fa;
+        }
+        
+        .table td {
+            padding: 0.75rem;
+            vertical-align: middle;
+            border-top: 1px solid #f1f1f1;
+        }
+        
+        .table-hover tbody tr:hover {
+            background-color: rgba(0, 123, 255, 0.03);
+        }
+        
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.35em 0.65em;
+            font-size: 0.75em;
+            font-weight: 600;
+            line-height: 1;
+            text-align: center;
+            white-space: nowrap;
+            vertical-align: baseline;
+            border-radius: 0.25rem;
+        }
+        
+        .badge-approved {
+            background-color: rgba(40, 167, 69, 0.1);
+            color: #28a745;
+        }
+        
+        .badge-rejected {
+            background-color: rgba(220, 53, 69, 0.1);
+            color: #dc3545;
+        }
+        
+        .badge-completed {
+            background-color: rgba(23, 162, 184, 0.1);
+            color: #17a2b8;
+        }
+        
+        .badge-pending {
+            background-color: rgba(255, 193, 7, 0.1);
+            color: #ffc107;
+        }
+        
+        .btn-detail {
+            border-radius: 4px;
+            font-weight: 500;
+            font-size: 0.75rem;
+            padding: 0.35rem 0.75rem;
+            transition: all 0.2s;
+        }
+        
+        .reason-cell {
+            max-width: 250px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .status-icon {
+            font-size: 0.9em;
+        }
+    </style>
+}
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            function formatDate(dateString) {
+                const options = { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+                return new Date(dateString).toLocaleDateString('tr-TR', options);
+            }
+
+            function getStatusBadge(isApproved, isCompleted) {
+                if (isCompleted) {
+                    return `<span class="status-badge badge-completed">
+                                <i class="fas fa-check-circle status-icon"></i> Tamamlandı
+                            </span>`;
+                }
+                return isApproved 
+                    ? `<span class="status-badge badge-approved">
+                            <i class="fas fa-check-circle status-icon"></i> Onaylandı
+                        </span>`
+                    : `<span class="status-badge badge-rejected">
+                            <i class="fas fa-times-circle status-icon"></i> Onaylanmadı
+                        </span>`;
+            }
+
+            function getCompletionBadge(isCompleted) {
+                return isCompleted 
+                    ? `<span class="status-badge badge-completed">
+                            <i class="fas fa-check status-icon"></i> Tamamlandı
+                        </span>`
+                    : `<span class="status-badge badge-pending">
+                            <i class="fas fa-clock status-icon"></i> Beklemede
+                        </span>`;
+            }
+
+            $.ajax({
+                url: '/Tenant/Request/GetCancellationRequests',
+                type: 'GET',
+                success: function (data) {
+                    var tbody = $('#cancellationRequestsTable tbody');
+                    tbody.empty();
+
+                    if (data.length === 0) {
+                        tbody.append(`
+                            <tr>
+                                <td colspan="8" class="text-center py-4 text-muted">
+                                    <i class="fas fa-info-circle me-2"></i>Kayıtlı iptal talebi bulunamadı
+                                </td>
+                            </tr>
+                        `);
+                        return;
+                    }
+
+                    $.each(data, function (index, item) {
+                        var row = `
+                            <tr>
+                                <td class="text-center">${index + 1}</td>
+                                <td><span class="badge bg-light text-dark">${item.licenseId}</span></td>
+                                <td><strong>${item.domain}</strong></td>
+                                <td class="reason-cell" title="${item.reason}">${item.reason}</td>
+                                <td>${formatDate(item.requestDate)}</td>
+                                <td class="text-center">${getStatusBadge(item.isApproved, item.isCompleted)}</td>
+                                <td class="text-center">${getCompletionBadge(item.isCompleted)}</td>
+                                <td class="text-center">
+                                    <a href="/Tenant/Request/RequestDetail/${item.id}" class="btn btn-detail btn-primary">
+                                        <i class="fas fa-eye me-1"></i> Detay
+                                    </a>
+                                </td>
+                            </tr>`;
+                        tbody.append(row);
+                    });
+                },
+                error: function () {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Hata',
+                        text: 'İptal talepleri alınamadı. Lütfen sayfayı yenileyin.',
+                        confirmButtonColor: '#3085d6',
+                    });
+                }
+            });
+        });
+    </script>
+}

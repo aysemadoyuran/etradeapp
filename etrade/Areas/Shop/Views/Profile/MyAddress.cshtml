@@ -1,0 +1,480 @@
+<section class="py-5">
+    <div class="container">
+        <div class="row g-4">
+            <!-- Profil Sidebar -->
+            <div class="col-lg-4">
+                @await Html.PartialAsync("_ProfilePartialView")
+            </div>
+
+            <!-- Adresler Ana Alan -->
+            <div class="col-lg-8">
+                <div class="card border-0 shadow-sm rounded-3 overflow-hidden">
+                    <div class="card-header bg-white py-3 border-bottom">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">Kayıtlı Adreslerim</h5>
+                            <button class="btn btn-dark rounded-pill px-4" data-bs-toggle="modal"
+                                data-bs-target="#addressModal">
+                                <i class="fas fa-plus me-2"></i>Yeni Adres Ekle
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="card-body p-0">
+                        <!-- Adres Listesi -->
+                        <div class="list-group list-group-flush" id="addressListContainer">
+                            <!-- Adresler buraya dinamik olarak yüklenecek -->
+                        </div>
+                        
+                        <!-- Sayfalama -->
+                        <div class="card-footer bg-white d-flex justify-content-center py-3" id="paginationContainer">
+                            <nav aria-label="Page navigation">
+                                <ul class="pagination pagination-sm mb-0">
+                                    <li class="page-item disabled" id="prevPage">
+                                        <a class="page-link" href="#" tabindex="-1" aria-disabled="true">
+                                            <i class="fas fa-chevron-left"></i>
+                                        </a>
+                                    </li>
+                                    <li class="page-item active"><span class="page-link" id="currentPage">1</span></li>
+                                    <li class="page-item" id="nextPage">
+                                        <a class="page-link" href="#">
+                                            <i class="fas fa-chevron-right"></i>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Adres Modal -->
+<div class="modal fade" id="addressModal" tabindex="-1" aria-labelledby="addressModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fs-5" id="addressModalLabel">Yeni Adres Ekle</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body pt-0 px-4">
+                <form id="addressForm" action="/Shop/Profile/SaveAddress" method="post">
+                    <input type="hidden" id="addressId" name="Id">
+                    
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="NameSurname" class="form-label">Ad Soyad</label>
+                            <input type="text" class="form-control" id="NameSurname" name="NameSurname" placeholder="Ad Soyad" required>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label for="addressTitle" class="form-label">Adres Başlığı</label>
+                            <input type="text" class="form-control" id="addressTitle" name="AddressTitle" placeholder="Ev, İş, Yazlık..." required>
+                        </div>
+                        
+                        <div class="col-md-3">
+                            <label for="city" class="form-label">İl</label>
+                            <select class="form-select" id="city" name="CityId" onchange="loadDistricts()" required>
+                                <option value="">Seçiniz</option>
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-3">
+                            <label for="district" class="form-label">İlçe</label>
+                            <select class="form-select" id="district" name="DistrictId" onchange="loadNeighborhoods()" required>
+                                <option value="">Seçiniz</option>
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-3">
+                            <label for="neighborhood" class="form-label">Semt</label>
+                            <select class="form-select" id="neighborhood" name="NeighborhoodId" onchange="loadVillages()" required>
+                                <option value="">Seçiniz</option>
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-3">
+                            <label for="village" class="form-label">Mahalle</label>
+                            <select class="form-select" id="village" name="VillageId" required>
+                                <option value="">Seçiniz</option>
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label for="phoneNumber" class="form-label">Telefon Numarası</label>
+                            <input type="tel" class="form-control" id="phoneNumber" name="PhoneNumber" placeholder="05XX XXX XX XX" required>
+                        </div>
+                        
+                        <div class="col-12">
+                            <label for="addressDetail" class="form-label">Açık Adres</label>
+                            <textarea class="form-control" id="addressDetail" name="AddressDetail" rows="3" placeholder="Açık adresinizi giriniz..." required></textarea>
+                        </div>
+                    </div>
+                    
+                    <div class="modal-footer border-0 pt-4">
+                        <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">İptal</button>
+                        <button type="submit" class="btn btn-dark rounded-pill px-4">Kaydet</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- CSS -->
+<style>
+    .page-header {
+        background-size: cover;
+        background-position: center;
+        position: relative;
+    }
+    
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.3);
+    }
+    
+    .address-card {
+        transition: all 0.3s ease;
+        border-left: 4px solid transparent;
+    }
+    
+    .address-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        border-left-color: #6e8efb;
+    }
+    
+    .address-actions .btn {
+        padding: 0.25rem 0.75rem;
+        font-size: 0.875rem;
+    }
+    
+    .address-type {
+        font-weight: 600;
+        color: #6e8efb;
+    }
+    
+    .no-address-message {
+        padding: 2rem;
+        text-align: center;
+        color: #6c757d;
+    }
+</style>
+
+<link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+
+<!-- SweetAlert2 JS -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
+<script>
+    $(document).ready(function () {
+        // Sayfa yüklendiğinde illeri getir
+        $.get("/Shop/Profile/GetIller", function (data) {
+            var $cityDropdown = $("#city");
+            $cityDropdown.empty().append('<option value="">Seçiniz</option>');
+            $.each(data, function (index, item) {
+                $cityDropdown.append('<option value="' + item.id + '">' + item.ad + '</option>');
+            });
+        }).fail(function () {
+            console.error("İller alınırken hata oluştu.");
+        });
+    });
+
+    // İl seçildiğinde ilçeleri yükle
+    function loadDistricts() {
+        var ilId = $("#city").val();
+        if (ilId) {
+            $.get("/Shop/Profile/GetIlceler", { ilId: ilId }, function (data) {
+                var $districtDropdown = $("#district");
+                $districtDropdown.empty().append('<option value="">Seçiniz</option>');
+                $.each(data, function (index, item) {
+                    $districtDropdown.append('<option value="' + item.id + '">' + item.ad + '</option>');
+                });
+            }).fail(function () {
+                console.error("İlçeler alınırken hata oluştu.");
+            });
+        }
+    }
+
+    // İlçe seçildiğinde semtleri yükle
+    function loadNeighborhoods() {
+        var ilceId = $("#district").val();
+        if (ilceId) {
+            $.get("/Shop/Profile/GetSemtler", { ilceId: ilceId }, function (data) {
+                var $neighborhoodDropdown = $("#neighborhood");
+                $neighborhoodDropdown.empty().append('<option value="">Seçiniz</option>');
+                $.each(data, function (index, item) {
+                    $neighborhoodDropdown.append('<option value="' + item.id + '">' + item.semtAdi + '</option>');
+                });
+            }).fail(function () {
+                console.error("Semtler alınırken hata oluştu.");
+            });
+        }
+    }
+
+    // Semt seçildiğinde mahalleleri yükle
+    function loadVillages() {
+        var semtId = $("#neighborhood").val();
+        if (semtId) {
+            $.get("/Shop/Profile/GetMahalleler", { semtId: semtId }, function (data) {
+                var $villageDropdown = $("#village");
+                $villageDropdown.empty().append('<option value="">Seçiniz</option>');
+                $.each(data, function (index, item) {
+                    $villageDropdown.append('<option value="' + item.id + '">' + item.mahalleAdi + '</option>');
+                });
+            }).fail(function () {
+                console.error("Mahalleler alınırken hata oluştu.");
+            });
+        }
+    }
+</script>
+
+<script>
+    $(document).ready(function () {
+        var currentPage = 1;
+        var itemsPerPage = 3;
+        var addressData = []; // Adres verilerini buraya alacağız
+
+        // Adres verilerini al
+        $.get("/Shop/Profile/GetUserAddresses", function (data) {
+            addressData = data;
+
+            // Adresleri ID'ye göre sıralama (yeni adresler önce gelsin)
+            addressData.sort(function (a, b) {
+                return b.id - a.id; // ID'ye göre azalan sıralama
+            });
+
+            // Sayfalandırmayı başlat
+            loadPage(currentPage);
+        }).fail(function () {
+            console.error("Adresler alınırken hata oluştu.");
+        });
+
+        // Sayfa yüklendiğinde adresleri 3'erli gruplarda göster
+        function loadPage(page) {
+            var start = (page - 1) * itemsPerPage;
+            var end = start + itemsPerPage;
+
+            var $addressList = $("#addressListContainer");
+            $addressList.empty();
+
+            // Eğer adres yoksa mesaj göster
+            if (addressData.length === 0) {
+                $addressList.append(`
+                    <div class="no-address-message">
+                        <i class="fas fa-map-marker-alt fa-3x mb-3"></i>
+                        <h5 class="mb-2">Kayıtlı adresiniz bulunmuyor</h5>
+                        <p class="text-muted">Yeni adres eklemek için "Yeni Adres Ekle" butonuna tıklayın.</p>
+                    </div>
+                `);
+                $("#paginationContainer").hide(); // Sayfalama kısmını gizle
+                return;
+            } else {
+                $("#paginationContainer").show(); // Sayfalama kısmını göster
+            }
+
+            var currentAddresses = addressData.slice(start, end);
+
+            $.each(currentAddresses, function (index, item) {
+                $addressList.append(`
+                    <div class="list-group-item py-3 address-card">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="me-3">
+                                <div class="d-flex align-items-center mb-2">
+                                    <h6 class="mb-0 me-2 address-type">${item.title}</h6>
+                                    ${item.isDefault ? '<span class="badge bg-primary">Varsayılan</span>' : ''}
+                                </div>
+                                <p class="mb-1 text-muted"><i class="fas fa-user me-2"></i>${item.nameSurname}</p>
+                                <p class="mb-1 text-muted"><i class="fas fa-phone me-2"></i>${item.telefon}</p>
+                                <p class="mb-1 text-muted">
+                                    <i class="fas fa-map-marker-alt me-2"></i>
+                                    ${item.city} / ${item.district} / ${item.neighborhood} / ${item.village}
+                                </p>
+                                <p class="mb-0 text-muted">${item.acikAdres}</p>
+                            </div>
+                            <div class="address-actions d-flex flex-column">
+                                <button class="btn btn-sm btn-outline-dark mb-2 updateAddress" data-id="${item.id}">
+                                    <i class="fas fa-edit me-1"></i>Düzenle
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger deleteAddress" data-id="${item.id}">
+                                    <i class="fas fa-trash me-1"></i>Sil
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `);
+            });
+
+            $("#currentPage").text(currentPage);
+            $("#prevPage").toggleClass("disabled", currentPage === 1);
+            $("#nextPage").toggleClass("disabled", end >= addressData.length);
+        }
+
+        // Önceki sayfa butonuna tıklama işlemi
+        $("#prevPage").click(function () {
+            if (currentPage > 1) {
+                currentPage--;
+                loadPage(currentPage);
+            }
+        });
+
+        // Sonraki sayfa butonuna tıklama işlemi
+        $("#nextPage").click(function () {
+            var totalPages = Math.ceil(addressData.length / itemsPerPage);
+            if (currentPage < totalPages) {
+                currentPage++;
+                loadPage(currentPage);
+            }
+        });
+
+        // Silme butonuna tıklama işlemi
+        $(document).on("click", ".deleteAddress", function () {
+            var addressId = $(this).data("id");
+            Swal.fire({
+                title: 'Emin misiniz?',
+                text: "Bu adresi silmek istediğinizden emin misiniz?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Evet, sil!',
+                cancelButtonText: 'Hayır'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: '/Shop/Profile/DeleteAddress', // Silme işlemine yönelik API
+                        method: 'POST',
+                        data: { id: addressId },
+                        success: function (response) {
+                            // Adres verisini listeden kaldır ve sayfayı güncelle
+                            addressData = addressData.filter(function (item) {
+                                return item.id !== addressId;
+                            });
+                            loadPage(currentPage); // Sayfayı yeniden yükle
+                            Swal.fire(
+                                'Silindi!',
+                                'Adres başarıyla silindi.',
+                                'success'
+                            );
+                        },
+                        error: function () {
+                            Swal.fire(
+                                'Hata!',
+                                'Adres silinirken bir hata oluştu.',
+                                'error'
+                            );
+                        }
+                    });
+                }
+            });
+        });
+
+        // Yeni Adres Ekle Butonuna Tıklama İşlemi
+        $(document).on("click", "[data-bs-target='#addressModal']", function () {
+            $('#addressModalLabel').text('Yeni Adres Ekle');
+            $('#addressForm').trigger("reset");  // Formu temizle
+            $('#addressId').val('');  // ID'yi boşalt
+            $('#addressForm').attr("action", "/Shop/Profile/SaveAddress");  // Action'ı kaydetmeye ayarla
+            $('#city').val(''); // Şehir dropdown'u boş gelsin
+            $('#district').val(''); // İlçe dropdown'u boş gelsin
+            $('#neighborhood').val(''); // Semt dropdown'u boş gelsin
+            $('#village').val(''); // Mahalle dropdown'u boş gelsin
+        });
+
+        // Güncelleme butonuna tıklama işlemi
+        $(document).on("click", ".updateAddress", function () {
+            var addressId = $(this).data("id");
+            console.log('Adres ID:', addressId); // Bu satırda ID'yi kontrol edin
+
+            var address = addressData.find(function (item) {
+                return item.id === addressId;
+            });
+
+            if (address) {
+                console.log('Adres verisi bulundu:', address); // Adres verisi bulunuyorsa bunu kontrol edin
+            } else {
+                console.log('Adres verisi bulunamadı');
+            }
+
+            // Modal başlığını güncelle
+            $('#addressModalLabel').text('Adres Güncelle');
+
+            // Modal formunu güncelle
+            $('#addressId').val(address.id);
+            $('#NameSurname').val(address.nameSurname); // Burada "nameSurname" küçük harfle yazılmıştı
+            $('#addressTitle').val(address.title);
+
+            $('#phoneNumber').val(address.telefon);
+            $('#addressDetail').val(address.acikAdres);
+
+            // Şehir seçimi
+            $('#city').val(address.cityId); // Şehri seçili yap
+
+            // İlçeleri yükle ve seçili yap
+            loadDistricts(address.cityId, address.districtId, function () {
+                // Semtleri yükle ve seçili yap
+                loadNeighborhoods(address.districtId, address.neighborhoodId, function () {
+                    // Mahalleleri yükle ve seçili yap
+                    loadVillages(address.neighborhoodId, address.villageId);
+                });
+            });
+
+            // Formun action'ını güncelle
+            $('#addressForm').attr("action", "/Shop/Profile/UpdateAddress");  // Action'ı güncellemeye ayarla
+
+            // Modalı göster
+            $('#addressModal').modal('show');
+        });
+
+        // İlçeleri yükleyen fonksiyon
+        function loadDistricts(cityId, selectedDistrictId, callback) {
+            $.get("/Shop/Profile/GetIlceler", { ilId: cityId }, function (data) {
+                var $districtDropdown = $("#district");
+                $districtDropdown.empty().append('<option value="">Seçiniz</option>');
+                $.each(data, function (index, item) {
+                    var selected = item.id === selectedDistrictId ? 'selected' : '';
+                    $districtDropdown.append('<option value="' + item.id + '" ' + selected + '>' + item.ad + '</option>');
+                });
+                if (callback) callback();  // Callback fonksiyonunu çağır
+            }).fail(function () {
+                console.error("İlçeler alınırken hata oluştu.");
+            });
+        }
+
+        // Semtleri yükleyen fonksiyon
+        function loadNeighborhoods(districtId, selectedNeighborhoodId, callback) {
+            $.get("/Shop/Profile/GetSemtler", { ilceId: districtId }, function (data) {
+                var $neighborhoodDropdown = $("#neighborhood");
+                $neighborhoodDropdown.empty().append('<option value="">Seçiniz</option>');
+                $.each(data, function (index, item) {
+                    var selected = item.id === selectedNeighborhoodId ? 'selected' : '';
+                    $neighborhoodDropdown.append('<option value="' + item.id + '" ' + selected + '>' + item.semtAdi + '</option>');
+                });
+                if (callback) callback();  // Callback fonksiyonunu çağır
+            }).fail(function () {
+                console.error("Semtler alınırken hata oluştu.");
+            });
+        }
+
+        // Mahalleleri yükleyen fonksiyon
+        function loadVillages(neighborhoodId, selectedVillageId) {
+            $.get("/Shop/Profile/GetMahalleler", { semtId: neighborhoodId }, function (data) {
+                var $villageDropdown = $("#village");
+                $villageDropdown.empty().append('<option value="">Seçiniz</option>');
+                $.each(data, function (index, item) {
+                    var selected = item.id === selectedVillageId ? 'selected' : '';
+                    $villageDropdown.append('<option value="' + item.id + '" ' + selected + '>' + item.mahalleAdi + '</option>');
+                });
+            }).fail(function () {
+                console.error("Mahalleler alınırken hata oluştu.");
+            });
+        }
+    });
+</script>

@@ -1,0 +1,124 @@
+@model IEnumerable<dynamic>  // Dinamik tipteki veriyi alıyoruz
+
+    <div class="card">
+        <div class="card-body">
+            @if (Model != null && Model.Any())
+            {
+                <h5>Ürüne Ait Renkler ve Fotoğraflar</h5>
+                <table class="table table-bordered table-striped table-centered">
+                    <thead>
+                        <tr>
+                            <th>Renk</th>
+                            <th>Fotoğraf</th>
+                            <th>#</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var color in Model)
+                        {
+                            <tr>
+                                <td>@color.ColorName</td>
+                                <td class="photo-column">
+                                    @foreach (var imageUrl in color.ImageUrls)
+                                    {
+                                        <div class="photo-item">
+                                            <img src="@imageUrl" alt="Color Image" class="color-image" onclick="openModal('@imageUrl')" />
+                                        </div>
+                                    }
+                                </td>
+                                <td>
+                                    <!-- Silme butonu eklemek isterseniz buraya bir buton ekleyebilirsiniz -->
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <div class="alert alert-info">
+                    Bu ürüne ait renk ve fotoğraf bulunmamaktadır.
+                </div>
+            }
+        </div>
+    </div>
+    
+    <!-- Modal -->
+    <div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="imageModalLabel">Fotoğraf Görüntüle</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <img id="modalImage" src="" alt="Fotoğraf" class="img-fluid" />
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" id="deleteBtn" onclick="deleteImage()">Sil</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let imageToDelete = '';
+    
+        // Modalı açmak için fonksiyon
+        function openModal(imageUrl) {
+            imageToDelete = imageUrl; // Hangi fotoğrafın silineceği bilgisi
+            $('#modalImage').attr('src', imageUrl); // Fotoğrafı modalda göster
+            $('#imageModal').modal('show'); // Modalı göster
+        }
+    
+        // Silme işlemi için fonksiyon
+        function deleteImage() {
+            if (confirm('Bu fotoğrafı silmek istediğinize emin misiniz?')) {
+                $.ajax({
+                    url: '/Admin/Product/DeleteImage', // Silme işlemi için bir URL
+                    method: 'POST',
+                    data: { imageUrl: imageToDelete },
+                    success: function(response) {
+                        if (response.success) {
+                            alert('Fotoğraf başarıyla silindi');
+                            location.reload(); // Sayfayı yenileyerek fotoğrafı kaldırabilirsiniz
+                        } else {
+                            alert('Silme işlemi sırasında bir hata oluştu.');
+                        }
+                    },
+                    error: function() {
+                        alert('Bir hata oluştu.');
+                    }
+                });
+            }
+        }
+    </script>
+    
+    <style>
+        /* Tabloyu daha düzenli hale getirelim */
+        .table-centered {
+            text-align: center;
+        }
+    
+        /* Resimler için maksimum boyutlandırma */
+        .color-image {
+            max-width: 60px;
+            max-height: 60px;
+            object-fit: cover;
+            cursor: pointer;
+            margin: 5px;
+        }
+    
+        /* Fotoğraflar için düzenleme */
+        .photo-column {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+    
+        .photo-item {
+            margin: 5px;
+        }
+    </style>
+    

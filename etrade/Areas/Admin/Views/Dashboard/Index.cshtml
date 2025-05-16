@@ -1,0 +1,618 @@
+@model ShippingFeeViewModel
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+
+    <!-- CSS ve Script Dosyaları -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+
+    <style>
+        .equal-height-card {
+            min-height: 400px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- İlk Satır - Özet Kartlar -->
+    <div class="row">
+        <!-- En Çok Satış Yapılan İl -->
+        <div class="col-xl col-lg-4 col-md-6">
+            <div class="card">
+                <div class="card-body overflow-hidden position-relative">
+                    <iconify-icon icon="iconamoon:3d-duotone" class="fs-36 text-info"></iconify-icon>
+                    <h3 class="mb-0 fw-bold mt-3 mb-1" id="mostSoldCity">$59.6k</h3>
+                    <p class="text-muted">En Çok Satış Yapılan İl</p>
+                    <span class="badge fs-12 badge-soft-success" id="total"><i
+                            class="ti ti-arrow-badge-up"></i>8.72%</span>
+                    <i class="bx bx-doughnut-chart widget-icon"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Toplam Kazanç -->
+        <div class="col-xl col-lg-4 col-md-6">
+            <div class="card">
+                <div class="card-body overflow-hidden position-relative">
+                    <iconify-icon icon="iconamoon:category-duotone" class="fs-36 text-success"></iconify-icon>
+                    <h3 class="mb-0 fw-bold mt-3 mb-1" id="totalRevenue">$24.03k</h3>
+                    <p class="text-muted">Toplam Kazanç</p>
+                    <span class="badge fs-12 badge-soft-success" id="totalCount"><i
+                            class="ti ti-arrow-badge-down"></i>3.28%</span>
+                    <i class="bx bx-bar-chart-alt-2 widget-icon"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Toplam İade Tutarı -->
+        <div class="col-xl col-lg-4 col-md-6">
+            <div class="card">
+                <div class="card-body overflow-hidden position-relative">
+                    <iconify-icon icon="iconamoon:store-duotone" class="fs-36 text-purple"></iconify-icon>
+                    <h3 class="mb-0 fw-bold mt-3 mb-1" id="totalref">$48.7k</h3>
+                    <p class="text-muted">Toplam İade Tutarı</p>
+                    <span class="badge fs-12 badge-soft-danger" id="totalrefcount"><i
+                            class="ti ti-arrow-badge-down"></i>5.69%</span>
+                    <i class="bx bx-building-house widget-icon"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Teslim Edilen Sipariş -->
+        <div class="col-xl col-lg-6 col-md-6">
+            <div class="card">
+                <div class="card-body overflow-hidden position-relative">
+                    <iconify-icon icon="iconamoon:gift-duotone" class="fs-36 text-orange"></iconify-icon>
+                    <h3 class="mb-0 fw-bold mt-3 mb-1" id="complete">$11.3k</h3>
+                    <p class="text-muted">Teslim Edilen Sipariş</p>
+                    <span class="badge fs-12 badge-soft-success" id="completecount"><i
+                            class="ti ti-arrow-badge-up"></i>10.58%</span>
+                    <i class="bx bx-bowl-hot widget-icon"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- En Çok Satılan Ürün -->
+        <div class="col-xl col-lg-6 col-md-12">
+            <div class="card">
+                <div class="card-body overflow-hidden position-relative">
+                    <iconify-icon icon="iconamoon:certificate-badge-duotone" class="fs-36 text-warning"></iconify-icon>
+                    <h4 class="mb-0 fw-bold mt-3 mb-1" id="code" data-bs-toggle="tooltip" data-bs-placement="top"
+                        title="">$5.5k</h4>
+                    <p class="text-muted">En Çok Satılan Ürün</p>
+                    <span class="badge fs-12 badge-soft-success" id="codeCount"><i
+                            class="ti ti-arrow-badge-up"></i>2.25%</span>
+                    <i class="bx bx-cricket-ball widget-icon"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- İkinci Satır - Stok Hareketleri ve Kampanyalar -->
+    <div class="row">
+        <!-- Stok Hareketleri -->
+        <div class="col-xl-6">
+            <div class="card equal-height-card">
+                <div class="card-body p-0">
+                    <div class="pt-3 px-3">
+                        <div class="float-end">
+                            <a href="/Admin/Stock/Index" class="text-primary">
+                                Tümünü Görüntüle <i class="bx bx-export ms-1"></i>
+                            </a>
+                        </div>
+                        <h5 class="card-title mb-3">Bugüne Ait Son 5 Stok Hareketi</h5>
+                    </div>
+                    <div class="mb-3" data-simplebar style="max-height: 324px">
+                        <div class="table-responsive table-centered table-nowrap px-3">
+                            <table class="table table-hover mb-0" id="stockMovementTable">
+                                <thead>
+                                    <tr>
+                                        <th>Ürün</th>
+                                        <th>Adet</th>
+                                        <th>Hareket Türü</th>
+                                        <th>Saat</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="stockMovementBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Yaklaşan Kampanyalar -->
+        <div class="col-xl-6">
+            <div class="card equal-height-card">
+                <div class="card-body">
+                    <div class="dropdown float-end">
+                        <a href="/Admin/Discount/Calendar">
+                            Takvimi Görüntüle <i class='bx bx-calendar'></i>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-end">
+                            <a href="javascript:void(0);" class="dropdown-item"><i class="bx bx-list-ul me-2"></i>To
+                                Do</a>
+                            <a href="javascript:void(0);" class="dropdown-item"><i class="bx bx-line-chart me-2"></i>In
+                                Progress</a>
+                            <a href="javascript:void(0);" class="dropdown-item"><i
+                                    class="bx bx-check-square me-2"></i>Completed</a>
+                        </div>
+                    </div>
+                    <h5 class="card-title mb-3">Yaklaşan Kampanyalar</h5>
+                    <div id="upcomingCampaignList"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Üçüncü Satır - Kullanıcı İstatistikleri -->
+    <div class="row">
+        <!-- Üye Sayısı -->
+        <div class="col-md-6 col-xl-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="avatar-md bg-primary rounded">
+                                <i class="bx bx-layer avatar-title fs-24 text-white"></i>
+                            </div>
+                        </div>
+                        <div class="col-6 text-end">
+                            <p class="text-muted mb-0 text-truncate">Üye Sayısı</p>
+                            <h3 class="text-dark mt-1 mb-0" id="users">13, 647</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sadık Müşteri -->
+        <div class="col-md-6 col-xl-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="avatar-md bg-success rounded">
+                                <i class="bx bx-award avatar-title fs-24 text-white"></i>
+                            </div>
+                        </div>
+                        <div class="col-6 text-end">
+                            <p class="text-muted mb-0 text-truncate">Sadık Müşteri</p>
+                            <h3 class="text-dark mt-1 mb-0" id="frequentCustomersCount">9, 526</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Davet Kodu ile Gelenler -->
+        <div class="col-md-6 col-xl-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-3">
+                            <div class="avatar-md bg-danger rounded">
+                                <i class="bx bxs-backpack avatar-title fs-24 text-white"></i>
+                            </div>
+                        </div>
+                        <div class="col-9 text-end">
+                            <p class="text-muted mb-0 text-truncate">Davet Kodu ile Gelenler</p>
+                            <h3 class="text-dark mt-1 mb-0" id="GetUsersRegisteredWithInvitationCode">976</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hiç Sipariş Vermeyen -->
+        <div class="col-md-6 col-xl-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-3">
+                            <div class="avatar-md text-bg-warning rounded">
+                                <i class="bx bx-dollar-circle avatar-title fs-24"></i>
+                            </div>
+                        </div>
+                        <div class="col-9 text-end">
+                            <p class="text-muted mb-0">Hiç Sipariş Vermeyen</p>
+                            <h3 class="text-dark mt-1 mb-0" id="GetUsersWithNoOrders">$123</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dördüncü Satır - Ödeme Yöntemleri ve Satış Grafiği -->
+    <div class="row">
+        <!-- Ödeme Yöntemleri -->
+        <div class="col-lg-4">
+            <div class="card h-100">
+                <div class="card-body p-3">
+                    <h5 class="card-title">Kullanılan Ödeme Yöntemleri</h5>
+                    <div id="conversions" class="apex-charts mb-2 mt-3"></div>
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <p class="text-muted mb-2">Kredi Kartı</p>
+                            <h3 class="text-dark mb-3" id="creditRate">-</h3>
+                        </div>
+                        <div class="col-6">
+                            <p class="text-muted mb-2">Kapıda Ödeme</p>
+                            <h3 class="text-dark mb-3" id="cashRate">-</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- En Çok Satış Yapılan 10 İl -->
+        <div class="col-lg-4">
+            <div class="card h-100">
+                <div class="card-body p-3">
+                    <h4 class="card-title">En Çok Satış Yapılan 10 İl</h4>
+                    <div dir="ltr">
+                        <div id="salesChart"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Yeni 4'lük Kart -->
+        <div class="col-lg-4">
+
+            <div class="card h-100">
+
+                <div class="card-body p-3">
+                    <h4 class="card-title mb-3">Kargo Ücreti (₺)</h4>
+
+                    <!-- Alert container ekledik -->
+                    <div id="shipping-alert" class="mb-3"></div>
+
+                    <form id="shippingForm" asp-action="Edit" method="post">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-muted"></label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light">
+                                    <i class="bi bi-truck"></i>
+                                </span>
+                                <input asp-for="ShippingFee" class="form-control" placeholder="Kargo ücreti giriniz" />
+                            </div>
+                            <span asp-validation-for="ShippingFee" class="text-danger small"></span>
+                        </div>
+
+                        <div class="d-grid mt-4">
+                            <button type="submit" class="btn btn-primary fw-bold" id="submitButton">
+                                <i class="bi bi-check-circle me-1"></i> Güncelle
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    @section Scripts {
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                const form = document.getElementById("shippingForm");
+                const alertContainer = document.getElementById("shipping-alert");
+                const submitButton = document.getElementById("submitButton");
+
+                form.addEventListener("submit", async function (e) {
+                    e.preventDefault();
+
+                    // Yükleme durumu
+                    submitButton.disabled = true;
+                    submitButton.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Güncelleniyor...';
+
+                    try {
+                        const formData = new FormData(form);
+                        const response = await fetch(form.action, {
+                            method: "POST",
+                            headers: {
+                                'Accept': 'application/json',
+                                'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                            },
+                            body: formData
+                        });
+
+                        const result = await response.json();
+
+                        if (!response.ok) {
+                            throw new Error(result.message || 'Sunucu hatası');
+                        }
+
+                        // Başarılı yanıt
+                        showAlert(result.isSuccess ? 'success' : 'danger', result.message);
+
+                        // Başarılıysa input değerini güncelle
+                        if (result.isSuccess && result.updatedFee) {
+                            document.querySelector('input[name="ShippingFee"]').value = result.updatedFee;
+                        }
+                    } catch (error) {
+                        console.error("Hata oluştu", error);
+                        showAlert('danger', error.message || 'Bir hata oluştu');
+                    } finally {
+                        submitButton.disabled = false;
+                        submitButton.innerHTML = '<i class="bi bi-check-circle me-1"></i> Güncelle';
+                    }
+                });
+
+                function showAlert(type, message) {
+                    alertContainer.innerHTML = `
+                                <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                                    ${message}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
+                            `;
+
+                    // 5 saniye sonra otomatik kapat
+                    setTimeout(() => {
+                        const alert = alertContainer.querySelector('.alert');
+                        if (alert) {
+                            const bsAlert = new bootstrap.Alert(alert);
+                            bsAlert.close();
+                        }
+                    }, 5000);
+                }
+            });
+        </script>
+    }
+    <script>
+        // Satış Grafiği
+        fetch('/Admin/Dashboard/GetTopSalesCities')
+            .then(response => response.json())
+            .then(data => {
+                if (!data || data.length === 0) {
+                    console.error('Veri alınamadı veya eksik');
+                    return;
+                }
+
+                const labels = data.map(city => city.cityName);
+                const salesData = data.map(city => city.salesCount || 0);
+
+                if (labels.length === 0 || salesData.length === 0) {
+                    console.error('Etiketler veya veri eksik');
+                    return;
+                }
+
+                var options = {
+                    chart: {
+                        type: 'bar',
+                        height: 350
+                    },
+                    plotOptions: {
+                        bar: {
+                            horizontal: false,
+                            columnWidth: '55%',
+                            endingShape: 'rounded'
+                        }
+                    },
+                    dataLabels: {
+                        enabled: false
+                    },
+                    stroke: {
+                        show: true,
+                        width: 2,
+                        colors: ['transparent']
+                    },
+                    series: [{
+                        name: 'Satış Miktarı',
+                        data: salesData
+                    }],
+                    xaxis: {
+                        categories: labels
+                    },
+                    yaxis: {
+                        title: {
+                            text: 'Satış Miktarı'
+                        }
+                    },
+                    fill: {
+                        opacity: 1
+                    },
+                    tooltip: {
+                        y: {
+                            formatter: function (val) {
+                                return val + " adet";
+                            }
+                        }
+                    }
+                };
+
+                var chart = new ApexCharts(document.querySelector("#salesChart"), options);
+                chart.render();
+            })
+            .catch(error => console.error('Veri alınırken hata:', error));
+
+        // Dashboard Verilerini Yükle
+        document.addEventListener("DOMContentLoaded", () => {
+            // Bootstrap tooltipleri aktif et
+            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            tooltipTriggerList.map(el => new bootstrap.Tooltip(el));
+
+            Promise.all([
+                fetch('/admin/dashboard/GetCustomerUserCount').then(res => res.json()),
+                fetch('/admin/dashboard/GetFrequentCustomersCount').then(res => res.json()),
+                fetch('/admin/dashboard/GetUsersWithNoOrders').then(res => res.json()),
+                fetch('/admin/dashboard/GetUsersRegisteredWithInvitationCode').then(res => res.json()),
+                fetch('/admin/dashboard/getmostsoldcity').then(res => res.json()),
+                fetch('/admin/dashboard/gettotalsalesandrevenue').then(res => res.json()),
+                fetch('/admin/dashboard/GetTotalRefundedItemsAndAmount').then(res => res.json()),
+                fetch('/admin/dashboard/GetDeliveredOrderCount').then(res => res.json()),
+                fetch('/admin/dashboard/GetBestSellingProduct').then(res => res.json())
+            ])
+                .then(([
+                    userData,
+                    frequentCustomerData,
+                    noOrdersData,
+                    invitedUserData,
+                    mostSoldCityData,
+                    salesRevenueData,
+                    refundData,
+                    deliveredOrderData,
+                    bestSellingProductData
+                ]) => {
+                    // Kullanıcı verilerini güncelle
+                    document.getElementById("users").innerText = `${userData.customerUserCount || "Veri yok"} Kişi`;
+                    document.getElementById("frequentCustomersCount").innerText = `${frequentCustomerData.frequentCustomersCount || "Veri yok"} Kişi`;
+                    document.getElementById("GetUsersWithNoOrders").innerText = `${noOrdersData.usersWithNoOrdersCount || "Veri yok"} kişi`;
+                    document.getElementById("GetUsersRegisteredWithInvitationCode").innerText = `${invitedUserData.invitedUserCount || "Veri yok"} kişi`;
+
+                    // Satış verilerini güncelle
+                    document.getElementById("mostSoldCity").innerText = mostSoldCityData.city || "Veri yok";
+                    document.getElementById("total").innerText = `${mostSoldCityData.salesCount?.toLocaleString("tr-TR") ?? "0"} Sipariş`;
+
+                    document.getElementById("totalRevenue").innerText = `${(salesRevenueData?.totalRevenue ?? 0).toLocaleString("tr-TR")} ₺`;
+                    document.getElementById("totalCount").innerText = `${salesRevenueData.totalSoldQuantity?.toLocaleString("tr-TR") ?? "0"} Satılan Ürün`;
+
+                    // İade verilerini güncelle
+                    document.getElementById("totalref").innerText = `${-(refundData?.totalRefundedAmount ?? 0).toLocaleString("tr-TR")} ₺`;
+                    document.getElementById("totalrefcount").innerText = `${refundData.totalRefundedItemsCount?.toLocaleString("tr-TR") ?? "0"} İade Edilen Ürün`;
+
+                    // Teslim edilen siparişler
+                    document.getElementById("complete").innerText = `${(deliveredOrderData?.delivered ?? 0).toLocaleString("tr-TR")} `;
+                    document.getElementById("completecount").innerText = `${(deliveredOrderData?.total ?? 0).toLocaleString("tr-TR")} Toplam Sipariş `;
+
+                    // En çok satılan ürün
+                    const productCode = bestSellingProductData?.productCode ?? "Kod yok";
+                    const productName = bestSellingProductData?.productName ?? "";
+                    const amountElement = document.getElementById("code");
+
+                    if (amountElement) {
+                        amountElement.innerText = productCode.toLocaleString("tr-TR");
+                        amountElement.setAttribute("title", productName);
+                        new bootstrap.Tooltip(amountElement);
+                    }
+
+                    document.getElementById("codeCount").innerText = `${(bestSellingProductData?.totalSold ?? 0).toLocaleString("tr-TR")} Adet `;
+                })
+                .catch(err => console.error("Genel fetch hatası:", err));
+        });
+
+        // Stok Hareketlerini Yükle
+        async function loadTodayStockMovements() {
+            try {
+                const response = await fetch('/Admin/Dashboard/GetTodayTopStockMovements');
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+
+                const data = await response.json();
+                const tbody = document.getElementById('stockMovementBody');
+                const noDataMessage = document.getElementById('noDataMessage');
+
+                tbody.innerHTML = "";
+
+                if (data.length === 0) {
+                    if (!noDataMessage) {
+                        const messageRow = document.createElement('tr');
+                        messageRow.id = 'noDataMessage';
+                        messageRow.innerHTML = `<td colspan="4" class="text-center">Bugüne ait stok hareketi bulunamamıştır</td>`;
+                        tbody.appendChild(messageRow);
+                    }
+                } else {
+                    data.forEach(item => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${item.productName}</td>
+                            <td>${item.quantity}</td>
+                            <td>${item.movementType}</td>
+                            <td>${item.createdDate}</td>
+                        `;
+                        tbody.appendChild(row);
+                    });
+
+                    if (noDataMessage) noDataMessage.remove();
+                }
+            } catch (error) {
+                console.error("Stok hareketleri alınırken hata oluştu:", error);
+            }
+        }
+
+        // Kampanyaları Yükle
+        async function loadUpcomingCampaigns() {
+            try {
+                const response = await fetch("/admin/dashboard/GetCampaignStats");
+                const data = await response.json();
+                const listContainer = document.getElementById("upcomingCampaignList");
+                listContainer.innerHTML = "";
+
+                const campaigns = data.upcomingCampaigns;
+
+                if (campaigns.length === 0) {
+                    listContainer.innerHTML = `<div class="alert alert-info mb-0" role="alert">Yaklaşan kampanya bulunmuyor.</div>`;
+                    return;
+                }
+
+                campaigns.forEach(campaign => {
+                    const row = document.createElement("div");
+                    row.classList.add("row", "align-items-center", "mb-2");
+                    row.innerHTML = `
+                        <div class="col-12 col-sm-12">
+                            <div class="alert alert-warning px-2 mb-0" role="alert">
+                                <p class="mb-0 fw-bold">${campaign.name}</p>
+                                <p class="mb-0">${campaign.startDate} - ${campaign.endDate}</p>
+                            </div>
+                        </div>
+                    `;
+                    listContainer.appendChild(row);
+                });
+            } catch (error) {
+                console.error("Kampanyalar yüklenirken hata oluştu:", error);
+            }
+        }
+
+        // Ödeme Yöntem Grafiğini Yükle
+        async function loadPaymentMethodChart() {
+            try {
+                const response = await fetch('/Admin/Dashboard/GetPaymentMethodPercentage');
+                if (!response.ok) throw new Error("Veri çekilemedi");
+
+                const data = await response.json();
+
+                const options = {
+                    chart: {
+                        type: 'donut',
+                        height: 240
+                    },
+                    labels: ['Kredi Kartı', 'Kapıda Ödeme'],
+                    series: [data.onlinePaymentPercentage, data.cashOnDeliveryPercentage],
+                    colors: ['#556ee6', '#f1b44c'],
+                    legend: {
+                        position: 'bottom'
+                    },
+                    dataLabels: {
+                        enabled: true,
+                        formatter: function (val) {
+                            return val.toFixed(1) + "%";
+                        }
+                    }
+                };
+
+                const chart = new ApexCharts(document.querySelector("#conversions"), options);
+                chart.render();
+
+                document.getElementById('creditRate').innerText = `${data.onlinePaymentPercentage}%`;
+                document.getElementById('cashRate').innerText = `${data.cashOnDeliveryPercentage}%`;
+            } catch (error) {
+                console.error("Ödeme yöntem yüzdeleri alınırken hata:", error);
+            }
+        }
+
+        // Sayfa yüklendiğinde tüm verileri çek
+        document.addEventListener('DOMContentLoaded', () => {
+            loadTodayStockMovements();
+            loadUpcomingCampaigns();
+            loadPaymentMethodChart();
+        });
+    </script>
+</body>
+
+</html>

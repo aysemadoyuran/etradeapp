@@ -1,0 +1,339 @@
+@model List<etrade.Entity.Color>
+
+<div class="container-fluid px-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold mb-0">Renk Yönetimi</h2>
+    </div>
+
+    <!-- Alerts -->
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show rounded-3 shadow-sm" role="alert">
+            <div class="d-flex align-items-center">
+                <i class="bx bx-error-circle me-2 fs-4"></i>
+                <div>@TempData["Error"]</div>
+                <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        </div>
+    }
+    
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show rounded-3 shadow-sm" role="alert">
+            <div class="d-flex align-items-center">
+                <i class="bx bx-check-circle me-2 fs-4"></i>
+                <div>@TempData["Success"]</div>
+                <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        </div>
+    }
+
+    <!-- Add Color Card -->
+    <div class="card border-0 shadow-sm rounded-3 mb-4">
+        <div class="card-header  border-0 py-3">
+            <h5 class="mb-0 fw-semibold"><i class='bx bx-palette me-2'></i>Yeni Renk Ekle</h5>
+        </div>
+        <div class="card-body">
+            <form action="/Admin/Color/Add" method="post">
+                <div class="row g-3">
+                    <div class="col-md-5">
+                        <label class="form-label">Renk Adı</label>
+                        <input type="text" name="Name" class="form-control" placeholder="Renk adı giriniz" required>
+                    </div>
+                    
+                    <div class="col-md-5">
+                        <label class="form-label">Renk Seçimi</label>
+                        <div class="input-group color-picker-group">
+                            <input type="text" class="form-control" id="colorHexValue" placeholder="#ff0000" readonly>
+                            <input type="color" class="form-control form-control-color" id="ColorCode" name="ColorCode" value="#ff0000" title="Renk seçin">
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button class="btn btn-success w-100 rounded-pill py-2" type="submit">
+                            <i class='bx bx-save me-1'></i> Kaydet
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Colors List Card -->
+    <div class="card border-0 shadow-sm rounded-3">
+        <div class="card-header  border-0 py-3">
+            <h5 class="mb-0 fw-semibold"><i class='bx bx-list-ul me-2'></i>Renk Listesi</h5>
+        </div>
+        <div class="card-body p-0">
+            @if (Model.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="bg-light bg-opacity-10">
+                            <tr>
+                                <th class="ps-4">Renk</th>
+                                <th>Renk Adı</th>
+                                <th class="text-end pe-4">İşlemler</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var color in Model)
+                            {
+                                <tr>
+                                    <td class="ps-4">
+                                        <div class="d-flex align-items-center">
+                                            <div class="color-preview" style="background-color: @color.ColorCode"></div>
+                                        </div>
+                                    </td>
+                                    <td>@color.Name</td>
+                                    <td class="text-end pe-4">
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            <button class="btn btn-outline-primary edit-btn" data-id="@color.Id" title="Düzenle">
+                                                <i class="bx bx-edit"></i>
+                                            </button>
+                                            <button class="btn btn-outline-danger delete-btn" data-id="@color.Id" title="Sil">
+                                                <i class="bx bx-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-5">
+                    <i class='bx bx-palette fs-1 text-muted'></i>
+                    <p class="text-muted mt-3">Henüz renk eklenmemiş</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Edit Color Modal -->
+<div class="modal fade" id="editColorModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-3">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">Renk Düzenle</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <form id="editColorForm">
+                    <input type="hidden" id="editColorId">
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Renk Adı</label>
+                        <input type="text" class="form-control rounded-2" id="editColorName" required>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="form-label">Renk Kodu</label>
+                        <div class="input-group color-picker-group">
+                            <input type="text" class="form-control" id="editColorHexValue" readonly>
+                            <input type="color" class="form-control form-control-color" id="editColorCode" name="ColorCode" title="Renk seçin">
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary w-100 rounded-pill py-2">
+                        <i class='bx bx-save me-1'></i> Değişiklikleri Kaydet
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- CSS Styling -->
+<style>
+    /* Modern Card Styling */
+    .card {
+        transition: all 0.3s ease;
+        border: none;
+    }
+    
+    .card:hover {
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+    
+    /* Table Styling */
+    .table {
+        --bs-table-bg: transparent;
+    }
+    
+    .table th {
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.5px;
+        color: #64748b;
+    }
+    
+    /* Color Preview */
+    .color-preview {
+        width: 24px;
+        height: 24px;
+        border-radius: 4px;
+        border: 1px solid #dee2e6;
+        display: inline-block;
+        margin-right: 10px;
+    }
+    
+    /* Color Picker Group */
+    .color-picker-group {
+        align-items: center;
+    }
+    
+    .form-control-color {
+        width: 40px;
+        height: 40px;
+        padding: 2px;
+    }
+    
+    /* Button Styling */
+    .btn-primary {
+        background-color: #6366f1;
+        border-color: #6366f1;
+    }
+    
+    .btn-primary:hover {
+        background-color: #4f46e5;
+        border-color: #4f46e5;
+    }
+    
+    /* Modal Styling */
+    .modal-content {
+        border: none;
+    }
+</style>
+
+<!-- JavaScript -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    $(document).ready(function () {
+        // Color picker functionality
+        $('#ColorCode').on('input', function() {
+            $('#colorHexValue').val($(this).val());
+        });
+        
+        $('#editColorCode').on('input', function() {
+            $('#editColorHexValue').val($(this).val());
+        });
+
+        // Düzenle butonu işlevi
+        $(document).on("click", ".edit-btn", function () {
+            var colorId = $(this).data("id");
+            $.get("/Admin/Color/GetColor", { id: colorId }, function (data) {
+                if (data) {
+                    $("#editColorId").val(data.id);
+                    $("#editColorName").val(data.name);
+                    $("#editColorCode").val(data.colorCode);
+                    $("#editColorHexValue").val(data.colorCode);
+                    
+                    $("#editColorModal").modal("show");
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Hata',
+                        text: 'Renk bilgisi alınamadı!',
+                        confirmButtonColor: '#6366f1'
+                    });
+                }
+            }).fail(function () {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Hata',
+                    text: 'Sunucu hatası!',
+                    confirmButtonColor: '#6366f1'
+                });
+            });
+        });
+
+        // Sil butonu işlevi
+        $(document).on("click", ".delete-btn", function () {
+            var colorId = $(this).data("id");
+            Swal.fire({
+                title: 'Emin misiniz?',
+                text: "Bu rengi silmek istediğinizden emin misiniz?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#6366f1',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Evet, sil!',
+                cancelButtonText: 'İptal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.post("/Admin/Color/DeleteColor", { id: colorId }, function (response) {
+                        if (response.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Başarılı!',
+                                text: 'Renk başarıyla silindi.',
+                                confirmButtonColor: '#6366f1'
+                            }).then(() => {
+                                location.reload();
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Hata',
+                                text: response.message,
+                                confirmButtonColor: '#6366f1'
+                            });
+                        }
+                    }).fail(function () {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Hata',
+                            text: 'İşlem sırasında bir hata oluştu!',
+                            confirmButtonColor: '#6366f1'
+                        });
+                    });
+                }
+            });
+        });
+
+        // Renk güncelleme formu
+        $('#editColorForm').submit(function (e) {
+            e.preventDefault();
+            var formData = {
+                id: $("#editColorId").val(),
+                name: $("#editColorName").val(),
+                colorCode: $("#editColorCode").val()
+            };
+            
+            $.post("/Admin/Color/UpdateColor", formData, function (response) {
+                if (response.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Başarılı!',
+                        text: 'Renk başarıyla güncellendi.',
+                        confirmButtonColor: '#6366f1'
+                    }).then(() => {
+                        $('#editColorModal').modal('hide');
+                        location.reload();
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Hata',
+                        text: response.message,
+                        confirmButtonColor: '#6366f1'
+                    });
+                }
+            }).fail(function () {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Hata',
+                    text: 'Sunucu ile bağlantı kurulamadı.',
+                    confirmButtonColor: '#6366f1'
+                });
+            });
+        });
+    });
+</script>

@@ -1,0 +1,522 @@
+@{
+    ViewData["Title"] = "Lisansı Dondur";
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["ErrorMessage"]
+    </div>
+}
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["SuccessMessage"]
+    </div>
+}
+
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 fw-semibold text-primary">Lisansı Dondur</h1>
+        <button id="freezeButton" class="btn btn-outline-primary rounded-pill px-4">Lisansı Dondur</button>
+    </div>
+
+    <!-- Bilgilendirme Kutucuğu (Başlangıçta gizli) -->
+    <div id="infoAlert" class="alert alert-info d-none mb-4">
+        <svg width="20" height="20" fill="currentColor" class="bi bi-info-circle me-2" viewBox="0 0 16 16">
+            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
+            <path
+                d="M8.93 6.588l-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z" />
+        </svg>
+        <span id="infoMessage">Satın Alınmış Bir Lisans Dondurma Hizmetiniz Vardır "Lisansı Sonlandır" Butonundan
+            Erişimi Durdurabilirsiniz.</span>
+    </div>
+
+    <div class="row g-4">
+        <!-- Sol Bilgilendirme Alanı -->
+        <div class="col-lg-6 d-flex">
+            <div class="card border-0 shadow-sm rounded-3 flex-grow-1">
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title fw-semibold mb-4 text-secondary">Dondurma Hakkında Detaylı Bilgilendirme</h5>
+                    <div class="d-flex flex-column gap-4 flex-grow-1">
+                        <!-- Madde 1 -->
+                        <div class="d-flex align-items-start">
+                            <div class="me-3 text-primary">
+                                <svg width="20" height="20" fill="currentColor" class="bi bi-clock-history mt-1"
+                                    viewBox="0 0 16 16">
+                                    <path
+                                        d="M8.515 1.019A7 7 0 0 0 8 1V0a8 8 0 0 1 .589.022l-.074.997zm2.004.45a7.003 7.003 0 0 0-.985-.299l.219-.976c.383.086.76.2 1.126.342l-.36.933zm1.37.71a7.01 7.01 0 0 0-.439-.27l.493-.87a8.025 8.025 0 0 1 .979.654l-.615.789a6.996 6.996 0 0 0-.418-.302zm1.834 1.79a6.99 6.99 0 0 0-.653-.796l.724-.69c.27.285.52.59.747.91l-.818.576zm.744 1.352a7.08 7.08 0 0 0-.214-.468l.893-.45a7.976 7.976 0 0 1 .45 1.088l-.95.313a7.023 7.023 0 0 0-.179-.483zm.53 2.507a6.991 6.991 0 0 0-.1-1.025l.985-.17c.067.386.106.778.116 1.17l-1 .025zm-.131 1.538c.033-.17.06-.339.081-.51l.993.123a7.957 7.957 0 0 1-.23 1.155l-.964-.267c.046-.165.086-.332.12-.501zm-.952 2.379c.184-.29.346-.594.486-.908l.914.405c-.16.36-.345.706-.555 1.038l-.845-.535zm-.964 1.205c.122-.122.239-.248.35-.378l.758.653a8.073 8.073 0 0 1-.401.432l-.707-.707z" />
+                                    <path d="M8 1a7 7 0 1 0 4.95 11.95l.707.707A8.001 8.001 0 1 1 8 0v1z" />
+                                    <path
+                                        d="M7.5 3a.5.5 0 0 1 .5.5v5.21l3.248 1.856a.5.5 0 0 1-.496.868l-3.5-2A.5.5 0 0 1 7 9V3.5a.5.5 0 0 1 .5-.5z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <h6 class="fw-semibold mb-2">Lisans dondurma işlemi en az 6 ay sürebilir</h6>
+                                <p class="text-muted mb-0 small">Bu işlemi başlattığınızda sisteminiz en az 6 ay boyunca
+                                    pasif hale gelir. Bu süre boyunca erişim sağlayamazsınız. Bu süre, işlem
+                                    tamamlandıktan sonra geriye alınamaz.</p>
+                            </div>
+                        </div>
+
+                        <!-- Madde 2 -->
+                        <div class="d-flex align-items-start">
+                            <div class="me-3 text-primary">
+                                <svg width="20" height="20" fill="currentColor" class="bi bi-calendar-check mt-1"
+                                    viewBox="0 0 16 16">
+                                    <path
+                                        d="M10.854 7.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L7.5 9.793l2.646-2.647a.5.5 0 0 1 .708 0z" />
+                                    <path
+                                        d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <h6 class="fw-semibold mb-2">6 ayın sonunda erişime açarsanız, sistem en az 6 ay açık
+                                    kalmalıdır</h6>
+                                <p class="text-muted mb-0 small">Lisansı yeniden aktifleştirdiğinizde, sisteminiz en az
+                                    6 ay boyunca aktif olarak kalmalıdır. Yani yeniden kısa süreli dondurma talebinde
+                                    bulunamazsınız.</p>
+                            </div>
+                        </div>
+
+                        <!-- Madde 3 -->
+                        <div class="d-flex align-items-start">
+                            <div class="me-3 text-primary">
+                                <svg width="20" height="20" fill="currentColor" class="bi bi-cash-coin mt-1"
+                                    viewBox="0 0 16 16">
+                                    <path fill-rule="evenodd"
+                                        d="M11 15a4 4 0 1 0 0-8 4 4 0 0 0 0 8zm5-4a5 5 0 1 1-10 0 5 5 0 0 1 10 0z" />
+                                    <path
+                                        d="M9.438 11.944c.047.596.518 1.06 1.363 1.116v.44h.375v-.443c.875-.061 1.386-.529 1.386-1.207 0-.618-.39-.936-1.09-1.1l-.296-.07v-1.2c.376.043.614.248.671.532h.658c-.047-.575-.54-1.024-1.329-1.073V8.5h-.375v.45c-.747.073-1.255.522-1.255 1.158 0 .562.378.92 1.007 1.066l.248.061v1.272c-.384-.058-.639-.27-.696-.563h-.668zm1.36-1.354c-.369-.085-.569-.26-.569-.522 0-.294.216-.514.572-.578v1.1h-.003zm.432.746c.449.104.655.272.655.569 0 .339-.257.571-.709.614v-1.195l.054.012z" />
+                                    <path
+                                        d="M1 0a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h4.083c.058-.344.145-.678.258-1H3a2 2 0 0 0-2-2V3a2 2 0 0 0 2-2h10a2 2 0 0 0 2 2v3.528c.38.34.717.728 1 1.154V1a1 1 0 0 0-1-1H1z" />
+                                    <path d="M9.998 5.083 10 5a2 2 0 1 0-3.132 1.65 5.982 5.982 0 0 1 3.13-1.567z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <h6 class="fw-semibold mb-2">Bir kere fiyat alınır, sonrasında ücret talep edilmez</h6>
+                                <p class="text-muted mb-0 small">Dondurma işlemi için sadece başvuru anında ödeme
+                                    yapılır. Bu süreçte veya daha sonra başka bir ücret alınmaz.</p>
+                            </div>
+                        </div>
+
+                        <!-- Madde 4 -->
+                        <div class="d-flex align-items-start">
+                            <div class="me-3 text-primary">
+                                <svg width="20" height="20" fill="currentColor" class="bi bi-shuffle mt-1"
+                                    viewBox="0 0 16 16">
+                                    <path fill-rule="evenodd"
+                                        d="M0 3.5A.5.5 0 0 1 .5 3H1c2.202 0 3.827 1.24 4.874 2.418.49.552.865 1.102 1.126 1.532.26-.43.636-.98 1.126-1.532C9.173 4.24 10.798 3 13 3v1c-1.798 0-3.173 1.01-4.126 2.082A9.624 9.624 0 0 0 7.556 8a9.624 9.624 0 0 0 1.317 1.918C9.828 10.99 11.204 12 13 12v1c-2.202 0-3.827-1.24-4.874-2.418A10.595 10.595 0 0 1 7 9.05c-.26.43-.636.98-1.126 1.532C4.827 11.76 3.202 13 1 13H.5a.5.5 0 0 1 0-1H1c1.798 0 3.173-1.01 4.126-2.082A9.624 9.624 0 0 0 6.444 8a9.624 9.624 0 0 0-1.317-1.918C4.172 5.01 2.796 4 1 4H.5a.5.5 0 0 1-.5-.5z" />
+                                    <path
+                                        d="M13 5.466V1.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384l-2.36 1.966a.25.25 0 0 1-.41-.192zm0 9v-3.932a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384l-2.36 1.966a.25.25 0 0 1-.41-.192z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <h6 class="fw-semibold mb-2">Bu sistem, geçici dondurmadan farklıdır</h6>
+                                <p class="text-muted mb-0 small">Normal dondurma işlemleri kısa süreli kullanım durdurma
+                                    içindir. Bu işlem ise uzun süreli ara verip, ileride geri dönmeyi planlayan
+                                    kullanıcılar için geliştirilmiştir.</p>
+                            </div>
+                        </div>
+
+                        <!-- Madde 5 -->
+                        <div class="d-flex align-items-start">
+                            <div class="me-3 text-primary">
+                                <svg width="20" height="20" fill="currentColor" class="bi bi-shield-lock mt-1"
+                                    viewBox="0 0 16 16">
+                                    <path
+                                        d="M5.338 1.59a61.44 61.44 0 0 0-2.837.856.481.481 0 0 0-.328.39c-.554 4.157.726 7.19 2.253 9.188a10.725 10.725 0 0 0 2.287 2.233c.346.244.652.42.893.533.12.057.218.095.293.118a.55.55 0 0 0 .101.025.615.615 0 0 0 .1-.025c.076-.023.174-.061.294-.118.24-.113.547-.29.893-.533a10.726 10.726 0 0 0 2.287-2.233c1.527-1.997 2.807-5.031 2.253-9.188a.48.48 0 0 0-.328-.39c-.651-.213-1.75-.56-2.837-.855C9.552 1.29 8.531 1.067 8 1.067c-.53 0-1.552.223-2.662.524zM5.072.56C6.157.265 7.31 0 8 0s1.843.265 2.928.56c1.11.3 2.229.655 2.887.87a1.54 1.54 0 0 1 1.044 1.262c.596 4.477-.787 7.795-2.465 9.99a11.775 11.775 0 0 1-2.517 2.453 7.159 7.159 0 0 1-1.048.625c-.28.132-.581.24-.829.24s-.548-.108-.829-.24a7.158 7.158 0 0 1-1.048-.625 11.777 11.777 0 0 1-2.517-2.453C1.928 10.487.545 7.169 1.141 2.692A1.54 1.54 0 0 1 2.185 1.43 62.456 62.456 0 0 1 5.072.56z" />
+                                    <path
+                                        d="M9.5 6.5a1.5 1.5 0 0 1-1 1.415l.385 1.99a.5.5 0 0 1-.491.595h-.788a.5.5 0 0 1-.49-.595l.384-1.99a1.5 1.5 0 1 1 2-1.415z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <h6 class="fw-semibold mb-2">Verileriniz bu süreçte güvenli şekilde saklanmaya devam
+                                    eder</h6>
+                                <p class="text-muted mb-0 small">Sistem kapalı olsa bile tüm verileriniz güvenli
+                                    sunucularda saklanır. Geri döndüğünüzde, tüm bilgileriniz kaldığınız yerden aynı
+                                    şekilde erişilebilir olur.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sağ Ödeme Alanı -->
+        <div class="col-lg-6 d-flex">
+            <div class="card border-0 shadow-sm rounded-3 flex-grow-1">
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title fw-semibold mb-4 text-secondary">Ödeme Bilgileri</h5>
+                    <form method="post" action="/Admin/License/FreezePayment" class="flex-grow-1 d-flex flex-column">
+                        <div class="mb-4">
+                            <label for="cardName" class="form-label fw-medium">Kart Üzerindeki İsim</label>
+                            <input type="text" class="form-control border-2 py-2" id="cardName" name="cardName"
+                                required />
+                        </div>
+                        <div class="mb-4">
+                            <label for="cardNumber" class="form-label fw-medium">Kart Numarası</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control border-2 py-2" id="cardNumber" name="cardNumber"
+                                    required />
+                                <span class="input-group-text bg-white border-start-0">
+                                    <svg width="20" height="20" fill="currentColor" class="bi bi-credit-card"
+                                        viewBox="0 0 16 16">
+                                        <path
+                                            d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4zm2-1a1 1 0 0 0-1 1v1h14V4a1 1 0 0 0-1-1H2zm13 4H1v5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V7z" />
+                                        <path
+                                            d="M2 10a1 1 0 0 1 1-1h1a1 1 0 0 1 1 1v1a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1v-1z" />
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label for="expiry" class="form-label fw-medium">Son Kullanma Tarihi</label>
+                                <input type="text" class="form-control border-2 py-2" id="expiry" name="expiry"
+                                    placeholder="MM/YY" required />
+                            </div>
+                            <div class="col-md-6">
+                                <label for="cvv" class="form-label fw-medium">CVV</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control border-2 py-2" id="cvv" name="cvv"
+                                        required />
+                                    <span class="input-group-text bg-white border-start-0">
+                                        <svg width="20" height="20" fill="currentColor" class="bi bi-lock"
+                                            viewBox="0 0 16 16">
+                                            <path
+                                                d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2zM5 8h6a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z" />
+                                        </svg>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label fw-medium">Tutar</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control border-2 py-2 bg-light" id="freezePrice"
+                                    readonly />
+                                <span class="input-group-text bg-white border-start-0">
+                                    <svg width="20" height="20" fill="currentColor" class="bi bi-cash"
+                                        viewBox="0 0 16 16">
+                                        <path d="M8 10a2 2 0 1 0 0-4 2 2 0 0 0 0 4z" />
+                                        <path
+                                            d="M0 4a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H1a1 1 0 0 1-1-1V4zm3 0a2 2 0 0 1-2 2v4a2 2 0 0 1 2 2h10a2 2 0 0 1 2-2V6a2 2 0 0 1-2-2H3z" />
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <button type="submit" id="paymentButton"
+                            class="btn btn-primary w-100 py-2 rounded-pill fw-medium mt-auto">Ödeme Yap</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1) !important;
+    }
+
+    .form-control:focus {
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
+    }
+
+    .btn-outline-primary:hover {
+        background-color: #0d6efd;
+        color: white;
+    }
+
+    #infoAlert {
+        transition: all 0.3s ease;
+    }
+
+    .disabled-form {
+        opacity: 0.6;
+        pointer-events: none;
+    }
+
+    .btn-outline-secondary {
+        cursor: not-allowed;
+    }
+</style>
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $.ajax({
+                url: '/Admin/Home/GetSettings',
+                type: 'GET',
+                success: function (data) {
+                    if (data && data.freezePrice !== undefined) {
+                        $('#freezePrice').val(data.freezePrice.toFixed(2) + " ₺");
+                    }
+                },
+                error: function () {
+                    console.error('Ayarlar alınamadı.');
+                }
+            });
+        });
+    </script>
+    <script>
+        document.getElementById("freezeButton").addEventListener("click", async function () {
+            const confirmFreeze = confirm("Bu lisansı dondurmak istediğinize emin misiniz?");
+            if (!confirmFreeze) return;
+
+            // URL'den id parametresini al
+            const urlParams = new URLSearchParams(window.location.search);
+            const licenseId = urlParams.get('id');
+
+            if (!licenseId) {
+                alert("Lisans ID'si bulunamadı.");
+                return;
+            }
+
+            try {
+                const response = await fetch(`/Admin/Home/FreezeLicense/${licenseId}`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    }
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    alert(result.message);
+                    this.disabled = true;
+                    this.innerText = "Lisans Donduruldu";
+                } else {
+                    alert("Hata: " + result.message);
+                }
+            } catch (error) {
+                console.error("İstek hatası:", error);
+                alert("Sunucuya bağlanılamadı.");
+            }
+        });
+    </script>
+    <script>
+        $(document).ready(function () {
+            // URL'den licenseId'yi al (örnek: /Admin/License/Freeze?id=123)
+            const urlParams = new URLSearchParams(window.location.search);
+            const licenseId = urlParams.get('id');
+
+            if (licenseId) {
+                // API'yi sorgula
+                $.get(`/Admin/Home/GetFrozen?id=${licenseId}`, function (response) {
+                    if (response.result) {
+                        // Eğer true dönerse (dondurulmuşsa):
+                        // 1. Ödeme formunu devre dışı bırak
+                        $('form').addClass('disabled-form');
+                        $('#paymentButton').prop('disabled', true);
+
+                        // 2. Form elemanlarını devre dışı bırak
+                        $('#cardName, #cardNumber, #expiry, #cvv').prop('disabled', true);
+
+                        // 3. Bilgilendirme mesajını göster
+                        $('#infoAlert').removeClass('d-none');
+                        $('#infoMessage').html(`
+                                    <div class="mb-2">Satın Alınmış Bir Lisans Dondurma Hizmetiniz Vardır "Lisansı Dondur" Butonundan Erişimi Durdurabilirsiniz.</div>
+                                `);
+
+                        if (response.freezeCode) {
+                            // Dondurma kodu için özel bir kutucuk oluştur
+                            $('#infoAlert').after(`
+                                        <div class="alert alert-warning mt-3" id="freezeCodeAlert">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <svg width="20" height="20" fill="currentColor" class="bi bi-key me-2" viewBox="0 0 16 16">
+                                                        <path d="M0 8a4 4 0 0 1 7.465-2H14a.5.5 0 0 1 .354.146l1.5 1.5a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0L13 9.207l-.646.647a.5.5 0 0 1-.708 0L11 9.207l-.646.647a.5.5 0 0 1-.708 0L9 9.207l-.646.647A.5.5 0 0 1 8 10h-.535A4 4 0 0 1 0 8zm4-3a3 3 0 1 0 2.712 4.285A.5.5 0 0 1 7.163 9h.63l.853-.854a.5.5 0 0 1 .708 0l.646.647.646-.647a.5.5 0 0 1 .708 0l.646.647.646-.647a.5.5 0 0 1 .708 0l.646.647.793-.793-1-1h-6.63a.5.5 0 0 1-.451-.285A3 3 0 0 0 4 5z"/>
+                                                        <path d="M4 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/>
+                                                    </svg>
+                                                    <strong>Dondurma Kodunuz:</strong>
+                                                </div>
+                                                <div class="d-flex align-items-center">
+                                                    <span class="badge bg-primary fs-5 me-2">${response.freezeCode}</span>
+                                                    <button class="btn btn-sm btn-outline-secondary copy-btn" data-code="${response.freezeCode}">
+                                                        <svg width="16" height="16" fill="currentColor" class="bi bi-clipboard" viewBox="0 0 16 16">
+                                                            <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/>
+                                                            <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z"/>
+                                                        </svg>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <div class="mt-2 small text-danger">
+                                                <svg width="16" height="16" fill="currentColor" class="bi bi-exclamation-triangle me-1" viewBox="0 0 16 16">
+                                                    <path d="M7.938 2.016A.13.13 0 0 1 8.002 2a.13.13 0 0 1 .063.016.146.146 0 0 1 .054.057l6.857 11.667c.036.06.035.124.002.183a.163.163 0 0 1-.054.06.116.116 0 0 1-.066.017H1.146a.115.115 0 0 1-.066-.017.163.163 0 0 1-.054-.06.176.176 0 0 1 .002-.183L7.884 2.073a.147.147 0 0 1 .054-.057zm1.044-.45a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566z"/>
+                                                    <path d="M7.002 12a1 1 0 1 1 2 0 1 1 0 0 1-2 0zM7.1 5.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995z"/>
+                                                </svg>
+                                                Bu kodu güvenli bir yere kaydedin. Lisansınızı tekrar aktifleştirmek için bu koda ihtiyacınız olacak.
+                                            </div>
+                                        </div>
+                                    `);
+
+                            // Kopyalama butonu işlevselliği
+                            // Kopyalama butonu işlevselliği
+                            $(document).on('click', '.copy-btn', function () {
+                                const code = $(this).data('code');
+
+                                // Create a temporary input element as fallback
+                                const copyToClipboardFallback = (text) => {
+                                    const textarea = document.createElement('textarea');
+                                    textarea.value = text;
+                                    textarea.style.position = 'fixed';  // Prevent scrolling to bottom
+                                    document.body.appendChild(textarea);
+                                    textarea.select();
+
+                                    try {
+                                        const successful = document.execCommand('copy');
+                                        if (successful) {
+                                            showCopySuccess($(this));
+                                        } else {
+                                            showCopyError($(this));
+                                        }
+                                    } catch (err) {
+                                        showCopyError($(this));
+                                    }
+
+                                    document.body.removeChild(textarea);
+                                };
+
+                                // Show success state
+                                const showCopySuccess = (button) => {
+                                    button.html(`
+                                <svg width="16" height="16" fill="currentColor" class="bi bi-check" viewBox="0 0 16 16">
+                                    <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.267.267 0 0 1 .02-.022z"/>
+                                </svg>
+                                Kopyalandı
+                            `);
+                                    setTimeout(() => {
+                                        button.html(`
+                                    <svg width="16" height="16" fill="currentColor" class="bi bi-clipboard" viewBox="0 0 16 16">
+                                        <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1 1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/>
+                                        <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z"/>
+                                    </svg>
+                                `);
+                                    }, 2000);
+                                };
+
+                                // Show error state
+                                const showCopyError = (button) => {
+                                    const originalHtml = button.html();
+                                    button.html(`
+                                <svg width="16" height="16" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16">
+                                    <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
+                                </svg>
+                                Kopyalanamadı
+                            `);
+                                    setTimeout(() => {
+                                        button.html(originalHtml);
+                                    }, 2000);
+                                };
+
+                                // Try modern Clipboard API first
+                                if (navigator.clipboard) {
+                                    navigator.clipboard.writeText(code).then(() => {
+                                        showCopySuccess($(this));
+                                    }).catch(() => {
+                                        // If Clipboard API fails, try fallback method
+                                        copyToClipboardFallback(code);
+                                    });
+                                } else {
+                                    // Use fallback for browsers without Clipboard API
+                                    copyToClipboardFallback(code);
+                                }
+                            });
+                        }
+                        // 4. "Lisansı Dondur" butonunu aktif bırak
+                        $('#freezeButton')
+                            .removeClass('btn-outline-secondary')
+                            .addClass('btn-outline-primary')
+                            .prop('disabled', false);
+                    }
+                    else {
+                        // Eğer false dönerse (dondurulmamışsa):
+                        // 1. Ödeme formunu aktif hale getir
+                        $('form').removeClass('disabled-form');
+                        $('#paymentButton').prop('disabled', false);
+
+                        // 2. Form elemanlarını aktif hale getir
+                        $('#cardName, #cardNumber, #expiry, #cvv').prop('disabled', false);
+
+                        // 3. Bilgilendirme mesajını göster ve metni değiştir
+                        $('#infoAlert').removeClass('d-none');
+                        $('#infoMessage').text("Lisansınızı Dondurmak için ödeme yapmanız gerekmektedir");
+
+                        // 4. "Lisansı Dondur" butonunu devre dışı bırak
+                        $('#freezeButton')
+                            .removeClass('btn-outline-primary')
+                            .addClass('btn-outline-secondary')
+                            .prop('disabled', true);
+                    }
+                }).fail(function () {
+                    console.error('API sorgulaması başarısız oldu');
+                    // Hata durumunda kullanıcıya bilgi ver
+                    $('#infoAlert')
+                        .removeClass('alert-info d-none')
+                        .addClass('alert-danger')
+                        .html('<svg width="20" height="20" fill="currentColor" class="bi bi-exclamation-triangle me-2" viewBox="0 0 16 16"><path d="M7.938 2.016A.13.13 0 0 1 8.002 2a.13.13 0 0 1 .063.016.146.146 0 0 1 .054.057l6.857 11.667c.036.06.035.124.002.183a.163.163 0 0 1-.054.06.116.116 0 0 1-.066.017H1.146a.115.115 0 0 1-.066-.017.163.163 0 0 1-.054-.06.176.176 0 0 1 .002-.183L7.884 2.073a.147.147 0 0 1 .054-.057zm1.044-.45a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566z"/><path d="M7.002 12a1 1 0 1 1 2 0 1 1 0 0 1-2 0zM7.1 5.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995z"/></svg> Dondurma durumu kontrol edilirken bir hata oluştu. Lütfen daha sonra tekrar deneyin.');
+                });
+            }
+            else {
+                console.error('URL\'de licenseId parametresi bulunamadı');
+                $('#infoAlert')
+                    .removeClass('alert-info d-none')
+                    .addClass('alert-warning')
+                    .html('<svg width="20" height="20" fill="currentColor" class="bi bi-exclamation-circle me-2" viewBox="0 0 16 16"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/><path d="M7.002 11a1 1 0 1 1 2 0 1 1 0 0 1-2 0zM7.1 4.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 4.995z"/></svg> Lisans bilgileri alınamadı. Lütfen sayfayı yenileyin veya sistem yöneticinize başvurun.');
+            }
+        });
+
+        // Ödeme formu submit işlemi
+        $(document).ready(function () {
+            $('form').submit(function (e) {
+                e.preventDefault();
+
+                const urlParams = new URLSearchParams(window.location.search);
+                const licenseId = urlParams.get('id');
+
+                if (!licenseId) {
+                    alert("Lisans bilgisi bulunamadı!");
+                    return;
+                }
+
+                const paymentRequest = {
+                    licensePaymentId: licenseId,
+                    cardHolderName: $('#cardName').val(),
+                    cardNumber: $('#cardNumber').val(),
+                    expireMonth: $('#expiry').val().split('/')[0],
+                    expireYear: $('#expiry').val().split('/')[1],
+                    cvc: $('#cvv').val(),
+                    totalPrice: '150.00'
+                };
+
+                $.ajax({
+                    url: '/Admin/Home/CompleteFreezePayment',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(paymentRequest),
+                    success: function (response) {
+                        if (response.isSuccess) {
+                            alert('Ödeme başarılı! Ödeme token: ' + response.paymentToken);
+                            window.location.href = '/some/redirect/page';
+                        } else {
+                            alert('Ödeme başarısız: ' + response.errorMessage);
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        alert('Ödeme sırasında bir hata oluştu: ' + error);
+                    }
+                });
+            });
+        });
+    </script>
+}

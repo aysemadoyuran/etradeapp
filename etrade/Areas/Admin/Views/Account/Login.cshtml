@@ -1,0 +1,178 @@
+@model etrade.Models.LoginViewModel
+@{
+    Layout = null; 
+  }
+<!doctype html>
+<html lang="en">
+    
+<!-- Mirrored from techzaa.in/reback/admin/auth-signin.html by HTTrack Website Copier/3.x [XR&CO'2014], Mon, 10 Feb 2025 10:12:40 GMT -->
+<head>
+        <!-- Title Meta -->
+        <meta charset="utf-8" />
+        <title>Sign In | Reback - Responsive Admin Dashboard Template</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta
+            name="description"
+            content="A fully responsive premium admin dashboard template"
+        />
+        <meta name="author" content="Techzaa" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+        <!-- App favicon -->
+        <link rel="shortcut icon" href="/temp/reback/admin/assets/images/favicon.ico" />
+
+        <!-- Vendor css (Require in all Page) -->
+        <link href="/temp/reback/admin/assets/css/vendor.min.css" rel="stylesheet" type="text/css" />
+
+        <!-- Icons css (Require in all Page) -->
+        <link href="/temp/reback/admin/assets/css/icons.min.css" rel="stylesheet" type="text/css" />
+
+        <!-- App css (Require in all Page) -->
+        <link href="/temp/reback/admin/assets/css/app.min.css" rel="stylesheet" type="text/css" />
+
+        <!-- Theme Config js (Require in all Page) -->
+        <script src="/temp/reback/admin/assets/js/config.js"></script>
+
+    </head>
+
+    <body class="authentication-bg">
+        <div class="account-pages pt-2 pt-sm-5 pb-4 pb-sm-5">
+            <div class="container">
+                <div class="row justify-content-center">
+                    <div class="col-xl-12">
+
+                        <div class="card auth-card">
+
+                            <div class="card-body p-0">
+                                @if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["ErrorMessage"]
+    </div>
+}
+                                <div class="row align-items-center g-0">
+                                    <div
+                                        class="col-lg-6 d-none d-lg-inline-block border-end"
+                                    >
+                                        <div class="auth-page-sidebar">
+                                            <img
+                                                src="/temp/reback/admin/assets/images/sign-in.svg"
+                                                alt="auth"
+                                                class="img-fluid"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <div class="p-4">
+                                            <div
+                                                class="mx-auto mb-4 text-center auth-logo"
+                                            >
+                                                <a
+                                                    href="/Admin/Account/Login/"
+                                                    class="logo-dark"
+                                                >
+        <img id="logo-dark" class="logo-lg" alt="logo dark" />
+
+                                                </a>
+
+                                                <a
+                                                    href="index-2.html"
+                                                    class="logo-light"
+                                                >
+                                                    <img
+                                                        src="/temp/reback/admin/assets/images/logo-sm.png"
+                                                        height="30"
+                                                        class="me-1"
+                                                        alt="logo sm"
+                                                    />
+                                                    <img
+                                                        src="/temp/reback/admin/assets/images/logo-light.png"
+                                                        height="24"
+                                                        alt="logo light"
+                                                    />
+                                                </a>
+                                            </div>
+                                            <h2
+                                                class="fw-bold text-center fs-18"
+                                            >
+                                                Mağaza Girişi
+                                            </h2>
+
+                                            <div
+                                                class="row justify-content-center"
+                                            >
+                                                <div class="col-12 col-md-8">
+                                                    <form asp-action="Login" method="post">
+                                                        <div class="form-group mb-3">
+                                                            <label asp-for="Email"></label>
+                                                            <input asp-for="Email" class="form-control" />
+                                                            <span asp-validation-for="Email" class="text-danger"></span>
+                                                        </div>
+                                                    
+                                                        <div class="form-group mb-3">
+                                                            <label asp-for="Password"></label>
+                                                            <input asp-for="Password" class="form-control" />
+                                                            <span asp-validation-for="Password" class="text-danger"></span>
+                                                        </div>
+                                                    
+                                                        <div class="form-check mb-3">
+                                                            <input asp-for="RememberMe" class="form-check-input" />
+                                                            <label asp-for="RememberMe" class="form-check-label"></label>
+                                                        </div>
+                                                    
+                                                        <button type="submit" class="btn btn-primary">Giriş Yap</button>
+                                                    </form>
+                                                    </div>
+                                                </div>
+                                                <!-- end col -->
+                                            </div>
+                                            <!-- end row -->
+                                        </div>
+                                    </div>
+                                    <!-- end col -->
+                                </div>
+                                <!-- end row -->
+                            </div>
+                            <!-- end card-body -->
+                        </div>
+                        <!-- end card -->
+
+                        <p class="text-white mb-0 text-center">
+                            Don't have an account?
+                            <a
+                                href="auth-signup.html"
+                                class="text-white fw-bold ms-1"
+                                >Sign Up</a
+                            >
+                        </p>
+                    </div>
+                    <!-- end col -->
+                </div>
+                <!-- end row -->
+            </div>
+        </div>
+        <script>
+    // Veritabanından logo yollarını alıyoruz
+    fetch('/Admin/Account/getStoreLogos')
+        .then(response => response.json())
+        .then(data => {
+            // Logo yollarını HTML img etiketlerine yerleştiriyoruz
+            if (data.logoDarkPath) {
+                document.getElementById('logo-dark').src = data.logoDarkPath;
+            }
+        })
+        .catch(error => {
+            console.error('Logo verisi alınırken hata oluştu:', error);
+        });
+</script>
+
+        <!-- Vendor Javascript (Require in all Page) -->
+        <script src="/temp/reback/admin/assets/js/vendor.js"></script>
+
+        <!-- App Javascript (Require in all Page) -->
+        <script src="/temp/reback/admin/assets/js/app.js"></script>
+
+    </body>
+
+<!-- Mirrored from techzaa.in/reback/admin/auth-signin.html by HTTrack Website Copier/3.x [XR&CO'2014], Mon, 10 Feb 2025 10:12:40 GMT -->
+</html>

@@ -1,0 +1,554 @@
+@model OrderViewModel
+@{
+    ViewData["Title"] = "Sipariş ve Ödeme";
+}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+
+<!-- Main Content -->
+<div class="container py-5">
+    <div class="row g-4">
+        <!-- Left Column - Delivery & Payment -->
+        <div class="col-lg-8">
+            <!-- Delivery Address Card -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white border-0 py-3 d-flex align-items-center">
+                    <div class="bg-primary bg-opacity-10 p-2 rounded me-3">
+                    </div>
+                    <h5 class="mb-0 fw-semibold">Teslimat Adresi</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-4">
+                        <label class="form-label fw-medium text-secondary mb-2">Kayıtlı Adresleriniz</label>
+                        <select class="form-select form-select-lg border-2 py-3" asp-for="SelectedAddressId">
+                            <option value="0">Adres Seçin</option>
+                            @foreach (var address in Model.UserAddresses)
+                            {
+                                <option value="@address.Id">@address.Title</option>
+                            }
+                        </select>
+                    </div>
+                    <button type="button" class="btn btn-light w-100 py-3 border-2 fw-medium" data-bs-toggle="modal"
+                        data-bs-target="#addressModal">
+                        <i class="bi bi-plus-circle-fill text-primary me-2"></i>Yeni Adres Ekle
+                    </button>
+                </div>
+            </div>
+
+            <!-- Payment Method Card -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0 py-3 d-flex align-items-center">
+                    <div class="bg-primary bg-opacity-10 p-2 rounded me-3">
+                    </div>
+                    <h5 class="mb-0 fw-semibold">Ödeme Yöntemi</h5>
+                </div>
+                <div class="card-body">
+                    <div class="payment-method">
+                        <div class="form-check mb-3 p-3 rounded-3 border" style="background-color: #f8f9fa;">
+                            <input class="form-check-input mt-1" type="radio" name="PaymentMethod" id="newCard"
+                                value="new">
+                            <label class="form-check-label d-flex align-items-center ms-2" for="newCard">
+                                <span class="payment-icon me-3"><i class="bi bi-credit-card-2-front fs-5"></i></span>
+                                <div>
+                                    <span class="d-block fw-medium">Kart ile Ödeme</span>
+                                    <small class="text-muted">Kredi/Banka kartı ile güvenli ödeme</small>
+                                </div>
+                            </label>
+                        </div>
+
+                        <div id="newCardForm" class="mt-3 p-4 bg-light rounded-3 d-none">
+                            <div class="mb-4">
+                                <label class="form-label text-secondary mb-2">Kart Üzerindeki İsim</label>
+                                <input type="text" class="form-control border-2 py-3" placeholder="Ad Soyad"
+                                    id="cardHolderName">
+                            </div>
+                            <div class="mb-4">
+                                <label class="form-label text-secondary mb-2">Kart Numarası</label>
+                                <input type="text" class="form-control border-2 py-3" placeholder="0000 0000 0000 0000"
+                                    id="cardNumber">
+                            </div>
+                            <div class="row g-3">
+                                <div class="col-md-3">
+                                    <label class="form-label text-secondary mb-2">Ay</label>
+                                    <input type="text" class="form-control border-2 py-3" placeholder="MM"
+                                        id="expireMonth">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label text-secondary mb-2">Yıl</label>
+                                    <input type="text" class="form-control border-2 py-3" placeholder="YY"
+                                        id="expireYear">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label text-secondary mb-2">Güvenlik Kodu</label>
+                                    <input type="text" class="form-control border-2 py-3" placeholder="CVC" id="cvc">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-check mt-3 p-3 rounded-3 border" style="background-color: #f8f9fa;">
+                            <input class="form-check-input mt-1" type="radio" name="PaymentMethod" id="cashOnDelivery"
+                                value="cash">
+                            <label class="form-check-label d-flex align-items-center ms-2" for="cashOnDelivery">
+                                <span class="payment-icon me-3"><i class="bi bi-cash-stack fs-5"></i></span>
+                                <div>
+                                    <span class="d-block fw-medium">Kapıda Ödeme</span>
+                                    <small class="text-muted">Teslimatta nakit veya kart ile ödeme</small>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column - Order Summary -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm sticky-top" style="top: 20px;">
+                <div class="card-header bg-white border-0 py-3 d-flex align-items-center">
+                    <div class="bg-primary bg-opacity-10 p-2 rounded me-3">
+                    </div>
+                    <h5 class="mb-0 fw-semibold">Sipariş Özeti</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Kupon Kodu Bölümü -->
+                    <div class="mb-4 pb-3 border-bottom">
+                        <label class="form-label text-secondary mb-2">Kupon Kodu</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control border-2 py-3" id="couponCode"
+                                placeholder="Kupon Kodu" asp-for="CouponCode">
+                            <button class="btn btn-primary px-4" type="button" id="applyCouponBtn">
+                                <i class="bi bi-ticket-perforated me-1"></i> Uygula
+                            </button>
+                        </div>
+                        <div id="couponMessage" class="mt-2 small"></div>
+                    </div>
+
+                    <div class="mb-4">
+                        <h6 class="fw-medium mb-3">Ürünler</h6>
+                        <ul class="list-group list-group-flush">
+                            @foreach (var item in Model.BasketItems)
+                            {
+                                <li
+                                    class="list-group-item border-0 px-0 py-2 d-flex justify-content-between align-items-center">
+                                    <div class="d-flex align-items-center">
+                                        <div>
+                                            <h6 class="mb-0 fw-normal">@item.ProductVariant.Product.Name</h6>
+                                            <small class="text-muted">@item.Quantity adet</small>
+                                        </div>
+                                    </div>
+                                    <span class="fw-medium">@(item.Quantity * item.ProductVariant.Product.Price) TL</span>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+
+                    <div class="border-top pt-3">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-secondary">Ara Toplam:</span>
+                            <span class="fw-medium">@ViewBag.baskettotalPrice TL</span>
+                        </div>
+
+                        <div id="discountRow" class="d-flex justify-content-between mb-2 text-success d-none">
+                            <span class="text-secondary">İndirim:</span>
+                            <span>-<span id="discountAmount">0</span> TL</span>
+                        </div>
+
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-secondary">Kargo:</span>
+                            <span id="shippingFee" class="text-success fw-medium">Ücretsiz</span>
+                        </div>
+
+                        <div class="d-flex justify-content-between fw-bold fs-5 mt-3 pt-2">
+                            <span>Toplam:</span>
+                            <span class="text-primary" id="totalPriceElement"
+                                data-totalprice="@Model.TotalPrice">@Model.TotalPrice TL</span>
+                        </div>
+                    </div>
+
+                    <script>
+                        // ViewBag'tan gelen toplam fiyatları JavaScript değişkenlerine alıyoruz
+                        var modelTotalPrice = parseFloat('@Model.TotalPrice');
+                        var basketTotalPrice = parseFloat('@ViewBag.baskettotalPrice');
+
+                        // Farkı hesaplıyoruz
+                        var shippingFee = modelTotalPrice - basketTotalPrice;
+
+                        // Eğer fark 0 ise ücretsiz, yoksa kargo ücreti yazdırılır
+                        if (shippingFee === 0) {
+                            document.getElementById('shippingFee').innerText = 'Ücretsiz';
+                        } else {
+                            document.getElementById('shippingFee').innerText = shippingFee.toFixed(2) + ' TL';
+                        }
+                    </script>
+
+                    <input type="hidden" id="orderId" value="@Model.OrderId" />
+                    <input type="hidden" id="appliedCouponCode" value="">
+                    <input type="hidden" id="appliedDiscount" value="0">
+                    <button id="completeOrderBtn" class="btn btn-primary w-100 py-3 mt-4 fw-bold">
+                        <i class="bi bi-check-circle me-2"></i>Siparişi Onayla
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Address Modal -->
+<div class="modal fade" id="addressModal" tabindex="-1" aria-labelledby="addressModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold fs-4" id="addressModalLabel">Yeni Adres Ekle</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body pt-0">
+                <form id="addressForm" action="/Shop/Order/SaveAddress" method="post">
+                    <input type="hidden" id="addressId" name="Id">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="NameSurname" class="form-label">Ad Soyad*</label>
+                            <input type="text" class="form-control border-2 py-3" id="NameSurname" name="NameSurname"
+                                required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="addressTitle" class="form-label">Adres Başlığı*</label>
+                            <input type="text" class="form-control border-2 py-3" id="addressTitle" name="AddressTitle"
+                                placeholder="Ev, İş, Yazlık..." required>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="city" class="form-label">İl*</label>
+                            <select class="form-select border-2 py-3" id="city" name="CityId" onchange="loadDistricts()"
+                                required>
+                                <option value="">Seçiniz</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="district" class="form-label">İlçe*</label>
+                            <select class="form-select border-2 py-3" id="district" name="DistrictId"
+                                onchange="loadNeighborhoods()" required>
+                                <option value="">Seçiniz</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="neighborhood" class="form-label">Semt*</label>
+                            <select class="form-select border-2 py-3" id="neighborhood" name="NeighborhoodId"
+                                onchange="loadVillages()" required>
+                                <option value="">Seçiniz</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="village" class="form-label">Mahalle*</label>
+                            <select class="form-select border-2 py-3" id="village" name="VillageId" required>
+                                <option value="">Seçiniz</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="phoneNumber" class="form-label">Telefon Numarası*</label>
+                            <input type="tel" class="form-control border-2 py-3" id="phoneNumber" name="PhoneNumber"
+                                placeholder="05XX XXX XX XX" required>
+                        </div>
+                        <div class="col-12">
+                            <label for="addressDetail" class="form-label">Açık Adres*</label>
+                            <textarea class="form-control border-2" id="addressDetail" name="AddressDetail" rows="3"
+                                placeholder="Cadde, sokak, apartman no, kat, daire no vb..." required></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0 pt-4">
+                        <button type="button" class="btn btn-outline-secondary px-4 py-2"
+                            data-bs-dismiss="modal">Vazgeç</button>
+                        <button type="submit" class="btn btn-primary px-4 py-2">Kaydet</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Modern Kart Stilleri */
+    .card {
+        border-radius: 16px;
+        overflow: hidden;
+        border: none;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    .card-header {
+        background-color: #fff;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    /* Ödeme Yöntemleri */
+    .payment-method .form-check {
+        transition: all 0.2s ease;
+    }
+
+    .payment-method .form-check:hover {
+        background-color: #f0f7ff !important;
+        border-color: #cce5ff !important;
+    }
+
+    .payment-method .form-check-input:checked {
+        background-color: #0d6efd;
+        border-color: #0d6efd;
+    }
+
+    .payment-method .form-check-input:checked~.form-check-label {
+        color: #0d6efd;
+    }
+
+    .payment-icon {
+        width: 48px;
+        height: 48px;
+        background: #fff;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #0d6efd;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    /* Butonlar */
+    #completeOrderBtn {
+        transition: all 0.3s ease;
+        letter-spacing: 0.5px;
+        box-shadow: 0 4px 6px rgba(13, 110, 253, 0.2);
+    }
+
+    #completeOrderBtn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(13, 110, 253, 0.25);
+    }
+
+    /* Input Alanları */
+    .form-control,
+    .form-select {
+        border-width: 2px;
+        border-color: #e9ecef;
+        transition: all 0.3s ease;
+    }
+
+    .form-control:focus,
+    .form-select:focus {
+        border-color: #86b7fe;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
+    }
+
+    /* Modal Stilleri */
+    .modal-content {
+        border-radius: 16px;
+        border: none;
+    }
+
+    /* Responsive Düzenlemeler */
+    @@media (max-width: 768px) {
+        .card-body {
+            padding: 1.25rem;
+        }
+
+        .payment-icon {
+            width: 40px;
+            height: 40px;
+        }
+    }
+</style>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            // Load cities on page load
+            $.get("/Shop/Profile/GetIller", function (data) {
+                var $cityDropdown = $("#city");
+                $cityDropdown.empty().append('<option value="">Seçiniz</option>');
+                $.each(data, function (index, item) {
+                    $cityDropdown.append('<option value="' + item.id + '">' + item.ad + '</option>');
+                });
+            }).fail(function () {
+                console.error("İller alınırken hata oluştu.");
+            });
+
+            // Show/hide card form based on payment method selection
+            $("input[name='PaymentMethod']").on("change", function () {
+                if ($("#newCard").is(":checked")) {
+                    $("#newCardForm").removeClass("d-none");
+                } else {
+                    $("#newCardForm").addClass("d-none");
+                }
+            });
+
+            // Kupon kodu uygula butonu
+            $("#applyCouponBtn").click(function () {
+                applyCoupon();
+            });
+
+            // Enter tuşu ile de kupon uygulanabilir
+            $("#couponCode").keypress(function (e) {
+                if (e.which == 13) {
+                    applyCoupon();
+                }
+            });
+        });
+
+        // Kupon uygulama fonksiyonu
+        function applyCoupon() {
+            var couponCode = $("#couponCode").val().trim();
+            if (!couponCode) {
+                showCouponMessage("Lütfen bir kupon kodu giriniz.", "text-danger");
+                return;
+            }
+
+            // Loading state
+            $("#applyCouponBtn").html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Uygulanıyor...');
+            $("#applyCouponBtn").prop("disabled", true);
+
+            $.ajax({
+                url: '@Url.Action("ApplyCoupon", "Order", new { area = "Shop" })',
+                type: 'POST',
+                data: {
+                    couponCode: couponCode,
+                    orderId: $("#orderId").val(),
+                    currentTotal: $("#totalPriceElement").data("totalprice")
+                },
+                success: function (response) {
+                    if (response.success) {
+                        showCouponMessage(response.message, "text-success");
+                        updateOrderSummary(response.discountAmount, response.newTotal);
+                        $("#appliedCouponCode").val(couponCode);
+                        $("#appliedDiscount").val(response.discountAmount);
+                    } else {
+                        showCouponMessage(response.message, "text-danger");
+                    }
+                },
+                error: function () {
+                    showCouponMessage("Bir hata oluştu, lütfen tekrar deneyin.", "text-danger");
+                },
+                complete: function () {
+                    $("#applyCouponBtn").html('<i class="bi bi-ticket-perforated"></i> Uygula');
+                    $("#applyCouponBtn").prop("disabled", false);
+                }
+            });
+        }
+
+        // Kupon mesajını göster
+        function showCouponMessage(message, textClass) {
+            $("#couponMessage").removeClass("text-success text-danger").addClass(textClass).text(message);
+        }
+
+        // Sipariş özetini güncelle
+        function updateOrderSummary(discountAmount, newTotal) {
+            if (discountAmount > 0) {
+                $("#discountRow").removeClass("d-none");
+                $("#discountAmount").text(discountAmount);
+                $("#totalPriceElement").text(newTotal + " TL");
+                $("#totalPriceElement").data("totalprice", newTotal);
+            } else {
+                $("#discountRow").addClass("d-none");
+            }
+        }
+
+        // Complete order function - Güncellenmiş versiyon (kupon bilgisini de gönderiyoruz)
+        $("#completeOrderBtn").click(function () {
+            var selectedAddressId = $("#SelectedAddressId").val();
+            if (!selectedAddressId || selectedAddressId == "0") {
+                alert("Lütfen bir teslimat adresi seçin");
+                return;
+            }
+
+            var paymentMethod = $("input[name='PaymentMethod']:checked").val();
+            if (!paymentMethod) {
+                alert("Lütfen bir ödeme yöntemi seçin");
+                return;
+            }
+
+            var requestData = {
+                selectedAddressId: selectedAddressId,
+                orderId: $("#orderId").val(),
+                paymentMethod: paymentMethod,
+                totalPrice: $("#totalPriceElement").data("totalprice"),
+                couponCode: $("#appliedCouponCode").val(),
+                discountAmount: $("#appliedDiscount").val()
+            };
+
+            if (paymentMethod === "new") {
+                requestData.cardHolderName = $("#cardHolderName").val();
+                requestData.cardNumber = $("#cardNumber").val();
+                requestData.expireMonth = $("#expireMonth").val();
+                requestData.expireYear = $("#expireYear").val();
+                requestData.cvc = $("#cvc").val();
+
+                if (!requestData.cardHolderName || !requestData.cardNumber ||
+                    !requestData.expireMonth || !requestData.expireYear || !requestData.cvc) {
+                    alert("Lütfen kart bilgilerini eksiksiz doldurun");
+                    return;
+                }
+            }
+
+            // Dinamik URL oluştur
+            var url = '@Url.Action("CompleteOrder", "Order", new { area = "Shop" })';
+
+            $.ajax({
+                url: url,
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(requestData),
+                success: function (response) {
+                    if (response.success) {
+                        window.location.href = '@Url.Action("OrderSuccess", "Order", new { area = "Shop" })';
+                    } else {
+                        alert(response.message || "Sipariş tamamlanırken bir hata oluştu");
+                    }
+                },
+                error: function (xhr) {
+                    alert("Sunucu hatası: " + (xhr.responseJSON?.message || xhr.statusText));
+                }
+            });
+        });
+
+        function loadDistricts() {
+            var ilId = $("#city").val();
+            if (ilId) {
+                $.get("/Shop/Profile/GetIlceler", { ilId: ilId }, function (data) {
+                    var $districtDropdown = $("#district");
+                    $districtDropdown.empty().append('<option value="">Seçiniz</option>');
+                    $.each(data, function (index, item) {
+                        $districtDropdown.append('<option value="' + item.id + '">' + item.ad + '</option>');
+                    });
+                }).fail(function () {
+                    console.error("İlçeler alınırken hata oluştu.");
+                });
+            }
+        }
+
+        // Load neighborhoods when district is selected
+        function loadNeighborhoods() {
+            var ilceId = $("#district").val();
+            if (ilceId) {
+                $.get("/Shop/Profile/GetSemtler", { ilceId: ilceId }, function (data) {
+                    var $neighborhoodDropdown = $("#neighborhood");
+                    $neighborhoodDropdown.empty().append('<option value="">Seçiniz</option>');
+                    $.each(data, function (index, item) {
+                        $neighborhoodDropdown.append('<option value="' + item.id + '">' + item.semtAdi + '</option>');
+                    });
+                }).fail(function () {
+                    console.error("Semtler alınırken hata oluştu.");
+                });
+            }
+        }
+
+        // Load villages when neighborhood is selected
+        function loadVillages() {
+            var semtId = $("#neighborhood").val();
+            if (semtId) {
+                $.get("/Shop/Profile/GetMahalleler", { semtId: semtId }, function (data) {
+                    var $villageDropdown = $("#village");
+                    $villageDropdown.empty().append('<option value="">Seçiniz</option>');
+                    $.each(data, function (index, item) {
+                        $villageDropdown.append('<option value="' + item.id + '">' + item.mahalleAdi + '</option>');
+                    });
+                }).fail(function () {
+                    console.error("Mahalleler alınırken hata oluştu.");
+                });
+            }
+        }
+    </script>
+}

@@ -1,0 +1,180 @@
+<div class="col-xl-12">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h5 class="card-title mb-0">Mağaza Kaydı</h5>
+        </div><!-- end card header -->
+
+        <div class="card-body">
+            <!-- Toast Mesajı için container -->
+            <div id="toastContainer" style="position: fixed; top: 20px; right: 20px; z-index: 1100;"></div>
+
+            <form class="row g-3 needs-validation" method="post" action="/Tenant/Store/Create"
+                enctype="multipart/form-data" novalidate>
+                <!-- Mağaza Adı -->
+                <div class="col-md-6">
+                    <label for="validationStoreName" class="form-label">Mağaza Adı</label>
+                    <input type="text" class="form-control" id="validationStoreName" name="StoreName" required>
+                    <div class="valid-feedback">Geçerli!</div>
+                    <div class="invalid-feedback">Lütfen geçerli bir mağaza adı girin.</div>
+                </div>
+
+                <!-- Mağaza Sahibi Adı -->
+                <div class="col-md-6">
+                    <label for="validationSiteName" class="form-label">Mağaza Sahibi Adı</label>
+                    <input type="text" class="form-control" id="validationSiteName" name="OwnerName" required>
+                    <div class="valid-feedback">Geçerli!</div>
+                    <div class="invalid-feedback">Lütfen geçerli bir mağaza sahibi adı girin.</div>
+                </div>
+
+                <!-- Domain Adı -->
+                <div class="col-md-6">
+                    <label for="validationDomain" class="form-label">Domain Adı</label>
+                    <div class="input-group has-validation">
+                        <span class="input-group-text">https://www.</span>
+                        <input type="text" class="form-control" id="validationDomain" name="Domain" required>
+                        <div class="invalid-feedback">Lütfen geçerli bir domain adı girin.</div>
+                    </div>
+                </div>
+
+                <!-- Sunucu Adı -->
+                <div class="col-md-6">
+                    <label for="validationServerName" class="form-label">Sunucu Adı</label>
+                    <input type="text" class="form-control" id="validationServerName" name="ServerName" required>
+                    <div class="valid-feedback">Geçerli!</div>
+                    <div class="invalid-feedback">Lütfen geçerli bir sunucu adı girin.</div>
+                </div>
+                <!-- Veritabanı Adı -->
+                <div class="col-md-6">
+                    <label for="validationDatabaseName" class="form-label">Veritabanı Adı</label>
+                    <input type="text" class="form-control" id="validationDatabaseName" name="DatabaseName" required>
+                    <div class="valid-feedback">Geçerli!</div>
+                    <div class="invalid-feedback">Lütfen geçerli bir veritabanı adı girin.</div>
+                </div>
+
+                <!-- Kullanıcı Adı -->
+                <div class="col-md-6">
+                    <label for="validationUsername" class="form-label">Kullanıcı Adı</label>
+                    <input type="text" class="form-control" id="validationUsername" name="Username" required>
+                    <div class="valid-feedback">Geçerli kullanıcı adı!</div>
+                    <div class="invalid-feedback">Lütfen geçerli bir kullanıcı adı girin.</div>
+                </div>
+
+                <!-- Şifre -->
+                <div class="col-md-6">
+                    <label for="validationPassword" class="form-label">Şifre</label>
+                    <div class="input-group">
+                        <input type="password" class="form-control" id="validationPassword" name="Password" required>
+                        <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <div class="valid-feedback">Güvenli şifre!</div>
+                        <div class="invalid-feedback">Lütfen geçerli bir şifre girin.</div>
+                    </div>
+                </div>
+
+                <!-- Email -->
+                <div class="col-md-6">
+                    <label for="validationEmail" class="form-label">Email</label>
+                    <input type="email" class="form-control" id="validationEmail" name="Email" required>
+                    <div class="valid-feedback">Geçerli email!</div>
+                    <div class="invalid-feedback">Lütfen geçerli bir email adresi girin.</div>
+                </div>
+
+                <!-- Logo Yükleme -->
+                <div class="col-md-12">
+                    <label for="validationLogo" class="form-label">Logo</label>
+                    <input class="form-control" type="file" id="validationLogo" name="Logo" accept="image/*" required>
+                    <div class="valid-feedback">Logo seçildi!</div>
+                    <div class="invalid-feedback">Lütfen bir logo dosyası seçin.</div>
+                </div>
+
+                <!-- Gönder Butonu -->
+                <div class="col-12 mt-4">
+                    <button class="btn btn-primary px-4 py-2" type="submit">Kaydet</button>
+                    <button class="btn btn-outline-secondary px-4 py-2 ms-2" type="reset">Temizle</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/js/all.min.js"></script>
+<script>
+    // Şifre göster/gizle
+    document.getElementById('togglePassword').addEventListener('click', function () {
+        const passwordInput = document.getElementById('validationPassword');
+        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+        passwordInput.setAttribute('type', type);
+        this.querySelector('i').classList.toggle('fa-eye-slash');
+    });
+
+    // Toast mesajı fonksiyonu
+    function showToast(message, type = 'success') {
+        const toast = document.createElement('div');
+        toast.className = `alert alert-${type} alert-dismissible fade show`;
+        toast.role = 'alert';
+        toast.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        `;
+
+        const container = document.getElementById('toastContainer');
+        container.appendChild(toast);
+
+        // 5 saniye sonra otomatik kapat
+        setTimeout(() => {
+            toast.remove();
+        }, 5000);
+    }
+
+    $('form').on('submit', function (e) {
+        e.preventDefault();
+
+        if (!this.checkValidity()) {
+            e.stopPropagation();
+            $(this).addClass('was-validated');
+            return;
+        }
+
+        var formData = new FormData(this);
+
+        $.ajax({
+            url: '/Tenant/Store/Create',
+            method: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function (response) {
+                showToast('Mağaza Bilgileri Kaydedildi. Veritabanı Kurulum Aşamasına Geçebilirsiniz.', 'success');
+                $('form')[0].reset();
+                $('form').removeClass('was-validated');
+
+                // Tüm valid-feedback ve invalid-feedback'leri gizle
+                $('.valid-feedback, .invalid-feedback').hide();
+
+                // Şifre göster/gizle butonunu varsayılan haline getir
+                $('#togglePassword i').removeClass('fa-eye-slash').addClass('fa-eye');
+                $('#validationPassword').attr('type', 'password');
+            },
+            error: function (xhr) {
+                showToast('Bir hata oluştu: ' + xhr.responseText, 'danger');
+            }
+        });
+    });
+
+    (function () {
+        'use strict'
+        var forms = document.querySelectorAll('.needs-validation')
+        Array.prototype.slice.call(forms)
+            .forEach(function (form) {
+                form.addEventListener('submit', function (event) {
+                    if (!form.checkValidity()) {
+                        event.preventDefault()
+                        event.stopPropagation()
+                    }
+
+                    form.classList.add('was-validated')
+                }, false)
+            })
+    })()
+</script>

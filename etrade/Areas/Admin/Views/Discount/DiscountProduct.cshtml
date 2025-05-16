@@ -1,0 +1,188 @@
+<div class="container-fluid py-4">
+    <div class="card border-0 shadow-lg rounded-xxl overflow-hidden">
+        <div class="card-header bg-gradient-primary text-white p-4">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-center">
+                <div class="d-flex align-items-center mb-3 mb-md-0">
+                    <button onclick="history.back()" class="btn btn-light btn-rounded-circle me-3 shadow-sm">
+                        <i class="fas fa-arrow-left"></i>
+                    </button>
+                    <h4 class="mb-0 fw-600 text-white">İndirimli Ürün Listesi</h4>
+                </div>
+                <div class="position-relative w-md-30">
+                    <span class="position-absolute search-icon">
+                        <i class="fas fa-search text-muted"></i>
+                    </span>
+                    <input type="text" id="searchInput" class="form-control ps-5 rounded-pill border-0 shadow-sm" 
+                           placeholder="Ürün ara...">
+                </div>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive rounded-xl">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light-100">
+                        <tr>
+                            <th class="py-3 px-4 text-uppercase fw-600 text-muted border-0">Ürün Adı</th>
+                            <th class="py-3 px-4 text-uppercase fw-600 text-muted border-0">İndirim Adı</th>
+                            <th class="py-3 px-4 text-uppercase fw-600 text-muted border-0 text-end">Kalan Süre</th>
+                        </tr>
+                    </thead>
+                    <tbody id="discountedProductTableBody" class="border-top-0">
+                        <!-- Data will be inserted here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="card-footer bg-light py-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="text-muted small">
+                    Toplam <span id="totalCount" class="fw-bold">0</span> ürün bulundu
+                </div>
+                <div class="pagination-controls">
+                    <!-- Pagination controls can be added here -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    async function fetchDiscountedProducts() {
+        try {
+            const response = await fetch('/Admin/Discount/GetProductDiscounts');
+            const productDiscounts = await response.json();
+            renderTable(productDiscounts);
+            document.getElementById('totalCount').textContent = productDiscounts.length;
+        } catch (error) {
+            console.error('Error fetching data:', error);
+        }
+    }
+
+    function renderTable(data) {
+        const tableBody = document.getElementById('discountedProductTableBody');
+        tableBody.innerHTML = '';
+
+        if (data.length === 0) {
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="3" class="py-4 text-center text-muted">
+                        <i class="fas fa-box-open fa-2x mb-2"></i>
+                        <p class="mb-0">İndirimli ürün bulunamadı</p>
+                    </td>
+                </tr>`;
+            return;
+        }
+
+        data.forEach(item => {
+            const row = `<tr class="hover-shadow">
+                <td class="py-3 px-4 border-0">
+                    <div class="d-flex align-items-center">
+                        <div class="symbol symbol-50px me-3">
+
+                        </div>
+                        <div>
+                            <h6 class="mb-0 fw-600">${item.productName}</h6>
+                            <small class="text-muted">${item.productCode || ''}</small>
+                        </div>
+                    </div>
+                </td>
+                <td class="py-3 px-4 border-0">
+                    <span class="badge bg-success-soft text-success py-2 px-3">
+                        ${item.discountName}
+                    </span>
+                </td>
+                <td class="py-3 px-4 border-0 text-end">
+                    <div class="d-flex flex-column align-items-end">
+                        <span class="fw-600">${item.discountRemainingTime}</span>
+                        <small class="text-muted">${item.discountEndDate || ''}</small>
+                    </div>
+                </td>
+            </tr>`;
+            tableBody.innerHTML += row;
+        });
+    }
+
+    document.getElementById('searchInput').addEventListener('input', function() {
+        const searchValue = this.value.toLowerCase();
+        const rows = document.querySelectorAll('#discountedProductTableBody tr');
+        let visibleCount = 0;
+        
+        rows.forEach(row => {
+            const productName = row.cells[0].textContent.toLowerCase();
+            const isVisible = productName.includes(searchValue);
+            row.style.display = isVisible ? '' : 'none';
+            if (isVisible) visibleCount++;
+        });
+        
+        document.getElementById('totalCount').textContent = visibleCount;
+    });
+
+    document.addEventListener("DOMContentLoaded", fetchDiscountedProducts);
+</script>
+
+<style>
+    :root {
+        --primary-color: #5e72e4;
+        --secondary-color: #f7fafc;
+        --success-soft: rgba(94, 186, 0, 0.1);
+    }
+    
+    .rounded-xxl {
+        border-radius: 1.5rem !important;
+    }
+    
+    .bg-gradient-primary {
+        background: linear-gradient(135deg, var(--primary-color) 0%, #825ee4 100%);
+    }
+    
+    .btn-rounded-circle {
+        border-radius: 50% !important;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .search-icon {
+        top: 50%;
+        left: 20px;
+        transform: translateY(-50%);
+    }
+    
+    .hover-shadow:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+    }
+    
+    .table-hover tbody tr {
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    
+    .table-hover tbody tr:hover {
+        background-color: rgba(94, 114, 228, 0.05);
+    }
+    
+    .bg-light-100 {
+        background-color: var(--secondary-color);
+    }
+    
+    .bg-success-soft {
+        background-color: var(--success-soft);
+    }
+    
+    .symbol {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+    
+    @@media (max-width: 768px) {
+        .w-md-30 {
+            width: 100% !important;
+        }
+    }
+</style>

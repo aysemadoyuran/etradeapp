@@ -1,0 +1,350 @@
+@model OrderDetailsViewModel
+
+<style>
+    /* Özel Stiller */
+    .order-container {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .order-header {
+        background-color: #f8f9fa;
+        border-radius: 0.5rem;
+    }
+
+    .info-card {
+        border-radius: 0.5rem;
+        border: 1px solid #e9ecef;
+        transition: all 0.3s ease;
+    }
+
+    .info-card:hover {
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.05);
+    }
+
+    .product-item {
+        border-bottom: 1px solid #f1f1f1;
+        transition: all 0.2s ease;
+    }
+
+    .product-item:hover {
+        background-color: #fafafa;
+    }
+
+    .refund-badge {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+    }
+
+    .price-text {
+        font-weight: 600;
+        color: #2c3e50;
+    }
+
+    .refund-highlight {
+        border-left: 4px solid #dc3545;
+        background-color: rgba(220, 53, 69, 0.05);
+    }
+
+    .fully-refunded {
+        background-color: #f8f9fa;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .fully-refunded::after {
+        content: "TAMAMEN İADE EDİLDİ";
+        position: absolute;
+        top: 50%;
+        left: 0;
+        right: 0;
+        text-align: center;
+        transform: translateY(-50%) rotate(-5deg);
+        font-size: 2rem;
+        font-weight: 800;
+        color: rgba(220, 53, 69, 0.1);
+        pointer-events: none;
+        z-index: 0;
+    }
+
+    .seller-info {
+        font-size: 0.85rem;
+    }
+
+    .section-title {
+        font-size: 1.1rem;
+        color: #495057;
+        border-bottom: 1px dashed #dee2e6;
+        padding-bottom: 0.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .product-image {
+        width: 80px;
+        height: 80px;
+        object-fit: cover;
+        border-radius: 0.25rem;
+    }
+
+    .order-status-badge {
+        font-size: 0.9rem;
+        padding: 0.5rem 1rem;
+    }
+
+    .refund-notice {
+        background-color: #e8f5e9;
+        border-left: 4px solid #28a745;
+        padding: 1rem;
+        border-radius: 0.25rem;
+        margin-bottom: 1.5rem;
+    }
+
+    @@media (max-width: 768px) {
+        .product-image {
+            width: 60px;
+            height: 60px;
+        }
+
+        .fully-refunded::after {
+            font-size: 1.5rem;
+        }
+    }
+</style>
+
+@{
+    bool isFullyRefunded = Model.TotalPrice == 0.00m;
+}
+
+<div class="order-container mt-4">
+    <!-- Üst Butonlar -->
+    <div class="d-flex justify-content-end mb-4 gap-2">
+        <a id="downloadInvoiceButton"
+            href="@Url.Action("GenerateInvoice", "Order", new { orderCode = Model.OrderCode })"
+            data-order-code="@Model.OrderCode" class="btn btn-outline-primary">
+            <i class="fas fa-file-invoice me-2"></i> Faturamı Görüntüle
+        </a>
+    </div>
+
+    @if (isFullyRefunded)
+    {
+        <div class="refund-notice d-flex align-items-center mb-4">
+            <i class="fas fa-check-circle me-3 fs-4 text-success"></i>
+            <div>
+                <p class="mb-1 text-success">Bu siparişteki tüm ürünler iade edilmiştir</p>
+            </div>
+        </div>
+    }
+
+    <!-- Sipariş Bilgileri -->
+    <div class="card order-header border-0 shadow-sm p-4 mb-4 @(isFullyRefunded ? "fully-refunded" : "")">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center position-relative"
+            style="z-index: 1;">
+            <div class="mb-3 mb-md-0">
+                <h4 class="mb-1">Sipariş Detayları</h4>
+                <div class="d-flex align-items-center gap-3">
+                    <span class="text-muted">Sipariş No: #@Model.OrderCode</span>
+                    <span class="text-muted">Tarih: @Model.OrderDate</span>
+                </div>
+            </div>
+            <span class="badge @(isFullyRefunded ? "bg-secondary" : "bg-primary") order-status-badge py-2 px-3">
+                @if (isFullyRefunded)
+                {
+                    <i class="fas fa-undo-alt me-1"></i>
+                }
+                @Model.OrderStatus
+            </span>
+        </div>
+    </div>
+
+    <!-- Alıcı ve Gönderen Bilgileri -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-6">
+            <div class="card info-card h-100 p-3">
+                <h5 class="section-title">
+                    <i class="fas fa-user-circle me-2 text-primary"></i>Alıcı Bilgileri
+                </h5>
+                <div class="d-flex flex-column gap-2">
+                    <div>
+                        <span class="text-muted small">Ad Soyad:</span>
+                        <p class="mb-0 fw-medium">@Model.ShippingAddress.NameSurname</p>
+                    </div>
+                    <div>
+                        <span class="text-muted small">Telefon:</span>
+                        <p class="mb-0 fw-medium">@Model.ShippingAddress.Phone</p>
+                    </div>
+                    <div>
+                        <span class="text-muted small">Adres:</span>
+                        <p class="mb-0 fw-medium">@Model.ShippingAddress.Address</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card info-card h-100 p-3">
+                <h5 class="section-title">
+                    <i class="fas fa-store me-2 text-primary"></i>Gönderen Bilgileri
+                </h5>
+                <div class="d-flex flex-column gap-2 seller-info">
+                    <div>
+                        <span class="text-muted small">Mağaza:</span>
+                        <p class="mb-0 fw-medium store-name">Loading...</p> <!-- Dinamik olarak yüklenecek -->
+                    </div>
+                    <div>
+                        <span class="text-muted small">Telefon:</span>
+                        <p class="mb-0 fw-medium store-phone">Loading...</p> <!-- Dinamik olarak yüklenecek -->
+                    </div>
+                    <div>
+                        <span class="text-muted small">Adres:</span>
+                        <p class="mb-0 fw-medium store-address">Loading...</p> <!-- Dinamik olarak yüklenecek -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Satın Alınan Ürünler -->
+    <div class="card shadow-sm border-0 p-3 p-md-4 mb-4">
+        <h5 class="section-title">
+            <i class="fas fa-box-open me-2 text-primary"></i>Satın Alınan Ürünler
+        </h5>
+
+        <div class="table-responsive">
+            <table class="table table-borderless">
+                <thead class="bg-light">
+                    <tr>
+                        <th>Ürün</th>
+                        <th>Beden/Renk</th>
+                        <th>Adet</th>
+                        <th>Fiyat</th>
+                        <th>Toplam</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.OrderItems)
+                    {
+                        var isRefunded = item.RefundedQuantity > 0;
+
+                        <tr class="product-item @(isRefunded ? "refund-highlight" : "")">
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div>
+                                        <a href="/Shop/Product/Details?id=@item.ProductId"
+                                            class="text-decoration-none text-dark fw-medium">
+                                            @item.ProductName
+                                        </a>
+                                        @if (isRefunded)
+                                        {
+                                            <div class="mt-1">
+                                                <span class="badge refund-badge bg-danger">
+                                                    <i class="fas fa-exchange-alt me-1"></i>
+                                                    @item.RefundedQuantity adet iade edildi
+                                                </span>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="align-middle">
+                                <span class="badge bg-light text-dark">@item.Size / @item.Color</span>
+                            </td>
+                            <td class="align-middle">@item.Quantity</td>
+                            <td class="align-middle">@item.Price.ToString("N2") TL</td>
+                            <td class="align-middle price-text">
+                                @if (isRefunded && item.RefundedQuantity == item.Quantity)
+                                {
+                                    <span
+                                        class="text-decoration-line-through text-muted me-2">@item.TotalPrice.ToString("N2")</span>
+                                    <span class="text-success">0,00 TL</span>
+                                }
+                                else
+                                {
+                                    @item.TotalPrice.ToString("N2")
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Ödeme Detayları -->
+    <div class="card shadow-sm border-0 p-3 p-md-4">
+        <h5 class="section-title">
+            <i class="fas fa-credit-card me-2 text-primary"></i>Ödeme Detayları
+        </h5>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <span class="text-muted small">Ödeme Yöntemi:</span>
+                    <p class="fw-medium mb-0">@Model.PaymentMethod</p>
+                </div>
+
+            </div>
+            <div class="col-md-6 text-md-end">
+                <div class="mb-3">
+                    <span class="text-muted small">Toplam Tutar:</span>
+                    <p class="fw-bold fs-5 @(isFullyRefunded ? "text-success" : "text-primary") mb-0">
+                        @if (isFullyRefunded)
+                        {
+                            <span>0,00 TL <small class="text-muted">(İade Edildi)</small></span>
+                        }
+                        else
+                        {
+                            @Model.TotalPrice.ToString("N2")
+                        
+                            <span>TL</span>
+                        }
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+    $(document).ready(function () {
+        $.ajax({
+            url: '/Shop/Order/GetInvoiceInfo',  // Veriyi döndüren endpoint
+            method: 'GET',
+            success: function (data) {
+                // Başarılı yanıt geldiğinde bu fonksiyon çalışacak
+                updateSenderInfo(data);
+            },
+            error: function () {
+                alert('Veri yüklenirken bir hata oluştu.');
+            }
+        });
+    });
+
+    function updateSenderInfo(data) {
+        // Veriyi dinamik olarak HTML'e yerleştirmek
+        $('.seller-info .store-name').text(data.storeName);
+        $('.seller-info .store-phone').text(data.contactInfo.tel);
+        $('.seller-info .store-address').text(data.cityCountry);
+
+        // Logo resmi güncelleme
+    }
+</script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        document.getElementById('downloadInvoiceButton').addEventListener('click', function (e) {
+            e.preventDefault();
+
+            // Butondan OrderCode değerini al
+            var orderCode = this.getAttribute('data-order-code');
+
+            // Eğer orderCode boşsa hata ver
+            if (!orderCode || orderCode.trim() === "") {
+                console.error("Geçersiz Order Code!");
+                return;
+            }
+
+            var url = '/Shop/Order/GenerateInvoice?orderCode=' + encodeURIComponent(orderCode);
+
+            // Yeni sekmede aç
+            window.open(url, '_blank', 'noopener,noreferrer');
+        });
+    });
+</script>

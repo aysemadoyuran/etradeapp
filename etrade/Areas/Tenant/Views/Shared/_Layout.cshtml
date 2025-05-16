@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!-- Mirrored from zoyothemes.com/dusty/html/pages-starter by HTTrack Website Copier/3.x [XR&CO'2014], Sun, 20 Apr 2025 17:02:39 GMT -->
+<!-- Added by HTTrack -->
+<meta http-equiv="content-type" content="text/html;charset=UTF-8" /><!-- /Added by HTTrack -->
+
+<head>
+
+    <meta charset="utf-8" />
+    <title>Starter | Dusty - Responsive Admin Dashboard Template</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="A fully featured admin theme which can be used to build CRM, CMS, etc." />
+    <meta name="author" content="Zoyothemes" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+    <!-- App favicon -->
+    <link rel="shortcut icon" href="assets/images/favicon.ico">
+
+    <!-- App css -->
+    <link href="/temp/dusty/assets/css/app.min.css" rel="stylesheet" type="text/css" id="app-style" />
+
+    <!-- Icons -->
+    <link href="/temp/dusty/assets/css/icons.min.css" rel="stylesheet" type="text/css" />
+
+    <script src="/temp/dusty/assets/js/head.js"></script>
+    @RenderSection("Styles", required: false)
+</head>
+
+<!-- body start -->
+
+<body data-menu-color="dark" data-sidebar="default">
+
+    <!-- Begin page -->
+    <div id="app-layout">
+
+
+        <!-- Topbar Start -->
+        <div class="topbar-custom">
+            <div class="container-fluid">
+                <div class="d-flex justify-content-between">
+                    <ul class="list-unstyled topnav-menu mb-0 d-flex align-items-center">
+                        <li>
+                            <button class="button-toggle-menu nav-link">
+                                <i data-feather="menu" class="noti-icon"></i>
+                            </button>
+                        </li>
+                        <li class="d-none d-lg-block">
+                            <form class="app-search d-none d-md-block me-auto">
+                                <div class="position-relative topbar-search">
+                                    <input type="text" class="form-control ps-4" placeholder="Search..." />
+                                    <iconify-icon icon="solar:minimalistic-magnifer-outline"
+                                        class="align-middle fs-14 position-absolute text-muted top-50 translate-middle-y ms-2"></iconify-icon>
+                                </div>
+                            </form>
+                        </li>
+                    </ul>
+
+                    <ul class="list-unstyled topnav-menu mb-0 d-flex align-items-center">
+
+                        <li class="dropdown topbar-dropdown">
+                            <a class="nav-link dropdown-toggle me-0" data-bs-toggle="dropdown" href="#" role="button"
+                                aria-haspopup="false" aria-expanded="false">
+                                <img src="/temp/dusty/assets/images/flags/us.svg" alt="user-image img-fluid"
+                                    class="w-100 rounded-2" height="20" width="20" id="selected-language-image" />
+                            </a>
+                            <div class="dropdown-menu dropdown-menu-end profile-dropdown">
+                                <!-- item-->
+                                <a href="javascript:void(0);" class="dropdown-item" data-translator-lang="en">
+                                    <img src="/temp/dusty/assets/images/flags/us.svg" alt="user-image"
+                                        class="me-1 rounded" height="18" data-translator-image=""> <span
+                                        class="align-middle">English</span>
+                                </a>
+
+                                <!-- item-->
+                                <a href="javascript:void(0);" class="dropdown-item" data-translator-lang="hi">
+                                    <img src="/temp/dusty/assets/images/flags/in.svg" alt="user-image"
+                                        class="me-1 rounded" height="18" data-translator-image=""> <span
+                                        class="align-middle">Hindi</span>
+                                </a>
+
+                                <!-- item-->
+                                <a href="javascript:void(0);" class="dropdown-item">
+                                    <img src="/temp/dusty/assets/images/flags/de.svg" alt="user-image"
+                                        class="me-1 rounded" height="18"> <span class="align-middle">German</span>
+                                </a>
+
+                                <!-- item-->
+                                <a href="javascript:void(0);" class="dropdown-item">
+                                    <img src="/temp/dusty/assets/images/flags/ca.svg" alt="user-image"
+                                        class="me-1 rounded" height="18"> <span class="align-middle">Canada</span>
+                                </a>
+
+                                <!-- item-->
+                                <a href="javascript:void(0);" class="dropdown-item">
+                                    <img src="/temp/dusty/assets/images/flags/au.svg" alt="user-image"
+                                        class="me-1 rounded" height="18"> <span class="align-middle">Australia</span>
+                                </a>
+
+                                <!-- item-->
+                                <a href="javascript:void(0);" class="dropdown-item">
+                                    <img src="/temp/dusty/assets/images/flags/ru.svg" alt="user-image"
+                                        class="me-1 rounded" height="18"> <span class="align-middle">Russian</span>
+                                </a>
+
+                                <!-- item-->
+                                <a href="javascript:void(0);" class="dropdown-item">
+                                    <img src=/temp/dusty/assets/images/flags/si.svg" alt="user-image"
+                                        class="me-1 rounded" height="18"> <span class="align-middle">Italian</span>
+                                </a>
+                            </div>
+                        </li>
+
+                        <!-- Button Trigger Customizer Offcanvas -->
+                        <li class="d-none d-sm-flex">
+                            <button type="button" class="btn nav-link" data-toggle="fullscreen">
+                                <iconify-icon icon="solar:minimize-square-outline"
+                                    class="fs-24 align-middle"></iconify-icon>
+                            </button>
+                        </li>
+
+                        <!-- Light/Dark Mode Button Themes -->
+                        <li class="d-none d-sm-flex">
+                            <button type="button" class="btn nav-link" id="light-dark-mode">
+                                <iconify-icon icon="solar:moon-outline"
+                                    class="fs-24 align-middle dark-mode"></iconify-icon>
+                                <iconify-icon icon="solar:sun-2-outline"
+                                    class="fs-24 align-middle light-mode"></iconify-icon>
+                            </button>
+                        </li>
+
+                        <li class="dropdown notification-list topbar-dropdown">
+                            <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button"
+                                aria-haspopup="false" aria-expanded="false">
+                                <iconify-icon icon="solar:bell-bing-outline"
+                                    class="fs-24 align-middle light-mode"></iconify-icon>
+                                <span class="badge bg-danger rounded-circle noti-icon-badge">9</span>
+                            </a>
+                            <div class="dropdown-menu dropdown-menu-end dropdown-lg">
+                                <!-- item-->
+                                <div class="dropdown-item noti-title">
+                                    <h5 class="m-0 fs-16 fw-semibold">
+                                        <span class="float-end"><a href="javascript:void(0);"
+                                                class="text-dark fs-14"><small class="text-primary">Make all as
+                                                    read</small></a></span>Notification
+                                    </h5>
+                                </div>
+
+                                <div class="noti-scroll" data-simplebar>
+                                    <!-- item-->
+                                    <a href="javascript:void(0);"
+                                        class="dropdown-item notify-item text-muted link-primary">
+                                        <div class="d-flex align-items-center">
+                                            <div class="notify-icon">
+                                                <img src="/temp/dusty/assets/images/users/avatar/avatar-3.jpg"
+                                                    class="img-fluid rounded-circle" alt="" />
+                                            </div>
+                                            <div class="flex-grow-1">
+                                                <div class="d-flex align-items-center justify-content-between mb-1">
+                                                    <p class="notify-details mb-0">Carl Steadham</p>
+                                                    <iconify-icon icon="solar:record-bold"
+                                                        class="fs-12 text-primary align-middle light-mode"></iconify-icon>
+                                                </div>
+                                                <div class="d-flex align-items-center justify-content-between">
+                                                    <p class="text-muted mb-0">Thursday 4:20pm</p>
+                                                    <p class="text-muted mb-0">2 hours ago</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </a>
+
+                                    <!-- item-->
+                                    <a href="javascript:void(0);"
+                                        class="dropdown-item notify-item text-muted link-primary">
+                                        <div class="d-flex align-items-start">
+                                            <div class="notify-icon">
+                                                <img src="/temp/dusty/assets/images/users/avatar/avatar-5.jpg"
+                                                    class="img-fluid rounded-circle" alt="" />
+                                            </div>
+                                            <div class="flex-grow-1">
+                                                <div class="d-flex align-items-center justify-content-between mb-1">
+                                                    <p class="notify-details mb-0">Carl Steadham</p>
+                                                    <iconify-icon icon="solar:record-bold"
+                                                        class="fs-12 text-primary align-middle light-mode"></iconify-icon>
+                                                </div>
+                                                <div class="d-flex align-items-center justify-content-between mb-1">
+                                                    <p class="text-muted mb-0">Thursday 4:00pm</p>
+                                                    <p class="text-muted mb-0">1 hours ago</p>
+                                                </div>
+                                                <div class="p-2 rounded-2 bg-light">
+                                                    <p class="text-dark mb-0">Love the background on this! <br> Would
+                                                        love to learn </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </a>
+
+                                    <!-- item-->
+                                    <a href="javascript:void(0);"
+                                        class="dropdown-item notify-item text-muted link-primary">
+                                        <div class="d-flex align-items-center">
+                                            <div class="notify-icon">
+                                                <img src="/temp/dusty/assets/images/users/avatar/avatar-1.jpg"
+                                                    class="img-fluid rounded-circle" alt="" />
+                                            </div>
+                                            <div class="flex-grow-1">
+                                                <div class="d-flex align-items-center justify-content-between mb-1">
+                                                    <p class="notify-details mb-0">Eleanor Mac </p>
+                                                    <iconify-icon icon="solar:record-bold"
+                                                        class="fs-12 text-primary align-middle light-mode"></iconify-icon>
+                                                </div>
+                                                <div class="d-flex align-items-center justify-content-between">
+                                                    <p class="text-muted mb-0">Thursday 3:20pm</p>
+                                                    <p class="text-muted mb-0">3 hours ago</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </a>
+
+                                    <!-- item-->
+                                    <a href="javascript:void(0);"
+                                        class="dropdown-item notify-item text-muted link-primary">
+                                        <div class="d-flex align-items-start">
+                                            <div class="notify-icon">
+                                                <img src="/temp/dusty/assets/images/users/avatar/avatar-7.jpg"
+                                                    class="img-fluid rounded-circle" alt="" />
+                                            </div>
+                                            <div class="flex-grow-1">
+                                                <div class="d-flex align-items-center justify-content-between mb-1">
+                                                    <p class="notify-details mb-0">Ollie diggs</p>
+                                                    <iconify-icon icon="solar:record-bold"
+                                                        class="fs-12 text-primary align-middle light-mode"></iconify-icon>
+                                                </div>
+                                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                                    <p class="text-muted mb-0">Thursday 3:44pm</p>
+                                                    <p class="text-muted mb-0">2 hours ago</p>
+                                                </div>
+                                                <div class="d-flex align-items-center gap-1">
+                                                    <button type="button"
+                                                        class="btn btn-sm bg-white border">Decline</button>
+                                                    <button type="button" class="btn btn-sm btn-primary">Accept</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </a>
+
+                                </div>
+
+                                <!-- All-->
+                                <a href="javascript:void(0);"
+                                    class="dropdown-item text-center text-primary notify-item notify-all fw-bold border-top border-light">View
+                                    all
+                                    <i class="fe-arrow-right"></i>
+                                </a>
+                            </div>
+                        </li>
+
+                        <!-- User Dropdown -->
+                        <li class="dropdown-item notify-item rounded-2">
+                            <form asp-area="Tenant" asp-controller="Account" asp-action="Logout" method="post">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-link p-0 border-0 bg-transparent"
+                                    style="cursor: pointer;">
+                                    <iconify-icon icon="solar:login-3-outline"
+                                        class="fs-18 align-middle"></iconify-icon>
+                                    <span>Çıkış Yap</span>
+                                </button>
+                            </form>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <!-- end Topbar -->
+
+        <!-- Left Sidebar Start -->
+        <div class="app-sidebar-menu">
+            <div class="h-100" data-simplebar>
+
+                <!--- Sidemenu -->
+                <div id="sidebar-menu">
+
+                    <div class="logo-box">
+                        <a class='logo logo-light' href='index.html'>
+                            <span class="logo-sm">
+                                <img src="/temp/dusty/assets/images/logo-sm.png" alt="" height="22">
+                            </span>
+                            <span class="logo-lg">
+                                <img src="/temp/dusty/assets/images/logo-light.png" alt="" height="32">
+                            </span>
+                        </a>
+                        <a class='logo logo-dark' href='index.html'>
+                            <span class="logo-sm">
+                                <img src="/temp/dusty/assets/images/logo-sm.png" alt="" height="22">
+                            </span>
+                            <span class="logo-lg">
+                                <img src="/temp/dusty/assets/images/logo-dark.png" alt="" height="24">
+                            </span>
+                        </a>
+                    </div>
+
+                    <ul id="side-menu">
+
+
+
+                        <li class="menu-title mt-2">Veritabanı İşlemleri</li>
+
+                        <li>
+                            <a class='tp-link' href='/Tenant/Store/List'>
+                                <span class="nav-icon"><iconify-icon
+                                        icon="solar:bill-list-bold-duotone"></iconify-icon></span>
+                                <span> Mağaza Listesi </span>
+                            </a>
+                        </li>
+
+                        <li>
+                            <a class='tp-link' href='/Tenant/Store/DatabaseSetup'>
+                                <span class="nav-icon"><iconify-icon
+                                        icon="solar:shield-user-bold-duotone"></iconify-icon></span>
+                                <span> Veritabanı Kurulumu </span>
+                            </a>
+                        </li>
+
+                        <li>
+                            <a class='tp-link' href='/Tenant/Health/Index'>
+                                <span class="nav-icon"><iconify-icon
+                                        icon="solar:calendar-minimalistic-bold-duotone"></iconify-icon></span>
+                                <span> Güncel Sağlık Durumu </span>
+                            </a>
+                        </li>
+
+                        <li class="menu-title">Lisanslama İşlemleri</li>
+
+                        <li>
+                            <a class='tp-link' href='/Tenant/License/CustomerList'>
+                                <span class="nav-icon"><iconify-icon
+                                        icon="solar:lock-keyhole-bold-duotone"></iconify-icon></span>
+                                <span> Müşteri Yönetimi</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a class='tp-link' href='/Tenant/License/LicenseList'>
+                                <span class="nav-icon"><iconify-icon
+                                        icon="solar:document-add-bold-duotone"></iconify-icon></span>
+                                <span> Lisans Yönetimi</span>
+                            </a>
+                        </li>
+                        
+                        <li>
+                            <a class='tp-link' href='/Tenant/License/PaymentList'>
+                                <span class="nav-icon"><iconify-icon
+                                        icon="solar:siderbar-bold-duotone"></iconify-icon></span>
+
+                                <span> Ödeme Planları</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a class='tp-link' href='/Tenant/License/LicensePrice'>
+                                <span class="nav-icon">
+                                    <iconify-icon icon="mdi:credit-card-outline"></iconify-icon>
+                                </span>
+                                <span> Lisans Ücretleri </span>
+                            </a>
+                        </li>
+
+                        <li class="menu-title mt-2">Talepler</li>
+
+
+                        <li>
+                        <a class='tp-link' href='/Tenant/Demo/Index'>
+                            <span class="nav-icon"><iconify-icon icon="mdi:license"></iconify-icon></span>
+                            <span> Demo Talepleri</span>
+                        </a>
+                        </li>
+                        <li>
+                            <a class='tp-link' href='/Tenant/Request/Index'>
+                                <span class="nav-icon">
+                                    <iconify-icon icon="mdi:undo-variant"></iconify-icon> </span>
+                                <span> İptal Talepleri</span>
+                            </a>
+                        </li>
+
+                        <!-- <li>
+                                <a href="widgets.html" class="tp-link">
+                                    <span class="nav-icon"><iconify-icon
+                                            icon="solar:box-minimalistic-bold-duotone"></iconify-icon></span>
+                                    <span> Widgets </span>
+                                </a>
+                            </li> -->
+
+
+
+
+
+
+
+
+
+
+
+                    </ul>
+                </div>
+                <!-- End Sidebar -->
+
+                <div class="clearfix"></div>
+
+            </div>
+        </div>
+        <!-- Left Sidebar End -->
+
+        <!-- ============================================================== -->
+        <!-- Start Page Content here -->
+        <!-- ============================================================== -->
+
+        <div class="content-page">
+            <div class="content">
+
+                <!-- Start Content-->
+                <div class="container-fluid">
+
+                    @RenderBody()
+
+
+                </div> <!-- container-fluid -->
+
+            </div> <!-- content -->
+
+            <!-- Footer Start -->
+            <footer class="footer">
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col fs-13 text-muted text-center">
+                            &copy;
+                            <script>document.write(new Date().getFullYear())</script> - Made with <span
+                                class="mdi mdi-heart text-danger"></span> by <a href="#!"
+                                class="text-reset fw-semibold">Zoyothemes</a>
+                        </div>
+                    </div>
+                </div>
+            </footer>
+            <!-- end Footer -->
+
+        </div>
+        <!-- ============================================================== -->
+        <!-- End Page content -->
+        <!-- ============================================================== -->
+
+
+    </div>
+    <!-- END wrapper -->
+
+    <!-- Vendor -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="/temp/dusty/assets/libs/jquery/jquery.min.js"></script>
+
+    <script src="/temp/dusty/assets/libs/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="/temp/dusty/assets/libs/iconify-icon/iconify-icon.min.js"></script>
+    <script src="/temp/dusty/assets/libs/simplebar/simplebar.min.js"></script>
+    <script src="/temp/dusty/assets/libs/node-waves/waves.min.js"></script>
+    <script src="/temp/dusty/assets/libs/waypoints/lib/jquery.waypoints.min.js"></script>
+    <script src="/temp/dusty/assets/libs/jquery.counterup/jquery.counterup.min.js"></script>
+    <script src="/temp/dusty/assets/libs/feather-icons/feather.min.js"></script>
+
+    <!-- App js-->
+    <script src="/temp/dusty/assets/js/app.js"></script>
+    @RenderSection("Scripts", required: false)
+
+</body>
+
+<!-- Mirrored from zoyothemes.com/dusty/html/pages-starter by HTTrack Website Copier/3.x [XR&CO'2014], Sun, 20 Apr 2025 17:02:39 GMT -->
+
+</html>

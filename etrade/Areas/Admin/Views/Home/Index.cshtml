@@ -1,0 +1,596 @@
+﻿@{
+    ViewData["Title"] = "Lisans Yönetimi";
+}
+<div id="dataDeliveryConfirmation" class="card mb-4" style="display: none;">
+    <div class="card-body">
+        <div class="form-check mb-3">
+            <input class="form-check-input" type="checkbox" id="dataDeliveryCheckbox">
+            <label class="form-check-label" for="dataDeliveryCheckbox">
+                Aysoft Yazılım Çözümleri Şirketinden Tüm Verilerimi Teslim Aldım. Verilerimi Saklama Yükümlülükleri
+                Kalmamıştır.
+            </label>
+        </div>
+        <button id="finalizeSystemBtn" class="btn btn-danger" disabled>
+            <i class="fas fa-power-off"></i> Sistemi Sonlandır
+        </button>
+    </div>
+</div>
+<div class="license-container">
+    <div class="license-header"
+        style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+        <!-- Sol tarafta Lisans Yönetimi başlığı -->
+        <h1 style="margin: 0;">Lisans Yönetimi</h1>
+
+        <!-- Sağ tarafta Ücretsiz Banner -->
+        <div class="free-trial-banner" style="margin-left: auto; font-size: 16px;">
+            <i class="fas fa-gift"></i> İlk 7 gün ücretsiz
+        </div>
+
+        <!-- İptal Talebi Butonu (Dinamik olarak güncellenecek) -->
+        <button id="cancelRequestButton" class="btn btn-outline-danger" data-bs-toggle="modal"
+            data-bs-target="#cancelRequestModal">
+            İptal Talebi Oluştur
+        </button>
+        <a href="#" class="btn btn-outline-warning" id="frozenRequestButton">
+            Lisansı Dondur
+        </a>
+    </div>
+
+    <!-- Alt kısımda müşteri bilgileri (tam genişlik - 12 kolon) -->
+    <div class="customer-info" style="width: 100%; margin-top: 20px;">
+        <div class="customer-details" style="display: flex; gap: 30px; flex-wrap: wrap; font-size: 16px;">
+            <div><i class="fas fa-user"></i> Lisans Sahibi: <span id="customerName">-</span></div>
+            <div><i class="fas fa-store"></i> Mağaza Adı:<span id="customerStore">-</span></div>
+            <div><i class="fas fa-envelope"></i> Mail Adresi:</Main><span id="customerEmail">-</span></div>
+        </div>
+    </div>
+
+    <!-- Lisans ve Borç Bilgileri -->
+    <div class="info-cards">
+        <div class="info-card license-info">
+            <div class="info-card-icon">
+                <i class="fas fa-calendar-alt"></i>
+            </div>
+            <div class="info-card-content">
+                <h3>Aktif Lisans Dönemi</h3>
+                <div class="license-dates">
+                    <div><span id="licenseStartDate">-</span> <i class="fas fa-arrow-right"></i> <span
+                            id="licenseEndDate">-</span></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="debt-cards">
+            <div class="debt-card">
+                <div class="debt-card-icon">
+                    <i class="fas fa-file-invoice-dollar"></i>
+                </div>
+                <div class="debt-card-info">
+                    <h3>Toplam Borç</h3>
+                    <span id="totalDebt">0</span> TL
+                </div>
+            </div>
+
+            <div class="debt-card">
+                <div class="debt-card-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="debt-card-info">
+                    <h3>Ödenen Borç</h3>
+                    <span id="paidDebt">0</span> TL
+                </div>
+            </div>
+
+            <div class="debt-card">
+                <div class="debt-card-icon">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <div class="debt-card-info">
+                    <h3>Kalan Borç</h3>
+                    <span id="remainingDebt">0</span> TL
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Veri Teslim Onayı (Sadece IsCompleted true ise gösterilecek) -->
+
+
+    <!-- Ödeme Kayıtları Tablosu -->
+    <div class="license-table-container">
+        <h2><i class="fas fa-history"></i> Ödeme Geçmişi</h2>
+        <div class="table-responsive">
+            <table class="license-table">
+                <thead>
+                    <tr>
+                        <th>Dönem</th>
+                        <th>Fiyat</th>
+                        <th>Durum</th>
+                        <th>İşlem</th>
+                    </tr>
+                </thead>
+                <tbody id="paymentsTable">
+                    <!-- Dinamik olarak buraya ödeme kayıtları eklenecek -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Ödeme Modalı -->
+<div id="paymentModal" class="modal">
+    <div class="modal-content" style="max-width: 500px;">
+        <span class="close-modal">&times;</span>
+        <h2><i class="fas fa-credit-card"></i> Ödeme Yap</h2>
+
+        <div class="payment-details">
+            <input type="hidden" name="modalId" id="modalId">
+            <p><strong>Dönem:</strong> <span id="modalPeriod"></span></p>
+            <p><strong>Ödenecek Tutar:</strong> <span id="modalAmount"></span> TL</p>
+            <p><strong>Mağaza:</strong> <span id="modalStore"></span></p>
+        </div>
+
+        <form id="paymentForm">
+            <div class="form-group">
+                <label for="cardNumber">Kart Numarası</label>
+                <input type="text" id="cardNumber" placeholder="1234 5678 9012 3456" required>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="cardExpiry">Son Kullanma Tarihi</label>
+                    <input type="text" id="cardExpiry" placeholder="MM/YY" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="cardCvc">CVC</label>
+                    <input type="text" id="cardCvc" placeholder="123" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="cardName">Kart Üzerindeki İsim</label>
+                <input type="text" id="cardName" placeholder="Ad Soyad" required>
+            </div>
+
+            <button type="submit" class="btn-pay">
+                <i class="fas fa-lock"></i> Ödemeyi Tamamla
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- İptal Talebi Modalı -->
+<div class="modal fade" id="cancelRequestModal" tabindex="-1" aria-labelledby="cancelRequestModalLabel"
+    aria-hidden="true" style="display: none;">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="cancelRequestModalLabel">Lisans İptal Talebi</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                    aria-label="Kapat"></button>
+            </div>
+            <div class="modal-body d-flex flex-wrap">
+                <!-- Sol: Bilgilendirme -->
+                <div class="col-md-6 border-end pe-4">
+                    <h5>Önemli Bilgilendirme</h5>
+                    <p>
+                        İptal işlemi geri alınamaz. İptal işlemi sonrası sisteminizdeki veritabanı tamamen
+                        kaldırılacaktır.
+                        <strong>İptal onayından sonra</strong> verileriniz size Excel ve SQL formatlarında sunulacak ve
+                        sistemde saklanmayacaktır.
+                    </p>
+                    <p>
+                        İptal işlemine devam ederek, bu koşulları kabul etmiş sayılırsınız. Talebiniz bize ulaştıktan
+                        sonra
+                        ekiplerimiz sizinle iletişime geçecek ve son onaydan sonra işlem tamamlanacaktır.
+                    </p>
+                </div>
+
+                <!-- Sağ: Form -->
+                <div class="col-md-6 ps-4">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" id="licenseId" />
+                    <div class="mb-3">
+                        <label for="reason" class="form-label">İptal Sebebiniz</label>
+                        <textarea id="reason" class="form-control" rows="6"
+                            placeholder="İptal sebebinizi detaylı şekilde yazınız..."></textarea>
+                    </div>
+                    <button class="btn btn-danger w-100" onclick="submitCancellationRequest()">İptal Talebi
+                        Gönder</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <link rel="stylesheet" href="~/css/HomeCss.css" />
+}
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<!-- SweetAlert JS -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+    document.getElementById('frozenRequestButton').addEventListener('click', function (e) {
+        e.preventDefault();
+        const id = document.getElementById('licenseId').value;
+        if (id) {
+            window.location.href = `/Admin/Home/Frozen?id=${id}`;
+        } else {
+            alert("ID bulunamadı.");
+        }
+    });
+    // Veri teslim onay checkbox'ı dinleme
+    $('#dataDeliveryCheckbox').change(function () {
+        $('#finalizeSystemBtn').prop('disabled', !$(this).is(':checked'));
+    });
+
+    // Sistemi sonlandır butonu
+    $('#finalizeSystemBtn').click(function () {
+        if ($('#dataDeliveryCheckbox').is(':checked')) {
+            const licenseId = $('#licenseId').val(); // input hidden alanından alıyoruz
+
+            Swal.fire({
+                title: 'Emin misiniz?',
+                text: "Sisteminizi sonlandırmak üzeresiniz. Bu işlem geri alınamaz!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Evet, sonlandır!',
+                cancelButtonText: 'Vazgeç'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // API'ye gönder
+                    $.ajax({
+                        url: '/Admin/Home/Finalize',
+                        type: 'POST',
+                        data: { licenseId: licenseId },
+                        success: function (response) {
+                            if (response.success) {
+                                Swal.fire(
+                                    'Sonlandırıldı!',
+                                    'Sistem başarıyla sonlandırıldı.',
+                                    'success'
+                                ).then(() => {
+                                    location.reload();
+                                });
+                            } else {
+                                Swal.fire(
+                                    'Hata!',
+                                    response.message || 'İşlem sırasında bir hata oluştu.',
+                                    'error'
+                                );
+                            }
+                        },
+                        error: function () {
+                            Swal.fire(
+                                'Hata!',
+                                'Sunucuya ulaşılamadı.',
+                                'error'
+                            );
+                        }
+                    });
+                }
+            });
+        } else {
+            Swal.fire('Uyarı', 'Lütfen verilerin teslim edildiğini onaylayın.', 'warning');
+        }
+    });
+
+    function finalizeSystem() {
+        const licenseId = $("#licenseId").val();
+        const token = $('input[name="__RequestVerificationToken"]').val();
+
+        $.ajax({
+            url: '/Admin/Home/FinalizeSystem',
+            type: 'POST',
+            contentType: 'application/json',
+            headers: {
+                'RequestVerificationToken': token
+            },
+            data: JSON.stringify({
+                licenseId: licenseId,
+                __RequestVerificationToken: token
+            }),
+            success: function (response) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Başarılı',
+                    text: response.message,
+                    confirmButtonColor: '#4361ee'
+                }).then(() => {
+                    location.reload();
+                });
+            },
+            error: function (xhr) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Hata',
+                    text: xhr.responseText || "Sistem sonlandırma işlemi sırasında bir hata oluştu.",
+                    confirmButtonColor: '#4361ee'
+                });
+            }
+        });
+    }
+
+    function submitCancellationRequest() {
+        const licenseId = $("#licenseId").val();
+        const reason = $("#reason").val();
+        console.log("LicenseId:", licenseId);
+        console.log("Reason:", reason);
+
+        if (!reason.trim()) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Uyarı',
+                text: 'Lütfen iptal sebebinizi yazınız.',
+                confirmButtonColor: '#4361ee'
+            });
+            return;
+        }
+
+        // Get the anti-forgery token
+        const token = $('input[name="__RequestVerificationToken"]').val();
+
+        $.ajax({
+            url: '/Admin/Home/CreateCancellationRequest',
+            type: 'POST',
+            contentType: 'application/json',
+            headers: {
+                'RequestVerificationToken': token
+            },
+            data: JSON.stringify({
+                licenseId: licenseId,
+                reason: reason,
+                __RequestVerificationToken: token
+            }),
+            success: function (response) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Başarılı',
+                    text: response.message,
+                    confirmButtonColor: '#4361ee'
+                }).then(() => {
+                    $('#cancelRequestModal').modal('hide');
+                    $('body').removeClass('modal-open');
+                    $('.modal-backdrop').remove();
+                    location.reload();
+                });
+            },
+            error: function (xhr) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Hata',
+                    text: xhr.responseText || "Bir hata oluştu.",
+                    confirmButtonColor: '#4361ee'
+                });
+            }
+        });
+    }
+
+    // Form submit işlemi
+    document.getElementById('paymentForm').addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        const cardNumber = document.getElementById('cardNumber').value;
+        const cardExpiry = document.getElementById('cardExpiry').value;
+        const cardCvc = document.getElementById('cardCvc').value;
+        const cardName = document.getElementById('cardName').value;
+        const totalPriceText = document.getElementById('modalAmount').textContent;
+        const totalPrice = parseFloat(totalPriceText.replace(' TL', '').replace(',', '.'));
+        const orderId = document.getElementById('modalId').textContent;
+
+        // Validate the payment ID exists
+        if (!orderId) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Hata',
+                text: "Ödeme ID'si bulunamadı. Lütfen sayfayı yenileyin ve tekrar deneyin.",
+                confirmButtonColor: '#4361ee'
+            });
+            return;
+        }
+
+        // Validate total price is a number
+        if (isNaN(totalPrice)) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Hata',
+                text: "Geçersiz tutar bilgisi. Lütfen sayfayı yenileyin ve tekrar deneyin.",
+                confirmButtonColor: '#4361ee'
+            });
+            return;
+        }
+
+        try {
+            const response = await fetch('/Admin/Home/CompleteLicensePayment', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    LicensePaymentId: orderId,
+                    cardHolderName: cardName,
+                    cardNumber: cardNumber,
+                    expireMonth: cardExpiry.split('/')[0],
+                    expireYear: cardExpiry.split('/')[1],
+                    cvc: cardCvc,
+                    totalPrice: totalPrice
+                })
+            });
+
+            const result = await response.json();
+
+            if (result.isSuccess) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Başarılı',
+                    text: 'Ödeme başarıyla tamamlandı!',
+                    confirmButtonColor: '#4361ee'
+                }).then(() => {
+                    closePaymentModal();
+                    setTimeout(() => window.location.reload(), 1000);
+                });
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Ödeme Başarısız',
+                    text: result.errorMessage || "Bilinmeyen hata",
+                    confirmButtonColor: '#4361ee'
+                });
+            }
+        } catch (error) {
+            console.error('Payment error:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Hata',
+                text: "Ödeme işlemi sırasında bir hata oluştu: " + error.message,
+                confirmButtonColor: '#4361ee'
+            });
+        }
+    });
+
+    // API'den veri alma ve tabloyu doldurma
+    fetch('/Admin/Home/GetLicensePayments')
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('customerName').innerText = data.customer.name;
+            document.getElementById('customerStore').innerText = data.customer.store;
+            document.getElementById('customerEmail').innerText = data.customer.email;
+            document.getElementById('licenseId').value = data.license.licenseId;
+            document.getElementById('licenseStartDate').innerText = new Date(data.license.startDate).toLocaleDateString();
+            document.getElementById('licenseEndDate').innerText = new Date(data.license.endDate).toLocaleDateString();
+
+            document.getElementById('totalDebt').innerText = data.totalDebt || '0';
+            document.getElementById('paidDebt').innerText = data.paidDebt || '0';
+            document.getElementById('remainingDebt').innerText = data.remainingDebt || '0';
+
+            const paymentsTable = document.getElementById('paymentsTable');
+            if (data.payments && data.payments.length > 0) {
+                data.payments.forEach(payment => {
+                    const row = document.createElement('tr');
+                    const period = `${new Date(payment.startPeriod).toLocaleDateString()} - ${new Date(payment.endPeriod).toLocaleDateString()}`;
+                    const statusBadge = payment.isPaid
+                        ? '<span class="status-paid"><i class="fas fa-check-circle"></i> Ödendi</span>'
+                        : '<span class="status-unpaid"><i class="fas fa-times-circle"></i> Ödenmedi</span>';
+                    const actionButton = payment.isPaid
+                        ? `<td><button class="btn-invoice" data-id="${payment.id}"><i class="fas fa-file-invoice"></i> Faturamı Görüntüle</button></td>`
+                        : `<td><button class="btn-pay" data-period="${period}" data-amount="${payment.price}" data-id="${payment.id}"><i class="fas fa-credit-card"></i> Ödeme Yap</button></td>`;
+
+                    row.innerHTML = `
+                        <td>${period}</td>
+                        <td>${payment.priceDisplay}</td>
+                        <td>${statusBadge}</td>
+                        ${actionButton}
+                    `;
+                    paymentsTable.appendChild(row);
+                });
+            } else {
+                paymentsTable.innerHTML = '<tr><td colspan="4" style="text-align:center;">Kayıtlı ödeme bulunamadı</td></tr>';
+            }
+
+            // Ödeme yap butonlarına event listener ekleme
+            document.querySelectorAll('.btn-pay').forEach(button => {
+                button.addEventListener('click', function () {
+                    openPaymentModal(
+                        this.getAttribute('data-period'),
+                        this.getAttribute('data-amount'),
+                        this.getAttribute('data-id'),
+                        data.customer.store
+                    );
+                });
+            });
+
+            // Fatura görüntüle butonlarına event listener ekleme
+            document.querySelectorAll('.btn-invoice').forEach(button => {
+                button.addEventListener('click', function () {
+                    const paymentId = this.getAttribute('data-id');
+                    window.open(`/Admin/Home/ViewInvoice?paymentId=${paymentId}`, '_blank');
+                });
+            });
+
+            // İptal talebi durumunu kontrol et
+            checkCancellationRequestStatus(data.license.licenseId);
+        })
+        .catch(error => {
+            console.error('Hata:', error);
+            document.getElementById('paymentsTable').innerHTML = '<tr><td colspan="4" style="text-align:center;color:#dc3545;">Veriler yüklenirken hata oluştu</td></tr>';
+        });
+
+    function checkCancellationRequestStatus(licenseId) {
+        $.ajax({
+            url: '/Admin/Home/GetCancellationRequestStatus',
+            type: 'GET',
+            data: { licenseId: licenseId },
+            success: function (response) {
+                const cancelRequestBtn = $('#cancelRequestButton');
+                const dataDeliverySection = $('#dataDeliveryConfirmation');
+
+                if (response.hasPendingRequest) {
+                    if (response.isApproved) {
+                        cancelRequestBtn.removeClass('btn-outline-danger').addClass('btn-success')
+                            .html('<i class="fas fa-check-circle"></i> Talebiniz Onaylandı')
+                            .prop('disabled', true);
+
+                        if (response.isCompleted) {
+                            // İşlem tamamlandıysa veri teslim onay bölümünü göster
+                            dataDeliverySection.show();
+                        }
+                    } else {
+                        cancelRequestBtn.removeClass('btn-outline-danger').addClass('btn-warning')
+                            .html('<i class="fas fa-clock"></i> Bekleyen Talebiniz Var')
+                            .prop('disabled', true);
+                    }
+                } else {
+                    // İptal talebi yoksa normal buton görünsün
+                    cancelRequestBtn.removeClass('btn-warning btn-success').addClass('btn-outline-danger')
+                        .html('İptal Talebi Oluştur')
+                        .prop('disabled', false);
+                }
+            },
+            error: function (xhr) {
+                console.error('İptal talebi durumu kontrol edilirken hata:', xhr.responseText);
+            }
+        });
+    }
+
+    // Modal işlemleri
+    const modal = document.getElementById('paymentModal');
+    const closeModal = document.querySelector('.close-modal');
+
+    function openPaymentModal(period, amount, paymentId, storeName) {
+        if (!paymentId) {
+            console.error('Payment ID is missing');
+            return;
+        }
+
+        document.getElementById('modalPeriod').textContent = period;
+        document.getElementById('modalId').textContent = paymentId;
+        document.getElementById('modalAmount').textContent = amount;
+        document.getElementById('modalStore').textContent = storeName;
+        document.getElementById('paymentForm').setAttribute('data-payment-id', paymentId);
+
+        modal.style.display = 'block';
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closePaymentModal() {
+        modal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+    }
+
+    closeModal.addEventListener('click', closePaymentModal);
+    window.addEventListener('click', function (event) {
+        if (event.target === modal) {
+            closePaymentModal();
+        }
+    });
+    $('#cancelRequestModal').on('hidden.bs.modal', function () {
+        $('body').removeClass('modal-open');
+        $('.modal-backdrop').remove();
+    });
+</script>

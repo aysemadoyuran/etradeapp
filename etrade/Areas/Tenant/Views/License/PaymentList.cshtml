@@ -1,0 +1,374 @@
+@{
+    ViewData["Title"] = "Lisans Ödemeleri";
+}
+
+<div class="container-fluid px-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">Lisans Ödemeleri</h2>
+        <div class="d-flex gap-2">
+            <div class="dropdown">
+                <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="statusFilter"
+                    data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="fas fa-filter me-1"></i> Filtrele
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="statusFilter">
+                    <li><a class="dropdown-item filter-item active" href="#" data-filter="all">Tümü</a></li>
+                    <li><a class="dropdown-item filter-item" href="#" data-filter="paid">Ödenmiş</a></li>
+                    <li><a class="dropdown-item filter-item" href="#" data-filter="unpaid">Ödenmemiş</a></li>
+                    <li><a class="dropdown-item filter-item" href="#" data-filter="overdue">Günü Geçmiş</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0 rounded-3 overflow-hidden">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0" id="licensePaymentsTable">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-4">Dönem</th>
+                            <th>Ücret</th>
+                            <th>Durum</th>
+                            <th>Müşteri</th>
+                            <th class="pe-4">Domain</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Data will be loaded via AJAX -->
+                    </tbody>
+                </table>
+            </div>
+            <div id="noResults" class="text-center py-5 d-none">
+                <i class="fas fa-inbox fs-1 text-muted mb-3"></i>
+                <h5 class="text-muted">Filtreleme kriterlerinize uygun kayıt bulunamadı</h5>
+                <p class="text-muted mb-0">Filtreleri temizleyip tekrar deneyin</p>
+            </div>
+            
+            <!-- Pagination -->
+            <div class="d-flex justify-content-between align-items-center p-3 border-top">
+                <div class="text-muted">
+                    <span id="showingInfo">Toplam <span id="totalItems">0</span> kayıttan <span id="showingRange">0-0</span> gösteriliyor</span>
+                </div>
+                <nav>
+                    <ul class="pagination mb-0" id="pagination">
+                        <!-- Pagination links will be added here -->
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .status-badge {
+        font-size: 0.75rem;
+        font-weight: 500;
+        padding: 0.35rem 0.75rem;
+        border-radius: 50px;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .status-paid {
+        background-color: rgba(25, 135, 84, 0.1);
+        color: #198754;
+    }
+
+    .status-unpaid {
+        background-color: rgba(220, 53, 69, 0.1);
+        color: #dc3545;
+    }
+
+    .status-overdue {
+        background-color: rgba(255, 193, 7, 0.1);
+        color: #ffc107;
+    }
+
+    .table-hover tbody tr {
+        transition: all 0.2s ease;
+    }
+
+    .table-hover tbody tr:hover {
+        background-color: rgba(0, 0, 0, 0.03);
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .period-cell {
+        white-space: nowrap;
+        font-weight: 500;
+    }
+
+    #licensePaymentsTable thead th {
+        border-bottom: none;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.5px;
+        color: #6c757d;
+        padding-top: 1rem;
+        padding-bottom: 1rem;
+    }
+
+    #licensePaymentsTable tbody td {
+        padding-top: 1rem;
+        padding-bottom: 1rem;
+        vertical-align: middle;
+    }
+
+    .card {
+        border: none;
+        box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.03);
+    }
+
+    #noResults {
+        background-color: #f8f9fa;
+    }
+
+    .dropdown-item.active {
+        background-color: #f8f9fa;
+        color: #0d6efd;
+    }
+
+    .page-item.active .page-link {
+        background-color: #0d6efd;
+        border-color: #0d6efd;
+    }
+
+    .page-link {
+        color: #0d6efd;
+    }
+</style>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+    $(document).ready(function () {
+        // Pagination variables
+        const itemsPerPage = 10;
+        let currentPage = 1;
+        let totalItems = 0;
+        let allPayments = [];
+        let filteredPayments = [];
+        let currentFilter = 'all';
+
+        // Load data initially
+        loadPaymentData();
+
+        // Status filter click handler
+        $('.filter-item').click(function (e) {
+            e.preventDefault();
+            $('.filter-item').removeClass('active');
+            $(this).addClass('active');
+
+            currentFilter = $(this).data('filter');
+            currentPage = 1; // Reset to first page when filter changes
+            filterPayments();
+        });
+
+        function loadPaymentData() {
+            $.ajax({
+                url: '@Url.Action("GetLicensePayments", "License", "Tenant")',
+                type: 'GET',
+                data: {
+                    page: currentPage,
+                    pageSize: itemsPerPage
+                },
+                success: function (response) {
+                    if (response.isSuccess) {
+                        allPayments = response.payments;
+                        totalItems = response.totalCount;
+                        filteredPayments = [...allPayments];
+                        
+                        renderPaymentTable();
+                        updatePagination();
+                        updateShowingInfo();
+                    } else {
+                        showAlert('danger', 'Veri yüklenirken hata oluştu: ' + response.errorMessage);
+                    }
+                },
+                error: function (xhr, status, error) {
+                    showAlert('danger', 'Bir hata oluştu: ' + error);
+                }
+            });
+        }
+
+        function renderPaymentTable() {
+            var tableBody = $('#licensePaymentsTable tbody');
+            tableBody.empty();
+            $('#noResults').addClass('d-none');
+
+            if (filteredPayments.length === 0) {
+                showNoResults();
+                return;
+            }
+
+            // Calculate pagination slice
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = Math.min(startIndex + itemsPerPage, filteredPayments.length);
+            const paginatedItems = filteredPayments.slice(startIndex, endIndex);
+
+            paginatedItems.forEach(function (payment) {
+                const isOverdue = isPaymentOverdue(payment);
+                const statusClass = payment.isPaid ? 'status-paid' :
+                    (isOverdue ? 'status-overdue' : 'status-unpaid');
+                const statusText = payment.isPaid ? 'Ödendi' :
+                    (isOverdue ? 'Günü Geçmiş' : 'Ödenmedi');
+                const iconClass = payment.isPaid ? 'fa-check-circle' :
+                    (isOverdue ? 'fa-exclamation-triangle' : 'fa-times-circle');
+
+                const row = `
+                    <tr data-status="${payment.isPaid ? 'paid' : 'unpaid'}" data-overdue="${isOverdue}">
+                        <td class="period-cell ps-4">
+                            ${formatDate(payment.startPeriod)} - ${formatDate(payment.endPeriod)}
+                        </td>
+                        <td>
+                            <strong>${payment.price.toFixed(2)}</strong> <small class="text-muted">₺</small>
+                        </td>
+                        <td>
+                            <span class="status-badge ${statusClass}">
+                                <i class="fas ${iconClass}"></i>
+                                ${statusText}
+                            </span>
+                        </td>
+                        <td>${payment.customerFullName}</td>
+                        <td class="pe-4">${payment.domainName}</td>
+                    </tr>
+                `;
+                tableBody.append(row);
+            });
+        }
+
+        function filterPayments() {
+            filteredPayments = allPayments.filter(payment => {
+                const isOverdue = isPaymentOverdue(payment);
+                
+                if (currentFilter === 'all') return true;
+                if (currentFilter === 'paid') return payment.isPaid;
+                if (currentFilter === 'unpaid') return !payment.isPaid;
+                if (currentFilter === 'overdue') return !payment.isPaid && isOverdue;
+                
+                return true;
+            });
+
+            currentPage = 1; // Reset to first page after filtering
+            renderPaymentTable();
+            updatePagination();
+            updateShowingInfo();
+        }
+
+        function updatePagination() {
+            const totalPages = Math.ceil(filteredPayments.length / itemsPerPage);
+            const $pagination = $('#pagination');
+            $pagination.empty();
+
+            if (totalPages <= 1) return;
+
+            // Previous button
+            $pagination.append(`
+                <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+                    <a class="page-link" href="#" aria-label="Previous" data-page="${currentPage - 1}">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+            `);
+
+            // Page numbers
+            const maxVisiblePages = 5;
+            let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+            let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+            if (endPage - startPage + 1 < maxVisiblePages) {
+                startPage = Math.max(1, endPage - maxVisiblePages + 1);
+            }
+
+            if (startPage > 1) {
+                $pagination.append(`
+                    <li class="page-item">
+                        <a class="page-link" href="#" data-page="1">1</a>
+                    </li>
+                    ${startPage > 2 ? '<li class="page-item disabled"><span class="page-link">...</span></li>' : ''}
+                `);
+            }
+
+            for (let i = startPage; i <= endPage; i++) {
+                $pagination.append(`
+                    <li class="page-item ${i === currentPage ? 'active' : ''}">
+                        <a class="page-link" href="#" data-page="${i}">${i}</a>
+                    </li>
+                `);
+            }
+
+            if (endPage < totalPages) {
+                $pagination.append(`
+                    ${endPage < totalPages - 1 ? '<li class="page-item disabled"><span class="page-link">...</span></li>' : ''}
+                    <li class="page-item">
+                        <a class="page-link" href="#" data-page="${totalPages}">${totalPages}</a>
+                    </li>
+                `);
+            }
+
+            // Next button
+            $pagination.append(`
+                <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+                    <a class="page-link" href="#" aria-label="Next" data-page="${currentPage + 1}">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+            `);
+
+            // Page click handler
+            $('.page-link').click(function(e) {
+                e.preventDefault();
+                const page = $(this).data('page');
+                if (page && page !== currentPage) {
+                    currentPage = page;
+                    renderPaymentTable();
+                    updatePagination();
+                    updateShowingInfo();
+                }
+            });
+        }
+
+        function updateShowingInfo() {
+            const startIndex = (currentPage - 1) * itemsPerPage + 1;
+            const endIndex = Math.min(currentPage * itemsPerPage, filteredPayments.length);
+            
+            $('#totalItems').text(filteredPayments.length);
+            $('#showingRange').text(`${startIndex}-${endIndex}`);
+        }
+
+        function showNoResults() {
+            $('#licensePaymentsTable tbody').empty();
+            $('#noResults').removeClass('d-none');
+            $('#pagination').empty();
+            $('#totalItems').text('0');
+            $('#showingRange').text('0-0');
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return '';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('tr-TR', { year: 'numeric', month: 'short', day: 'numeric' });
+        }
+
+        function isPaymentOverdue(payment) {
+            if (payment.isPaid) return false;
+            const endDate = new Date(payment.endPeriod);
+            const today = new Date();
+            return endDate < today;
+        }
+
+        function showAlert(type, message) {
+            const alert = `
+                <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            `;
+            $('.container-fluid').prepend(alert);
+        }
+    });
+</script>

@@ -1,0 +1,215 @@
+@{
+    ViewData["Title"] = "Lisans Ayarları";
+}
+
+<div class="settings-container">
+    <div class="settings-header">
+        <h2><i class="fas fa-key"></i> Lisans Ücretleri Yönetimi</h2>
+    </div>
+
+    <div id="message" class="alert-container"></div>
+
+    <div class="settings-card">
+        <form id="settingsForm">
+            <div class="form-floating mb-4">
+                <input type="number" id="StartLicense" name="StartLicense" class="form-control form-control-lg"
+                    placeholder=" " />
+                <label for="StartLicense">Açılış+Kurulum+Bakım Ücreti</label>
+                <div class="form-text">Bir kerelik kurulum ve başlangıç ücreti</div>
+            </div>
+
+            <div class="form-floating mb-4">
+                <input type="number" id="License" name="License" class="form-control form-control-lg" placeholder=" " />
+                <label for="License">Aylık Bakım Ücreti</label>
+                <div class="form-text">Düzenli olarak tahsil edilecek aylık ücret</div>
+            </div>
+
+            <div class="form-floating mb-4">
+                <input type="number" id="Kdv" name="Kdv" class="form-control form-control-lg" placeholder=" " min="0"
+                    max="100" />
+                <label for="Kdv">KDV Oranı (%)</label>
+                <div class="form-text">Yüzde olarak KDV oranı giriniz (örneğin: 20)</div>
+            </div>
+            <div class="form-floating mb-4">
+                <input type="number" id="Freeze" name="Freeze" class="form-control form-control-lg" placeholder=" " />
+                <label for="Freeze">Dondurma Ücreti</label>
+                <div class="form-text">Bir kerelik dondurma ücreti </div>
+            </div>
+
+            <div class="d-grid gap-2 mt-4">
+                <button type="submit" class="btn btn-primary btn-lg">
+                    <i class="fas fa-save me-2"></i> Ayarları Kaydet
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3f37c9;
+            --success-color: #4cc9f0;
+            --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .settings-container {
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .settings-header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .settings-header h2 {
+            color: var(--primary-color);
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .settings-card {
+            background: white;
+            border-radius: 12px;
+            padding: 2.5rem;
+            box-shadow: var(--card-shadow);
+            transition: transform 0.3s ease;
+        }
+
+        .settings-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .form-floating {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-floating label {
+            font-weight: 500;
+            color: #495057;
+        }
+
+        .form-control-lg {
+            height: calc(3.5rem + 2px);
+            padding: 1rem 1.2rem;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+            margin-top: 0.5rem;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.25rem rgba(67, 97, 238, 0.25);
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            border: none;
+            padding: 0.8rem;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-2px);
+        }
+
+        .alert-container {
+            margin-bottom: 1.5rem;
+            transition: all 0.3s ease;
+            display: none;
+        }
+
+        .form-text {
+            margin-top: 0.5rem;
+            font-size: 0.85rem;
+            color: #6c757d;
+        }
+
+        @@media (max-width: 768px) {
+            .settings-card {
+                padding: 1.5rem;
+            }
+        }
+    </style>
+}
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+    <script>
+        $(document).ready(function () {
+            loadSettings();
+
+            $('#settingsForm').submit(function (e) {
+                e.preventDefault();
+                saveSettings();
+            });
+        });
+
+        function loadSettings() {
+            $.ajax({
+                url: '/Tenant/License/GetSettings',
+                type: 'GET',
+                success: function (data) {
+                    $('#StartLicense').val(data.startLicense);
+                    $('#License').val(data.license);
+                    $('#Kdv').val(data.kdv * 100);
+                    $('#Freeze').val(data.freeze);
+
+
+                },
+                error: function () {
+                    showAlert('Ayarlar yüklenirken bir hata oluştu', 'danger');
+                }
+            });
+        }
+
+        function saveSettings() {
+            const $submitBtn = $('#settingsForm').find('button[type="submit"]');
+            const originalBtnText = $submitBtn.html();
+
+            $submitBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-2"></i> Kaydediliyor...');
+
+            var settings = {
+                StartLicense: parseFloat($('#StartLicense').val()) || 0,
+                License: parseFloat($('#License').val()) || 0,
+                Kdv: (parseFloat($('#Kdv').val()) || 0) / 100,
+                Freeze: parseFloat($('#Freeze').val()) || 0,
+
+            };
+
+            $.ajax({
+                url: '/Tenant/License/UpdateSettings',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(settings),
+                success: function (response) {
+                    showAlert(response.message || 'Ayarlar başarıyla kaydedildi', 'success');
+                    $submitBtn.prop('disabled', false).html(originalBtnText);
+                },
+                error: function (xhr) {
+                    const errorMsg = xhr.responseJSON?.message || 'Güncelleme sırasında bir hata oluştu';
+                    showAlert(errorMsg, 'danger');
+                    $submitBtn.prop('disabled', false).html(originalBtnText);
+                }
+            });
+        }
+
+        function showAlert(message, type) {
+            const $alert = $('#message');
+            $alert.html(`<div class="alert alert-${type}">${message}</div>`)
+                .fadeIn()
+                .delay(3000)
+                .fadeOut();
+        }
+    </script>
+}

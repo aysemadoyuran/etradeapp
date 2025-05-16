@@ -1,0 +1,102 @@
+<section class="pricing-section position-relative overflow-hidden bg-dark text-white pt-120"
+    style="background: url('assets/img/page-header-bg.svg') no-repeat center center">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-6 col-md-12">
+                <div class="section-heading text-center z-5 position-relative">
+                    <h4 class="h5 text-warning">Planlar &amp; Fiyatlandırma</h4>
+                    <h2>Fiyatlarımızı İnceleyin</h2>
+                    <p>Özelleştirilmiş e-ticaret çözümleri ile işinizi bir üst seviyeye taşıyın. Her ölçekten işletmeye
+                        uygun planlarımızla, sorunsuz bir deneyim sunuyoruz.</p>
+                    <p>Fiyatlarımıza KDV Dahil Değildir.</p>
+                </div>
+            </div>
+        </div>
+        <div class="row justify-content-center">
+            <div class="col-lg-8 col-md-10">
+                <div
+                    class="pricing-content-wrap mb--100 bg-white rounded-custom shadow-lg border d-flex z-10 position-relative">
+                    <div class="price-feature-col pricing-feature-info left-radius bg-primary-soft p-5">
+                        <ul class="list-unstyled pricing-feature-list pricing-included-list mb-0">
+                            <li class="py-1"><i class="fas fa-check-circle text-primary me-2"></i> Ürün çeşitliliği ve
+                                filtreleme seçenekleri</li>
+                            <li class="py-1"><i class="fas fa-check-circle text-primary me-2"></i> Stok durumu takibi ve
+                                uyarıları</li>
+                            <li class="py-1"><i class="fas fa-check-circle text-primary me-2"></i> Hızlı ödeme ve
+                                kullanıcı dostu ödeme ekranları</li>
+                            <li class="py-1"><i class="fas fa-check-circle text-primary me-2"></i> Kampanya ve indirim
+                                yönetimi</li>
+                            <li class="py-1"><i class="fas fa-check-circle text-primary me-2"></i> Ürün yorumları ve
+                                müşteri puanlama sistemi</li>
+                            <li class="py-1"><i class="fas fa-check-circle text-primary me-2"></i> Hızlı sipariş ve
+                                sepet hatırlatma özellikleri</li>
+                            <li class="py-1"><i class="fas fa-check-circle text-primary me-2"></i> Kargo ve teslimat
+                                takibi</li>
+                            <li class="py-1"><i class="fas fa-check-circle text-primary me-2"></i> Ürün önerileri ve
+                                çapraz satış (cross-selling) özellikleri</li>
+                            <li class="py-1"><i class="fas fa-check-circle text-primary me-2"></i> Kolay iade ve değişim
+                                süreçleri</li>
+
+                        </ul>
+                    </div>
+                    <div class="price-feature-col pricing-action-info p-5">
+                        <ul class="nav nav-pills mb-4 pricing-tab-list" id="pills-tab" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="active" id="pills-home-tab" data-bs-toggle="pill"
+                                    data-bs-target="#pills-home" type="button" role="tab" aria-controls="pills-home"
+                                    aria-selected="true">Kurulum</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button id="pills-profile-tab" data-bs-toggle="pill" data-bs-target="#pills-profile"
+                                    type="button" role="tab" aria-controls="pills-profile" aria-selected="false"
+                                    class="">Aylık</button>
+                            </li>
+                        </ul>
+                        <div class="tab-content" id="pills-tabContent">
+                            <div class="tab-pane fade active show" id="pills-home" role="tabpanel"
+                                aria-labelledby="pills-home-tab">
+                                <h3 class="h5">Kurulum Ücreti</h3>
+                                <p>Başlangıçta e-ticaret sisteminizi kuruyor ve tüm teknik altyapıyı sağlıyoruz.</p>
+                                <div class="pricing-price mt-5">
+                                    <h4 id="start-license" class="h1 fw-bold">15.000₺ <span>+ KDV</span></h4>
+                                </div>
+                                <p>Kurulum bedeli, sistemin tüm entegrasyonlarını, özelleştirmeleri ve altyapı
+                                    hazırlıklarını kapsar.</p>
+                            </div>
+                            <div class="tab-pane fade" id="pills-profile" role="tabpanel"
+                                aria-labelledby="pills-profile-tab">
+                                <h3 class="h5">Aylık Ücret</h3>
+                                <p>Sisteminizi kullanmaya başladıktan sonra aylık hizmet bedeliniz bu kadar olacak.</p>
+                                <div class="pricing-price mt-5">
+                                    <h4 id="monthly-license" class="h1 fw-bold">1.000₺ <span>/Ay</span></h4>
+                                </div>
+                                <p>Aylık ücret, tüm yazılım, sunucu, bakım ve destek hizmetlerini kapsar.</p>
+
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="bg-circle rounded-circle circle-shape-1 position-absolute bg-warning left-5"></div>
+    <div class="white-space-100 bg-white w-100"></div>
+</section>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $.ajax({
+        url: '/Aysoft/License/GetShippingSettings', // Controller'daki endpoint'e istek gönderiyoruz
+        type: 'GET',
+        success: function (data) {
+            // 'data' artık JSON verisi olacak
+            $('h4#start-license').html(data.startLicense + '₺ <span>+ KDV</span>');
+
+            // License'ı yazdırma
+            $('h4#monthly-license').html(data.license + '₺ <span>/Ay</span>');
+        },
+        error: function (error) {
+            console.error('Error fetching shipping settings: ', error);
+        }
+    });
+</script>

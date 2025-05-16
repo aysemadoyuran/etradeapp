@@ -1,0 +1,645 @@
+@model ProductDetailDTO
+
+
+<div class="container">
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+</div>
+<div class="row mb-5 mt-5">
+    <div class="col-md-6">
+        <div class="tf-product-media-wrap sticky-top">
+            <!-- Fotoğrafların yan yana dizilmesi için flex düzeni -->
+            <div class="d-flex">
+                <!-- Thumbnail slider (Solda) -->
+                <div class="thumbs-slider" style="margin-left: 20px;">
+                    <div dir="ltr" class="swiper tf-product-media-thumbs other-image-zoom" data-direction="vertical">
+                        <div class="swiper-wrapper stagger-wrap">
+                            @foreach (var image in Model.Images)
+                            {
+                                <div class="swiper-slide">
+                                    <a href="javascript:void(0);" class="item" data-image-url="@image.ImageUrl"
+                                        onclick="changeMainImage('@image.ImageUrl')">
+                                        <img class="tf-image-zoom lazyload" data-zoom="@image.ImageUrl"
+                                            data-src="@image.ImageUrl" src="@image.ImageUrl" alt="Product Image Thumbnail">
+                                    </a>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Ana fotoğraf (Sağda) -->
+                <div class="main-image-wrap">
+                    <img id="mainImage" class="tf-image-zoom lazyload" src="@Model.Images.First().ImageUrl"
+                        alt="Product Image" data-zoom="@Model.Images.First().ImageUrl">
+                </div>
+            </div>
+        </div>
+    </div>
+<div class="col-md-6">
+    <div class="tf-product-info-wrap position-relative">
+        <div class="tf-zoom-main"></div>
+        <div class="tf-product-info-list other-image-zoom">
+            <div class="tf-product-info-heading">
+                <div class="tf-product-info-name">
+                    <div class="text text-btn-uppercase">@Model.CategoryName - @Model.SubCategoryName</div>
+                    <h3 class="name">@Model.Name</h3>
+                </div>
+                <div class="tf-product-info-desc">
+<style>
+    .price {
+        font-family: 'Arial', sans-serif;
+        font-weight: bold;
+        font-size: 18px;
+        color: #333;
+    }
+    
+    .old-price {
+        text-decoration: line-through;
+        color: #999 !important;
+        font-size: 14px;
+        margin-right: 8px;
+    }
+    
+    .price span:not(.old-price) {
+        color: #d82c2c;
+        font-size: 20px;
+        font-weight: 800;
+    }
+    
+    /* Normal fiyat (indirim yoksa) */
+    .price > span:only-child {
+        color: black; /* Varsayılan tema rengi */
+        font-size: 18px;
+        font-weight: bold;
+    }
+</style>
+
+<span class="price">
+    @if (Model.OriginalPrice != null)
+    {
+        <span class="old-price">@Model.OriginalPrice ₺</span>
+        <span>@Model.Price ₺</span>
+    }
+    else
+    {
+        <span>@Model.Price ₺</span>
+    }
+</span>
+                    <p>Stok Kodu: @Model.ProductCode</p>
+                    <p>@Html.Raw(Model.Description)</p>
+                </div>
+            </div>
+
+            <div class="tf-product-info-choose-option">
+                <form id="add-to-cart-form" action="/Shop/Product/AddToCart" method="POST">
+                    <!-- Ürün ID ve Fiyatı gizli alanda tutuyoruz -->
+                    <input type="hidden" name="productId" value="@Model.Id"> <!-- Ürün ID -->
+                    <input type="hidden" name="price" value="@Model.Price"> <!-- Fiyat -->
+                    <input type="hidden" name="colorId" id="selectedColorId">
+                    <input type="hidden" name="sizeId" id="selectedSizeId">
+
+                    <!-- Renk Seçimi -->
+                    <div class="variant-picker-item">
+                        <div class="variant-picker-label mb_12">
+                            Renkler:
+                            <span class="text-title variant-picker-label-value value-currentColor">
+                                @(Model.Variants != null && Model.Variants.Count > 0 ? Model.Variants[0].ColorName : "")
+                            </span>
+                        </div>
+                        <div class="variant-picker-values">
+                            @if (Model.Variants != null)
+                            {
+                                @foreach (var variant in Model.Variants)
+                                {
+                                    <span class="color-swatch" 
+                                          data-color-id="@variant.ColorId" 
+                                          data-color-code="@variant.ColorCode" 
+                                          title="@variant.ColorName" 
+                                          onclick="selectColor(@variant.ColorId)"
+                                          @(variant.IsOutOfStock ? "style='cursor: not-allowed; opacity: 0.5;' disabled='true'" : "")>
+                                    </span>
+                                }
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Beden Seçimi -->
+                    <div class="variant-picker-item">
+                        <div class="variant-picker-label mb_12">
+                            Bedenler:
+                        </div>
+                        <div class="variant-picker-values variant-picker-values-size">
+                            @if (Model.Variants != null)
+                            {
+                                @foreach (var sizeGroup in Model.Variants
+                                                                .SelectMany(v => v.Sizes)
+                                                                .GroupBy(s => s.SizeId))
+                                {
+                                    var size = sizeGroup.First();
+                                    <input type="radio" name="sizeId" id="size-@size.SizeId" value="@size.SizeId"
+                                        onclick="selectSize(@size.SizeId)"
+                                        @(size.IsOutOfStock ? "disabled='true' style='cursor: not-allowed; opacity: 0.5;'" : "")>
+                                    <label class="style-text size-btn" for="size-@size.SizeId">
+                                        <span class="text-title">@size.SizeName</span>
+                                    </label>
+                                }
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Adet Seçimi -->
+                    <div class="tf-product-info-quantity mb-3">
+                        <div class="title mb_12">Adet:</div>
+                        <div class="wg-quantity">
+                            <span class="btn-quantity btn-decrease">-</span>
+                            <input class="quantity-product" type="number" name="quantity" value="1" min="1">
+                            <span class="btn-quantity btn-increase">+</span>
+                        </div>
+                    </div>
+
+                    <!-- Sepete Ekle Butonu -->
+                    <div>
+                        <div class="tf-product-info-by-btn mb_10">
+                            <button type="submit" class="btn-style-2 flex-grow-1 text-btn-uppercase fw-6 btn-add-to-cart">
+                                <span>Sepete Ekle -&nbsp;</span><span class="tf-qty-price total-price">@Model.Price ₺</span>
+                            </button>
+                            <div class="">
+                                @{
+                                    List<int> favoriteProductIds = ViewBag.FavoriteProductIds as List<int>
+                                    ?? new List<int>();
+                                    bool isFavorite = favoriteProductIds.Contains(Model.Id);
+                                }
+
+                                <a href="javascript:void(0);" class="btn-icon-action d-flex align-items-center justify-content-center rounded-circle @(isFavorite ? "favorited" : "")"
+                                    data-product-id="@Model.Id" onclick="addToFavorites(this)"
+                                    style="width: 50px; height: 50px; border: 1px solid #ccc; text-align: center;">
+                                    @if (isFavorite)
+                                    {
+                                        <span class="fas fa-heart text-danger fs-2"></span> <!-- Dolu Kalp -->
+                                    }
+                                    else
+                                    {
+                                        <span class="far fa-heart text-muted fs-2"></span> <!-- Boş Kalp -->
+                                    }
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="mt-5">
+    <hr>
+
+@await Component.InvokeAsync("ProductComment", new { productId = Model.Id })
+</div>
+</div>
+</div>
+
+ <style>
+    body {
+        overflow-x: hidden;
+        /* Yana kaymayı engelle */
+    }
+
+    .row {
+        margin: 10 !important;
+    }
+
+    .swiper-wrapper {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        /* Fotoğraflar arasına boşluk */
+    }
+
+    .swiper-slide {
+        width: 80px !important;
+        /* Sabit genişlik */
+        height: 80px !important;
+        /* Sabit yükseklik */
+    }
+
+    .swiper-slide img {
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+    }
+
+    .swiper-slide img:hover {
+        opacity: 1;
+        transform: scale(1.1);
+    }
+
+    .main-image-wrap {
+        overflow: hidden;
+        /* Taşma olursa engelle */
+    }
+
+    .main-image-wrap img {
+        width: 100%;
+        height: auto;
+        object-fit: cover;
+        transition: transform 0.3s ease-in-out;
+    }
+
+    .main-image-wrap img:hover {
+        transform: scale(1.2);
+        /* Hover'da yakınlaştırma efekti */
+    }
+
+    .thumbs-slider {
+        margin-right: 20px;
+    }
+
+    .color-swatch {
+        display: inline-block;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        margin-right: 5px;
+        cursor: pointer;
+        border: 2px solid #cccccc;
+        transition: border 0.2s ease-in-out;
+    }
+
+    .color-swatch.selected {
+        border: 2px solid black;
+    }
+    /* Tükendi olan bedenler için özel stil */
+.out-of-stock {
+    background-color: #f0f0f0 !important; /* Gri arka plan */
+    color: #aaa !important;  /* Renk soluk */
+    cursor: not-allowed !important;  /* Seçilememe işareti */
+    text-decoration: line-through !important; /* Çizgi */
+    opacity: 0.5 !important; /* Daha fazla soluklaştır */
+}
+
+
+
+input[type="radio"]:disabled + label {
+    cursor: not-allowed;
+    background-color: #e0e0e0 !important; /* Gri arka plan seçilmeyenlerde */
+}
+
+/* Etiket üzerindeki "Tükendi" metni */
+.out-of-stock::after {
+    content: 'Tükendi';  /* "Tükendi" metnini ekle */
+    font-size: 14px;
+    font-weight: bold;
+    color: red;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+
+}
+.container {
+    padding-left: 0;
+    padding-right: 0;
+}
+
+.row {
+    margin-left: 0;
+    margin-right: 0;
+}
+
+.col-md-6 {
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+.tf-product-media-wrap,
+.tf-product-info-wrap {
+    padding-left: 15px;
+    padding-right: 15px;
+}
+</style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+ <script>
+    function addToFavorites(button) {
+        var productId = $(button).data("product-id");
+
+        $.ajax({
+            url: '/Shop/Product/ToggleFavorite',  // API endpoint'i
+            type: 'POST',
+            data: { productId: productId },
+            success: function (response) {
+                if (response.success) {
+                    var icon = $(button).find("span.fa-heart");
+                    var tooltip = $(button).find(".tooltip");
+
+                    if ($(button).hasClass("favorited")) {
+                        // Favorilerden çıkar
+                        $(button).removeClass("favorited");
+                        icon.removeClass("fas fa-heart").addClass("far fa-heart").css("color", "");
+                        tooltip.text("Favorilere Ekle");
+                    } else {
+                        // Favorilere ekle
+                        $(button).addClass("favorited");
+                        icon.removeClass("far fa-heart").addClass("fas fa-heart").css("color", "red");
+                        tooltip.text("Favorilerden Çıkar");
+                    }
+                }
+            }
+        });
+    }
+</script>
+ <script>
+    document.getElementById("add-to-cart-form").addEventListener("submit", function (event) {
+        // Kullanıcı giriş durumu kontrolü
+        var isAuthenticated = @User.Identity.IsAuthenticated.ToString().ToLower();
+        if (!isAuthenticated) {
+            event.preventDefault(); // Formu göndermeyi engelle
+            window.location.href = '/login'; // Giriş sayfasına yönlendir
+            return;
+        }
+
+        // Renk seçimi kontrolü
+        var selectedColorId = document.getElementById("selectedColorId").value;
+        if (!selectedColorId) {
+            event.preventDefault(); // Formu göndermeyi engelle
+            Swal.fire({
+                icon: 'error',
+                title: 'Renk Seçimi Hatası',
+                text: 'Lütfen bir renk seçin!',
+                confirmButtonText: 'Tamam'
+            });
+            return;
+        }
+
+        // Beden seçimi kontrolü
+        var selectedSizeId = document.getElementById("selectedSizeId").value;
+        if (!selectedSizeId) {
+            event.preventDefault(); // Formu göndermeyi engelle
+            Swal.fire({
+                icon: 'error',
+                title: 'Beden Seçimi Hatası',
+                text: 'Lütfen bir beden seçin!',
+                confirmButtonText: 'Tamam'
+            });
+            return;
+        }
+    });
+
+    // Renk seçildiğinde, hidden input'a değeri ekle
+    function selectColor(colorId) {
+        document.getElementById("selectedColorId").value = colorId;
+    }
+
+    // Beden seçildiğinde, hidden input'a değeri ekle
+    function selectSize(sizeId) {
+        document.getElementById("selectedSizeId").value = sizeId;
+    }
+</script>
+
+ <script>
+    document.getElementById("add-to-cart-form").addEventListener("submit", function (event) {
+        var isAuthenticated = @User.Identity.IsAuthenticated.ToString().ToLower(); // Kullanıcının giriş durumu
+
+        if (!isAuthenticated) {
+            event.preventDefault(); // Formu göndermeyi engelle
+            window.location.href = '/Shop/Account/login'; // Giriş sayfasına yönlendir
+        }
+    });
+    function changeMainImage(imageUrl) {
+        // Ana resmi değiştirme
+        var mainImage = document.getElementById('mainImage');
+        mainImage.src = imageUrl;
+        mainImage.setAttribute('data-zoom', imageUrl);
+    }
+    document.addEventListener('DOMContentLoaded', function () {
+        const sizeInput = document.getElementById("selectedSizeId"); // Hidden input
+        const colorInput = document.getElementById("selectedColorId"); // Yeni eklenen renk input'u
+
+        // Beden seçimlerini bağla
+        function attachSizeListeners() {
+            const sizeRadios = document.querySelectorAll('input[name="sizeId"]');
+
+            sizeRadios.forEach(radio => {
+                radio.removeEventListener('change', sizeChangeHandler); // Önce eskiyi kaldır
+                radio.addEventListener('change', sizeChangeHandler);
+            });
+        }
+
+        function sizeChangeHandler(event) {
+            sizeInput.value = event.target.value;
+            console.log("✅ Seçilen Beden ID:", event.target.value);
+        }
+
+        // Başta eventleri bağla
+        attachSizeListeners();
+
+        // Renk seçimi event'i
+        const colorSwatches = document.querySelectorAll('.color-swatch');
+        colorSwatches.forEach(swatch => {
+            let colorCode = swatch.getAttribute('data-color-code');
+            if (!colorCode) {
+                colorCode = "#cccccc"; // Default grey if color code is not present
+            }
+            swatch.style.backgroundColor = colorCode; // Color code set to swatch
+
+            swatch.addEventListener('click', function () {
+                document.querySelectorAll('.color-swatch').forEach(item => item.classList.remove('selected'));
+                this.classList.add('selected');
+
+                const colorId = this.getAttribute('data-color-id');
+                const colorName = this.getAttribute('title');
+                document.querySelector('.value-currentColor').innerText = colorName;
+
+                // Renk seçildiğinde colorId'yi input'a aktaralım
+                colorInput.value = colorId;  // Burada colorId'yi input'a aktarıyoruz.
+
+                updateSizes(colorId);
+                updateImagesForColor(colorId);
+            });
+        });
+
+        // Renk seçimine göre bedenleri güncelleme fonksiyonu
+        function updateSizesForColor(colorId) {
+            const sizeRadios = document.querySelectorAll('input[name="sizeId"]');
+
+            sizeRadios.forEach(radio => {
+                radio.disabled = false; // Beden seçeneklerini etkinleştir
+            });
+        }
+
+        // Renk seçildiğinde görselleri güncelleme fonksiyonu
+        function updateImagesForColor(colorId) {
+            const productId = getProductIdFromUrl();
+            console.log("Product ID:", productId);
+
+            if (!productId) {
+                console.error('Product ID bulunamadı.');
+                return;
+            }
+
+            $.ajax({
+                url: '/Shop/Product/GetImagesByColor',
+                type: 'GET',
+                data: { productId: productId, colorId: colorId },
+                success: function (response) {
+                    console.log('Renk bazında gelen görseller:', response);
+
+                    if (Array.isArray(response) && response.length > 0) {
+                        var mainImage = $('#mainImage');
+                        var thumbsContainer = $('.swiper-wrapper');
+
+                        // Ana fotoğrafı güncelle
+                        mainImage.attr('src', response[0].imageUrl);
+                        mainImage.attr('data-zoom', response[0].imageUrl);
+
+                        // Thumbnail'ları temizle
+                        thumbsContainer.empty();
+
+                        // Yeni thumbnail'ları ekle
+                        response.forEach(function (image) {
+                            thumbsContainer.append(`
+                        <div class="swiper-slide">
+                            <a href="javascript:void(0);" class="item" 
+                               data-image-url="${image.imageUrl}" 
+                               onclick="changeMainImage('${image.imageUrl}')">
+                                <img class="tf-image-zoom lazyload" 
+                                     data-zoom="${image.imageUrl}" 
+                                     data-src="${image.imageUrl}" 
+                                     src="${image.imageUrl}" alt="Product Image Thumbnail">
+                            </a>
+                        </div>
+                    `);
+                        });
+
+                        // Swiper'ı yeniden başlat
+                        initializeSwiper();
+
+                        // Swiper içeriğinin güncellendiğini bildir
+                        if (swiperInstance) {
+                            swiperInstance.update();
+                        }
+                    } else {
+                        console.error('Backend’den gelen görseller array değil ya da boş geldi.');
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error('Görseller güncellenirken hata:', error);
+                }
+            });
+        }
+
+        // Swiper'ı başlatan fonksiyon
+        let swiperInstance = null; // Swiper örneğini saklamak için global değişken
+
+        function initializeSwiper() {
+            if (typeof Swiper !== "undefined") {
+                if (swiperInstance) {
+                    swiperInstance.destroy(true, true); // Swiper'ı tamamen yok et
+                }
+                swiperInstance = new Swiper('.swiper', {
+                    slidesPerView: 4,
+                    spaceBetween: 10,
+                    freeMode: true,
+                    observer: true,  // DOM değişikliklerini izle
+                    observeParents: true // Üst elementler değiştiğinde güncelle
+                });
+            }
+        }
+
+        // Ana görseli değiştiren fonksiyon
+        function changeMainImage(imageUrl) {
+            const mainImage = document.getElementById('mainImage');
+            mainImage.src = imageUrl; // Ana fotoğrafın src'sini değiştirdik
+            mainImage.setAttribute('data-zoom', imageUrl); // Zoom efekti için data-zoom özelliğini ekledik
+        }
+
+        // Product ID'yi URL'den alma fonksiyonu
+        function getProductIdFromUrl() {
+            const queryString = window.location.search;
+            const urlParams = new URLSearchParams(queryString);
+            const productId = urlParams.get('id');
+            if (productId && !isNaN(productId)) {
+                return parseInt(productId, 10);
+            }
+            return null;
+        }
+
+        // Bedenleri güncelleme fonksiyonu
+        function updateSizes(colorId) {
+            const productId = getProductIdFromUrl();
+            if (!productId) {
+                console.error('Product ID bulunamadı veya geçersiz.');
+                return;
+            }
+
+         $.ajax({
+    url: '/Shop/Product/GetSizesByColor',
+    type: 'GET',
+    data: { productId: productId, colorId: colorId },
+    success: function (response) {
+        console.log('AJAX Yanıtı:', response);
+        var sizeContainer = $('.variant-picker-values-size');
+        sizeContainer.empty();
+
+        if (Array.isArray(response) && response.length > 0) {
+            response.forEach(function (size) {
+                sizeContainer.append(`
+                    <input type="radio" name="sizeId" id="size-${size.sizeId}" value="${size.sizeId}">
+                    <label class="style-text size-btn" for="size-${size.sizeId}">
+                        <span class="text-title">${size.name}</span>
+                    </label>
+                `);
+
+                // Stoğu 0 olanları disable yap ve belirgin hale getir
+                if (size.stock <= 0) {
+                    $('#size-' + size.sizeId).prop('disabled', true)
+                        .css('cursor', 'not-allowed')
+                        .css('opacity', 0.5)
+                        .attr('title', 'Tükendi');
+
+                    // Etiket üzerine çizgi ekle ve "Tükendi" metni ekle
+                    $('#size-' + size.sizeId).siblings('label')
+                        .addClass('out-of-stock');  // Tükendi olan beden için özel sınıf ekle
+                } else {
+                    $('#size-' + size.sizeId).prop('disabled', false)
+                        .css('cursor', 'pointer')
+                        .css('opacity', 1)
+                        .css('background-color', '')  // Varsayılan arka plan
+                        .attr('title', 'Seçilebilir');
+
+                    // Tükendi olmayanları temizle
+                    $('#size-' + size.sizeId).siblings('label').removeClass('out-of-stock');
+                }
+            });
+
+            // Beden eventlerini tekrar bağla
+            attachSizeListeners();
+        } else {
+            console.error('Beden verisi boş geldi veya hatalı.');
+        }
+    },
+    error: function (xhr, status, error) {
+        console.error('Beden güncelleme hatası:', error);
+    }
+});
+        }
+    });
+</script>

@@ -1,0 +1,79 @@
+@model RegisterViewModel
+
+<section class="flat-spacing">
+    <div class="container">
+        <div class="login-wrap">
+            <div class="left">
+                <div class="heading">
+                    <h4>Kayıt Ol</h4>
+                </div>
+                <form action="/Shop/Account/Register" method="post" class="form-login form-has-password">
+                    @if (!ViewData.ModelState.IsValid)
+                    {
+                        <div class="alert alert-danger">
+                            <ul>
+                                @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                                {
+                                    <li>@error.ErrorMessage</li>
+                                }
+                            </ul>
+                        </div>
+                    }
+                    <div class="wrap">
+                        <fieldset>
+                            <input type="text" placeholder="Ad Soyad" name="FullName" tabindex="1" required>
+                        </fieldset>
+                        <fieldset>
+                            <input type="email" placeholder="Mail Adresi" name="Email" tabindex="2" required>
+                        </fieldset>
+                        <fieldset class="position-relative password-item">
+                            <input class="input-password" type="password" placeholder="Şifre" name="Password" tabindex="3" required>
+                            <span class="toggle-password unshow">
+                                <i class="icon-eye-hide-line"></i>
+                            </span>
+                        </fieldset>
+                        <fieldset class="position-relative password-item">
+                            <input class="input-password" type="password" placeholder="Şifre Tekrar" name="ConfirmPassword" tabindex="4" required>
+                            <span class="toggle-password unshow">
+                                <i class="icon-eye-hide-line"></i>
+                            </span>
+                        </fieldset>
+                         <fieldset class="position-relative password-item">
+                            <input class="input-password" type="text" placeholder="Davet Kodu(İsteğe Bağlı)" name="InvitationCode" tabindex="4">
+                        </fieldset>
+                        <div class="d-flex align-items-center">
+                            <div class="tf-cart-checkbox">
+                                <div class="tf-checkbox-wrapp">
+                                    <input type="checkbox" id="login-form_agree" name="AgreeCheckbox" required>
+                                    <div>
+                                        <i class="icon-check"></i>
+                                    </div>
+                                </div>
+                                <label class="text-secondary-2" for="login-form_agree">
+                                    Kişisel verilerimin işlenmesine yönelik &nbsp;
+                                </label>
+                            </div>
+                            <a href="/Shop/Account/TermOfUse/" title="Terms of Service">aydınlatma metnini</a>
+                        </div>
+                        <span>okudum ve anladım.</span>
+                    </div>
+                    <div class="button-submit">
+                        <button class="tf-btn btn-fill" type="submit">
+                            <span class="text text-button">Kayıt Ol</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+            <div class="right">
+                <h4 class="mb_8">Zaten bir hesabınız var mı?</h4>
+                <p class="text-secondary">
+                    Tekrar hoş geldiniz. Kişiselleştirilmiş deneyiminize, kayıtlı tercihlerinize ve daha fazlasına erişmek için giriş yapın. 
+                    Sizi tekrar aramızda görmekten mutluluk duyuyoruz!
+                </p>
+                <a href="/Shop/Account/Login" class="tf-btn btn-fill">
+                    <span class="text text-button">Giriş Yap</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</section>

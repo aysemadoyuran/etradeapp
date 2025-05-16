@@ -1,0 +1,15 @@
+@media (max-width: 576px) {
+    .canvas-filter {
+        width: 100% !important; /* Tam genişlik yap */
+        position: fixed; /* Sabitle */
+        top: 0;
+        left: 0;
+        height: 100vh; /* Tüm ekranı kaplasın */
+        background-color: white; /* Arka planı beyaz yap */
+        z-index: 1050; /* Üstte tut */
+        overflow-y: auto; /* Kaydırma ekle */
+        padding: 20px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        display: none; /* Başlangıçta kapalı */
+    }
+}

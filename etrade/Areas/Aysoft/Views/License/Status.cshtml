@@ -1,0 +1,510 @@
+@model License
+@{
+    ViewData["Title"] = "Lisans Detayları";
+    
+    // Model null kontrolü
+    if (Model == null)
+    {
+        <div class="container py-5">
+            <div class="text-center py-5">
+                <i class="fas fa-info-circle fa-3x text-muted mb-4"></i>
+                <h4 class="fw-semibold text-gray-800 mb-3">Lisans Kaydı Bulunamadı</h4>
+                <p class="text-muted">Bu kullanıcıya ait aktif bir lisans kaydı bulunmamaktadır.</p>
+                <a href="/Aysoft/Demo/Request" class="btn btn-primary mt-3">
+                    <i class="fas fa-plus me-1"></i> Yeni Lisans Oluştur
+                </a>
+            </div>
+        </div>
+        return; // Sayfanın geri kalanını render etme
+    }
+
+    // Safe property accessors
+    var storeCount = Model.TenantStores?.Count ?? 0;
+    var paymentCount = Model.Payments?.Count ?? 0;
+    var hasCancellationRequests = Model.CancellationRequests != null && Model.CancellationRequests.Any();
+    var hasStores = Model.TenantStores != null && Model.TenantStores.Any();
+    var hasPayments = Model.Payments != null && Model.Payments.Any();
+    
+    // Check if dates are valid (not default)
+    var hasStartDate = Model.StartDate != default(DateTime);
+    var hasEndDate = Model.EndDate != default(DateTime);
+    var hasValidDates = hasStartDate && hasEndDate;
+    
+    // Calculate if within 30 days of cancellation
+    var isWithinReactivationPeriod = Model.IsDeleted && Model.DeletionDate.HasValue && 
+                                    (DateTime.Now - Model.DeletionDate.Value).TotalDays <= 30;
+}
+
+<div class="container py-3">
+    <!-- Header with status -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="fw-semibold text-gray-800">
+         Lisans Detayları
+        </h4>
+        @if (Model.IsDeleted)
+        {
+            <span class="badge bg-danger bg-opacity-10 text-white py-2 px-3 rounded-pill small">
+                <i class="fas fa-times-circle me-1"></i> İptal Edilmiş
+            </span>
+        }
+        else if (Model.IsFrozen)
+        {
+            <span class="badge bg-info bg-opacity-10 text-white py-2 px-3 rounded-pill small">
+                <i class="fas fa-snowflake me-1"></i> Dondurulmuş
+            </span>
+        }
+        else
+        {
+            <span class="badge bg-success bg-opacity-10 text-white py-2 px-3 rounded-pill small">
+                <i class="fas fa-check-circle me-1"></i> Aktif
+            </span>
+        }
+    </div>
+
+@if (Model.IsDeleted)
+{
+    @if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+    <!-- Minimal notice for cancelled licenses -->
+    <div class="alert alert-danger d-flex align-items-center gap-3 p-3 rounded-3 mb-4 border-start border-1 border-danger">
+        <i class="fas fa-ban fs-4 text-danger"></i>
+
+        <div class="flex-grow-1">
+            <strong class="d-block">Lisans İptal Edilmiş</strong>
+            <small>Bu lisans @Model.DeletionDate?.ToString("dd MM yyyy") tarihinde iptal edilmiştir.</small>
+
+            @if (isWithinReactivationPeriod)
+            {
+<form asp-action="RestoreLicense" asp-route-id="@Model.Id" method="post" class="mt-3 row g-2 align-items-center">
+    <div class="col-sm">
+        <small class="text-muted">Lisansınızı 30 gün içinde yeniden etkinleştirebilirsiniz.</small>
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-sm btn-outline-success">
+            <i class="fas fa-undo me-1"></i> Yeniden Etkinleştir
+        </button>
+    </div>
+</form>
+            }
+            else if (Model.DeletionDate.HasValue)
+            {
+                <small class="d-block text-muted mt-2">Yeniden etkinleştirme süresi @Model.DeletionDate.Value.AddDays(30).ToString("dd MMMM yyyy") tarihinde sona ermiştir.</small>
+            }
+        </div>
+    </div>
+}
+    else if (ViewBag.Message != null)
+    {
+        <!-- Regular alert message for active licenses -->
+        <div class="alert bg-warning bg-opacity-10 border-start border-3 border-warning d-flex align-items-center mb-4 p-3 rounded">
+            <i class="fas fa-exclamation-circle me-3 text-warning"></i>
+            <div class="small">@ViewBag.Message</div>
+        </div>
+    }
+
+    <div class="row g-4">
+        <!-- Main license info -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm rounded-3 @(Model.IsDeleted ? "opacity-75" : "")">
+                <div class="card-body p-4">
+                    <h5 class="mb-4 text-gray-800 fw-semibold">
+                        <i class="fas fa-info-circle me-2 text-primary"></i>Lisans Bilgileri
+                    </h5>
+
+                    <!-- Date range -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <div class="p-3 bg-light rounded-3">
+                                <small class="text-muted d-block mb-1">Başlangıç Tarihi</small>
+                                <strong id="startDate">
+                                    @(hasStartDate ? Model.StartDate.ToString("dd MM yyyy") : "Belirtilmemiş")
+                                </strong>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="p-3 bg-light rounded-3">
+                                <small class="text-muted d-block mb-1">Bitiş Tarihi</small>
+                                <strong id="endDate">
+                                    @(hasEndDate ? Model.EndDate.ToString("dd MM yyyy") : "Belirtilmemiş")
+                                </strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    @if (!Model.IsDeleted && hasValidDates)
+                    {
+                        <!-- Progress bar - Only show if license has dates and is active -->
+                        <div class="mb-4">
+                            <div class="d-flex justify-content-between mb-2 small">
+                                <span class="text-muted" id="remainingInfo"></span>
+                                <span class="text-muted">@Model.DurationInMonths ay</span>
+                            </div>
+                            <div class="progress rounded-pill" style="height: 8px;">
+                                <div id="licenseProgress" class="progress-bar" role="progressbar" style="width: 0%;"></div>
+                            </div>
+                        </div>
+                    }
+
+                    <!-- License details -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <div class="p-3 bg-light rounded-3">
+                                <small class="text-muted d-block mb-1">Lisans Türü</small>
+                                <strong>@Model.LicenseType</strong>
+                            </div>
+                        </div>
+                        
+                        @if (!string.IsNullOrEmpty(Model.FrozenCode))
+                        {
+                            <div class="col-md-6">
+                                <div class="p-3 bg-light rounded-3">
+                                    <small class="text-muted d-block mb-1">Dondurma Kodu</small>
+                                    <strong class="font-monospace">@Model.FrozenCode</strong>
+                                </div>
+                            </div>
+                        }
+                    </div>
+
+                    @if (!Model.IsDeleted)
+                    {
+                        @if(Model.LicenseType=="Full"){
+                        <div class="border-top pt-4 mt-4">
+                            <h6 class="mb-3 fw-semibold text-gray-800">Lisansı Uzat</h6>
+                                @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+                            <form asp-action="ExtendLicense" method="post" class="row g-3">
+                                <input type="hidden" name="licenseId" value="@Model.Id" />
+                                <div class="col-md-8">
+                                    <label for="extensionMonths" class="form-label small text-muted">Uzatma Süresi (Ay)</label>
+                                    <select class="form-select form-select-sm rounded-2" id="extensionMonths" name="extensionMonths" required>
+                                        <option value="1">1 Ay</option>
+                                        <option value="3">3 Ay</option>
+                                        <option value="6">6 Ay</option>
+                                        <option value="12">12 Ay</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4 d-flex align-items-end">
+                                    <button type="submit" class="btn btn-primary btn-sm w-100 rounded-2">
+                                        <i class="fas fa-calendar-plus me-1"></i> Uzat
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                        }
+
+
+                        <!-- Demo License Form -->
+                        @if (Model.LicenseType == "Demo")
+                        {
+                            <div class="border-top pt-4 mt-4">
+                                <h6 class="mb-3 fw-semibold text-gray-800">Lisansı Başlat</h6>
+                                <form asp-action="StartDemoLicense" method="post" class="row g-3">
+                                    <div class="col-md-8">
+                                        <label for="duration" class="form-label small text-muted">Lisans Süresi</label>
+                                        <select class="form-select form-select-sm rounded-2" id="duration" name="duration">
+                                            <option value="1">1 Ay</option>
+                                            <option value="3">3 Ay</option>
+                                            <option value="6">6 Ay</option>
+                                            <option value="12">12 Ay</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4 d-flex align-items-end">
+                                        <button type="submit" class="btn btn-primary btn-sm w-100 rounded-2">
+                                            <i class="fas fa-play me-1"></i> Başlat
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        }
+
+                        <!-- Full License Password Change -->
+                        @if (Model.LicenseType == "Full")
+                        {
+                            <div class="border-top pt-4 mt-4">
+                                <h6 class="mb-3 fw-semibold text-gray-800">Admin Şifresini Değiştir</h6>
+                                <p class="text-muted">Kullanıcı Adı: <code>admin@admin.com</code></p>
+
+                                @if (TempData["Success"] != null)
+                                {
+                                    <div class="alert alert-success">@TempData["Success"]</div>
+                                }
+                                @if (TempData["Error"] != null)
+                                {
+                                    <div class="alert alert-danger">@TempData["Error"]</div>
+                                }
+                                <form asp-action="ChangeAdminPassword" method="post">
+                                    <input type="hidden" id="tenantCustomerId" name="tenantCustomerId" value="@Model.CustomerId">
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <label for="newPassword" class="form-label small text-muted">Yeni Şifre</label>
+                                            <input type="password" class="form-control form-control-sm rounded-2" id="newPassword" name="newPassword" required>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="confirmPassword" class="form-label small text-muted">Şifre Tekrar</label>
+                                            <input type="password" class="form-control form-control-sm rounded-2" id="confirmPassword" name="confirmPassword" required>
+                                        </div>
+                                        <div class="col-12">
+                                            <button type="submit" class="btn btn-primary btn-sm w-100 rounded-2">
+                                                <i class="fas fa-key me-1"></i> Şifreyi Değiştir
+                                            </button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+
+            <!-- Cancellation Requests -->
+            @if (hasCancellationRequests)
+            {
+                <div class="card border-0 shadow-sm rounded-3 mt-4 @(Model.IsDeleted ? "opacity-75" : "")">
+                    <div class="card-body p-4">
+                        <h5 class="mb-4 text-gray-800 fw-semibold">
+                            <i class="fas fa-exclamation-triangle me-2 text-primary"></i>İptal Talebi
+                        </h5>
+                        <div class="row g-3">
+                            @foreach (var req in Model.CancellationRequests)
+                            {
+                                <div class="col-md-6">
+                                    <div class="p-3 bg-light rounded-3">
+                                        <div class="d-flex justify-content-between mb-2">
+                                            <small class="text-muted">@req.RequestDate.ToString("dd MM yyyy")</small>
+                                        </div>
+                                        <p class="mb-0 small">@req.Reason</p>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Connected Stores -->
+            <div class="card border-0 shadow-sm rounded-3 mb-4 @(Model.IsDeleted ? "opacity-75" : "")">
+                <div class="card-body p-4">
+                    <h5 class="mb-3 text-gray-800 fw-semibold">
+                        <i class="fas fa-store me-2 text-primary"></i>Bağlı Mağazalar
+                        <span class="badge bg-primary bg-opacity-10 text-white ms-2 small">@storeCount</span>
+                    </h5>
+                    
+                    @if (hasStores)
+                    {
+                        <div class="list-group list-group-flush">
+                            @foreach (var store in Model.TenantStores.Take(3))
+                            {
+                                <a href="http://@store.Domain:5168/Shop/Home/Index" 
+                                   class="list-group-item list-group-item-action border-0 py-2 px-0 small d-flex align-items-center">
+                                    <i class="fas fa-external-link-alt me-2 text-muted opacity-75"></i>
+                                    <span class="text-truncate">@store.Domain</span>
+                                </a>
+                            }
+                            
+                            @if (Model.TenantStores.Count > 3)
+                            {
+                                <div class="list-group-item border-0 py-2 px-0 small text-center text-muted">
+                                    + @(Model.TenantStores.Count - 3) daha fazla
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-3">
+                            <i class="fas fa-info-circle text-muted opacity-25 mb-2 fs-4"></i>
+                            <p class="small text-muted mb-0">Mağaza bulunamadı</p>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Payment History -->
+            <div class="card border-0 shadow-sm rounded-3 @(Model.IsDeleted ? "opacity-75" : "")">
+                <div class="card-body p-4 position-relative">
+                    @if (Model.IsDeleted)
+                    {
+                        <div class="position-absolute top-0 start-0 w-100 h-100 bg-white bg-opacity-75 d-flex flex-column justify-content-center align-items-center rounded-3">
+                            <i class="fas fa-ban text-danger fs-1 mb-2"></i>
+                            <p class="text-center text-muted small px-3">Lisans iptal edildiği için ödeme kayıtları görüntülenemez</p>
+                        </div>
+                    }
+                    
+                    <h5 class="mb-3 text-gray-800 fw-semibold">
+                        <i class="fas fa-credit-card me-2 text-primary"></i>Ödeme Kayıtları
+                        <span class="badge bg-primary bg-opacity-10 text-white ms-2 small">@paymentCount</span>
+                    </h5>
+                    
+                    @if (hasPayments && !Model.IsDeleted)
+                    {
+                        <div class="list-group list-group-flush">
+                            @foreach (var payment in Model.Payments.Take(5))
+                            {
+                                <div class="list-group-item border-0 py-2 px-0">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="small">@payment.EndPeriod.ToString("dd MM yyyy")</span>
+                                        <span class="fw-semibold small">@payment.Price.ToString("N2") ₺</span>
+                                    </div>
+                                </div>
+                            }
+                            
+                            @if (Model.Payments.Count > 5)
+                            {
+                                <div class="list-group-item border-0 py-2 px-0 small text-center text-muted">
+                                    + @(Model.Payments.Count - 5) daha fazla
+                                </div>
+                            }
+                        </div>
+                    }
+                    else if (!Model.IsDeleted)
+                    {
+                        <div class="text-center py-3">
+                            <i class="fas fa-info-circle text-muted opacity-25 mb-2 fs-4"></i>
+                            <p class="small text-muted mb-0">Ödeme kaydı bulunamadı</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    body {
+        color: #495057;
+    }
+
+    .card {
+        border: none;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 0.5rem 1.25rem rgba(0, 0, 0, 0.05);
+    }
+
+    .progress {
+        overflow: visible;
+    }
+
+    .progress-bar {
+        position: relative;
+        overflow: visible;
+    }
+
+    .progress-bar::after {
+        content: '';
+        position: absolute;
+        right: -4px;
+        top: -2px;
+        width: 8px;
+        height: 8px;
+        background-color: inherit;
+        border-radius: 50%;
+    }
+
+    .list-group-item {
+        border: none;
+        padding-left: 0;
+        padding-right: 0;
+    }
+
+    .form-control, .form-select {
+        border-radius: 0.375rem;
+        border-color: #dee2e6;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: #86b7fe;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.1);
+    }
+
+    .btn-sm {
+        padding: 0.375rem 0.75rem;
+    }
+
+    .badge {
+        font-weight: 500;
+        letter-spacing: 0.5px;
+    }
+
+    .bg-light {
+        background-color: #f8f9fa !important;
+    }
+    
+    .opacity-75 {
+        opacity: 0.75;
+    }
+    
+    .position-relative {
+        position: relative;
+    }
+    
+    .position-absolute {
+        position: absolute;
+    }
+</style>
+
+@section Scripts {
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Only run date calculations if license is active and has dates
+        @if (!Model.IsDeleted && hasValidDates)
+        {
+            @Html.Raw(@"<script>
+                const startDate = new Date('" + Model.StartDate.ToString("yyyy-MM-dd") + @"');
+                const endDate = new Date('" + Model.EndDate.ToString("yyyy-MM-dd") + @"');
+                const currentDate = new Date();
+
+                const totalDays = Math.round((endDate - startDate) / (1000 * 60 * 60 * 24));
+                let remainingDays = Math.round((endDate - currentDate) / (1000 * 60 * 60 * 24));
+                remainingDays = Math.max(0, remainingDays);
+
+                const remainingPercentage = Math.min(100, Math.max(0, (remainingDays / totalDays) * 100));
+
+                const progressBar = document.getElementById('licenseProgress');
+                if (progressBar) {
+                    progressBar.style.width = remainingPercentage + '%';
+
+                    if (remainingPercentage < 10) {
+                        progressBar.classList.add('bg-danger');
+                    } else if (remainingPercentage < 30) {
+                        progressBar.classList.add('bg-warning');
+                    } else {
+                        progressBar.classList.add('bg-success');
+                    }
+                }
+
+                const remainingInfo = document.getElementById('remainingInfo');
+                if (remainingInfo) {
+                    remainingInfo.textContent = remainingDays + ' gün kaldı';
+                }
+
+                const startEl = document.getElementById('startDate');
+                const endEl = document.getElementById('endDate');
+                if (startEl) startEl.textContent = formatDate(startDate);
+                if (endEl) endEl.textContent = formatDate(endDate);
+
+                function formatDate(date) {
+                    const options = { day: 'numeric', month: 'long', year: 'numeric' };
+                    return date.toLocaleDateString('tr-TR', options);
+                }
+            </script>")
+        }
+    });
+</script>
+}

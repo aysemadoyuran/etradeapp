@@ -1,0 +1,190 @@
+@{
+    var customers = ViewBag.Customers as List<TenantCustomer>;
+    var stores = ViewBag.Stores as List<TenantStore>;
+}
+
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-white border-0 py-3">
+        <h5 class="m-0 text-dark">Yeni Lisans Ekle</h5>
+    </div>
+    <div class="card-body px-4 py-3">
+        <form id="addLicenseForm" class="needs-validation" novalidate>
+            <div class="mb-3">
+                <label for="customerSelect" class="form-label text-muted small">MÜŞTERİ SEÇİMİ</label>
+                <select id="customerSelect" name="CustomerId" class="form-select" required>
+                    <option value="" disabled selected>Seçim yapın...</option>
+                    @foreach (var customer in customers)
+                    {
+                        <option value="@customer.Id">@customer.FullName</option>
+                    }
+                </select>
+                <div class="invalid-feedback small">Lütfen bir müşteri seçiniz</div>
+            </div>
+
+            <div class="row g-2 mb-3">
+                <div class="col-md-6">
+                    <label for="startDate" class="form-label text-muted small">BAŞLANGIÇ TARİHİ</label>
+                    <input id="startDate" name="StartDate" class="form-control" type="date" required />
+                    <div class="invalid-feedback small">Geçerli bir tarih seçin</div>
+                </div>
+                <div class="col-md-6">
+                    <label for="duration" class="form-label text-muted small">SÜRE (AY)</label>
+                    <input id="duration" name="DurationInMonths" class="form-control" type="number" min="1" required />
+                    <div class="invalid-feedback small">Geçerli bir süre girin</div>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label text-muted small d-block">MAĞAZA SEÇİMİ</label>
+                @if (stores != null && stores.Any())
+                {
+                    <div class="d-flex flex-wrap gap-2">
+                        @foreach (var store in stores)
+                        {
+                            <div>
+                                <input class="btn-check" type="radio" name="SelectedStoreId" id="store-@store.Id" value="@store.Id" required />
+                                <label class="btn btn-outline-secondary btn-sm" for="store-@store.Id">
+                                    @store.StoreName
+                                </label>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="alert alert-warning small py-2 mb-0">
+                        Tüm mağazalar zaten lisanslı
+                    </div>
+                }
+            </div>
+
+            <div class="d-grid mt-4">
+                <button type="submit" class="btn btn-dark">
+                    Lisansı Kaydet
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="result" class="mt-3"></div>
+
+<style>
+    .card {
+        border-radius: 8px;
+    }
+    
+    .form-label {
+        letter-spacing: 0.5px;
+        font-weight: 500;
+    }
+    
+    .form-control, .form-select {
+        font-size: 0.875rem;
+        padding: 0.5rem 0.75rem;
+        border-radius: 6px;
+    }
+    
+    .btn {
+        font-size: 0.8125rem;
+        padding: 0.375rem 0.75rem;
+        border-radius: 6px;
+        font-weight: 500;
+    }
+    
+    .btn-outline-secondary {
+        border-color: #e0e0e0;
+    }
+    
+    .btn-check:checked + .btn-outline-secondary {
+        background-color: #333;
+        border-color: #333;
+        color: white;
+    }
+</style>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+    $(document).ready(function() {
+        // Bootstrap validation
+        const form = document.getElementById('addLicenseForm');
+        form.addEventListener('submit', function(event) {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            form.classList.add('was-validated');
+        }, false);
+
+        // Modern AJAX form submission
+        $('#addLicenseForm').on('submit', function(e) {
+            e.preventDefault();
+
+            const form = $(this);
+            const submitBtn = form.find('button[type="submit"]');
+            const originalBtnText = submitBtn.html();
+            
+            // Show loading state
+            submitBtn.prop('disabled', true);
+            submitBtn.html('<span class="spinner-border spinner-border-sm me-2" role="status"></span>Kaydediliyor...');
+
+            const licenseData = {
+                customerId: parseInt(form.find('[name="CustomerId"]').val()),
+                startDate: form.find('[name="StartDate"]').val(),
+                durationInMonths: parseInt(form.find('[name="DurationInMonths"]').val()),
+                tenantStores: []
+            };
+
+            // Get selected store
+            const selectedStoreId = form.find('[name="SelectedStoreId"]:checked').val();
+            if (selectedStoreId) {
+                licenseData.tenantStores.push({ id: parseInt(selectedStoreId) });
+            }
+
+            $.ajax({
+                type: 'POST',
+                url: '/Tenant/License/AddLicense',
+                data: JSON.stringify(licenseData),
+                contentType: 'application/json',
+                success: function(res) {
+                    $('#result').html(`
+                        <div class="alert alert-success alert-dismissible fade show py-2 small" role="alert">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-check-circle me-2"></i>
+                                <div>Lisans başarıyla kaydedildi</div>
+                                <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        </div>
+                    `);
+                    
+                    // Reset form
+                    form[0].reset();
+                    form.removeClass('was-validated');
+                },
+                error: function(xhr) {
+                    let msg = "Bir hata oluştu. Lütfen tekrar deneyin.";
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        msg = xhr.responseJSON.message;
+                    }
+                    $('#result').html(`
+                        <div class="alert alert-danger alert-dismissible fade show py-2 small" role="alert">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-exclamation-circle me-2"></i>
+                                <div>${msg}</div>
+                                <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        </div>
+                    `);
+                },
+                complete: function() {
+                    submitBtn.prop('disabled', false);
+                    submitBtn.html(originalBtnText);
+                }
+            });
+        });
+
+        // Set minimum date to today
+        const today = new Date().toISOString().split('T')[0];
+        $('#startDate').attr('min', today);
+    });
+</script>

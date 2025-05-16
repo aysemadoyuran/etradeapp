@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>İndirim Yönetimi</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-light">
+    <div class="container py-5">
+        <!-- Başlık ve Açıklama -->
+        <div class="text-center mb-5">
+            <h2 class="fw-bold text-gradient">Yeni İndirim Kampanyası</h2>
+            <p class="text-muted">Kampanya detaylarını aşağıdaki formu doldurarak oluşturabilirsiniz</p>
+        </div>
+
+        <!-- Ana Form Kartı -->
+        <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+            <div class="card-body p-3">
+                <form id="discountForm" class="needs-validation" novalidate>
+                    <!-- 1. Bölüm: Temel Bilgiler -->
+                    <div class="mb-5">
+                        <h5 class="fw-bold mb-4 d-flex align-items-center">
+                            <span class="icon-circle bg-primary-light me-3">
+                                <i class="fas fa-info-circle text-primary"></i>
+                            </span>
+                            Temel Bilgiler
+                        </h5>
+                        
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input type="text" id="discountName" name="discountName" class="form-control form-control-lg" placeholder="İndirim Adı" required />
+                                    <label for="discountName">İndirim Adı</label>
+                                    <div class="invalid-feedback">Lütfen geçerli bir ad giriniz</div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <select id="discountType" name="discountType" class="form-select form-select-lg" required>
+                                        <option value="">Seçiniz</option>
+                                        <option value="Percentage">Yüzdesel İndirim</option>
+                                        <option value="Fixed">Sabit Tutarlı İndirim</option>
+                                    </select>
+                                    <label for="discountType">İndirim Türü</label>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input type="number" id="value" name="value" class="form-control form-control-lg" placeholder="İndirim Değeri" required />
+                                    <label for="value">İndirim Değeri</label>
+                                    <div class="invalid-feedback">Lütfen geçerli bir değer giriniz</div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <select id="conditionType" name="conditionType" class="form-select form-select-lg" required onchange="loadConditionValues(1)">
+                                        <option value="">Seçiniz</option>
+                                        <option value="Product">Ürün Bazlı</option>
+                                        <option value="Category">Kategori Bazlı</option>
+                                    </select>
+                                    <label for="conditionType">Uygulama Kapsamı</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 2. Bölüm: Ürün/Kategori Seçimi -->
+                    <div class="mb-5">
+                        <h5 class="fw-bold mb-4 d-flex align-items-center">
+                            <span class="icon-circle bg-primary-light me-3">
+                                <i class="fas fa-list-ul text-primary"></i>
+                            </span>
+                            Uygulanacak Öğeler
+                        </h5>
+
+                        <div class="card border-0 shadow-sm rounded-3">
+                            <div class="card-body p-4">
+                                <div class="search-box-wrapper mb-4">
+                                    <div class="search-box">
+                                        <i class="fas fa-search"></i>
+                                        <input type="text" id="searchInput" class="form-control form-control-lg" placeholder="Öğe ara..." onkeyup="filterOptions()">
+                                    </div>
+                                </div>
+                                
+                                <div id="conditionOptions" class="option-grid mb-4"></div>
+                                
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <button type="button" id="prevPage" class="btn btn-sm btn-outline-secondary" onclick="changePage(-1)">
+                                        <i class="fas fa-arrow-left me-2"></i> Önceki
+                                    </button>
+                                    <span id="pageInfo" class="text-muted fw-bold small"></span>
+                                    <button type="button" id="nextPage" class="btn btn-sm btn-outline-secondary" onclick="changePage(1)">
+                                        Sonraki <i class="fas fa-arrow-right ms-2"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 3. Bölüm: Zaman Ayarları -->
+                    <div class="mb-5">
+                        <h5 class="fw-bold mb-4 d-flex align-items-center">
+                            <span class="icon-circle bg-primary-light me-3">
+                                <i class="fas fa-clock text-primary"></i>
+                            </span>
+                            Zaman Planlaması
+                        </h5>
+                        
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input type="datetime-local" id="startDateTime" name="startDateTime" class="form-control form-control-lg" placeholder="Başlangıç Zamanı" required />
+                                    <label for="startDateTime">Başlangıç Zamanı</label>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input type="datetime-local" id="endDateTime" name="endDateTime" class="form-control form-control-lg" placeholder="Bitiş Zamanı" required />
+                                    <label for="endDateTime">Bitiş Zamanı</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Form Butonları -->
+                    <div class="d-flex justify-content-between pt-4">
+                        <button type="button" class="btn btn-lg btn-outline-danger" onclick="history.back()">
+                            <i class="fas fa-times-circle me-2"></i> Vazgeç
+                        </button>
+                        <button type="submit" class="btn btn-lg btn-primary px-5">
+                            <i class="fas fa-rocket me-2"></i> Kampanyayı Başlat
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gerekli JS Dosyaları -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+        .text-gradient {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .icon-circle {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .bg-primary-light {
+            background-color: #e0e7ff;
+        }
+        
+        .form-control-lg, .form-select-lg {
+            padding: 1rem 1.25rem;
+            height: calc(3.5rem + 2px);
+            border-radius: 0.75rem;
+        }
+        
+        .search-box-wrapper {
+            position: relative;
+        }
+        
+        .search-box {
+            position: relative;
+        }
+        
+        .search-box i {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #64748b;
+            z-index: 10;
+        }
+        
+        .search-box input {
+            padding-left: 50px !important;
+            border-radius: 0.75rem !important;
+        }
+        
+        .option-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1rem;
+            max-height: 300px;
+            overflow-y: auto;
+            padding: 5px;
+        }
+        
+        .option-grid::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .option-grid::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 10px;
+        }
+        
+        .option-grid::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+        
+        .option-grid .form-check {
+            background: white;
+            border-radius: 0.75rem;
+            padding: 1rem;
+            border: 1px solid #e2e8f0;
+            transition: all 0.3s ease;
+        }
+        
+        .option-grid .form-check:hover {
+            border-color: #6366f1;
+            box-shadow: 0 5px 15px rgba(99, 102, 241, 0.1);
+        }
+        
+        .btn-lg {
+            padding: 0.8rem 2rem;
+            font-size: 1.1rem;
+            border-radius: 0.75rem;
+        }
+        
+        .rounded-4 {
+            border-radius: 1rem !important;
+        }
+    </style>
+
+    <script>
+        let currentPage = 1;
+        let totalPages = 1;
+        let allData = [];
+        let selectedItems = [];
+
+        // Koşul değerlerini yükle
+        function loadConditionValues(page = 1) {
+            const conditionType = document.getElementById('conditionType').value;
+            const conditionOptions = document.getElementById('conditionOptions');
+            conditionOptions.innerHTML = '';
+            if (!conditionType) return;
+
+            let apiUrl = conditionType === 'Product' ? '/Admin/Discount/GetProducts' : '/Admin/Discount/GetCategories';
+
+            fetch(apiUrl)
+                .then(response => response.json())
+                .then(data => {
+                    allData = data;
+                    totalPages = Math.ceil(data.length / 10);
+                    renderPage(page);
+                })
+                .catch(error => {
+                    console.error('Veri çekme hatası:', error);
+                    alert('Veri yüklenirken bir hata oluştu.');
+                });
+        }
+
+        // Sayfayı render et
+        function renderPage(page) {
+            const conditionOptions = document.getElementById('conditionOptions');
+            conditionOptions.innerHTML = '';
+
+            let start = (page - 1) * 10;
+            let end = start + 10;
+            let pageData = allData.slice(start, end);
+
+            pageData.forEach(item => {
+                const isChecked = selectedItems.includes(item.id) ? 'checked' : '';
+                const checkbox = `<div class='form-check'>
+                    <input class='form-check-input' type='checkbox' name='selectedItems' value='${item.id}' id='item-${item.id}' ${isChecked} onclick="toggleItemSelection(${item.id})">
+                    <label class='form-check-label' for='item-${item.id}'>${item.name}</label>
+                </div>`;
+                conditionOptions.innerHTML += checkbox;
+            });
+
+            document.getElementById('pageInfo').textContent = `Sayfa ${currentPage} / ${totalPages}`;
+            document.getElementById('prevPage').disabled = currentPage === 1;
+            document.getElementById('nextPage').disabled = currentPage === totalPages;
+        }
+
+        // Sayfa değiştirme
+        function changePage(direction) {
+            currentPage += direction;
+            renderPage(currentPage);
+        }
+
+        // Seçilen öğeleri yönet
+        function toggleItemSelection(itemId) {
+            const index = selectedItems.indexOf(itemId);
+            if (index === -1) {
+                selectedItems.push(itemId);
+            } else {
+                selectedItems.splice(index, 1);
+            }
+            console.log("Seçilen Öğeler:", selectedItems);
+        }
+
+        // Seçenekleri filtrele
+        function filterOptions() {
+            let query = document.getElementById('searchInput').value.toLowerCase();
+            let filteredData = allData.filter(item => item.name.toLowerCase().includes(query));
+
+            const conditionOptions = document.getElementById('conditionOptions');
+            conditionOptions.innerHTML = '';
+
+            filteredData.slice(0, 10).forEach(item => {
+                const isChecked = selectedItems.includes(item.id) ? 'checked' : '';
+                const checkbox = `<div class='form-check'>
+                    <input class='form-check-input' type='checkbox' name='selectedItems' value='${item.id}' id='item-${item.id}' ${isChecked} onclick="toggleItemSelection(${item.id})">
+                    <label class='form-check-label' for='item-${item.id}'>${item.name}</label>
+                </div>`;
+                conditionOptions.innerHTML += checkbox;
+            });
+        }
+
+        // Form gönderimini işle
+        document.getElementById('discountForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            // Form verilerini topla
+            const formData = {
+                discountName: document.getElementById('discountName').value,
+                discountType: document.getElementById('discountType').value,
+                value: parseFloat(document.getElementById('value').value),
+                conditionType: document.getElementById('conditionType').value,
+                selectedIds: selectedItems,
+                startDateTime: document.getElementById('startDateTime').value,
+                endDateTime: document.getElementById('endDateTime').value,
+            };
+
+            console.log("Backend'e Gönderilen Veriler:", formData);
+
+            // Fetch ile JSON gönder
+            fetch('/Admin/Discount/Create', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.text().then(text => {
+                        throw new Error('Sunucu hatası: ' + text);
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'İndirim başarıyla oluşturuldu.',
+                        showConfirmButton: false,
+                        timer: 1500
+                    });
+                    document.getElementById('discountForm').reset();
+                    selectedItems = [];
+                    loadConditionValues(1);
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'İndirim eklenirken bir hata oluştu.',
+                        text: data.message
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Hata:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Form gönderilirken bir hata oluştu.',
+                    text: error.message
+                });
+            });
+        });
+
+        // Sayfa yüklendiğinde koşul değerlerini yükle
+        document.addEventListener('DOMContentLoaded', function() {
+            loadConditionValues(1);
+        });
+    </script>
+</body>
+</html>

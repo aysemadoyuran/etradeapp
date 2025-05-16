@@ -1,0 +1,59 @@
+@{
+    ViewData["Title"] = "Kod Gir";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-4">
+            <div class="card shadow-sm">
+                <div class="card-body p-4">
+                    <h4 class="card-title text-center mb-4">Lisans Aktifleştirme</h4>
+
+                    <form asp-action="CheckCode" method="post">
+                        <!-- Donduruma Kodu Girişi -->
+                        <div class="mb-3">
+                            <label for="codeInput" class="form-label fw-light">Donduruma Kodu</label>
+                            <input type="text" class="form-control form-control-lg border-2" id="codeInput" name="code"
+                                required placeholder="XXXXXX">
+                        </div>
+
+                        <!-- Lisans Süresi Girişi -->
+                        <div class="mb-3">
+                            <label for="monthsInput" class="form-label fw-light">Lisansınızı Kaç Aylık Başlatalım?</label>
+                            <input type="number" class="form-control form-control-lg border-2" id="monthsInput" name="months"
+                                required placeholder="Örn: 3" min="1">
+                        </div>
+
+                        <!-- Submit Butonu -->
+                        <button type="submit" class="btn btn-primary w-100 py-2">
+                            Aktif Et
+                        </button>
+                    </form>
+
+                    @if (TempData["Message"] != null)
+                    {
+                        <div class="alert alert-info mt-4 mb-0 text-center">
+                            @TempData["Message"]
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        border: none;
+        border-radius: 10px;
+    }
+
+    .form-control {
+        border-color: #dee2e6;
+    }
+
+    .form-control:focus {
+        border-color: #86b7fe;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.1);
+    }
+</style>

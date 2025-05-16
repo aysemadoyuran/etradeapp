@@ -1,0 +1,384 @@
+@{
+    ViewData["Title"] = "İptal Talep Detayı";
+}
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold text-primary">İptal Talep Detayı</h2>
+        <div class="btn-group" style="gap: 10px;">
+            <button id="approveButton" class="btn btn-success" disabled>
+                <i class="fas fa-check-circle me-2"></i>Onayla
+            </button>
+            <button id="prepareButton" class="btn btn-primary" disabled>
+                <i class="fas fa-cog me-2"></i>Verileri Excel Formatına Çevir
+            </button>
+            <button id="completeButton" class="btn btn-success" disabled>
+                <i class="fas fa-check-circle me-2"></i>Veriler Mail olarak İletildi
+            </button>
+        </div>
+    </div>
+
+    <div class="card shadow-sm mb-4" id="requestDetails" style="display:none;">
+        <div class="card-header bg-light">
+            <h5 class="card-title mb-0">Temel Bilgiler</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class=" col-md-2 mb-3">
+                    <label class="form-label text-muted small">ID</label>
+                    <p class="fw-bold" id="detailId">-</p>
+                </div>
+                <div class=" col-md-2 mb-3">
+                    <label class="form-label text-muted small">Lisans ID</label>
+                    <p class="fw-bold" id="detailLicenseId">-</p>
+                </div>
+                <div class="col-md-2 mb-3">
+                    <label class="form-label text-muted small">Talep Tarihi</label>
+                    <p class="fw-bold" id="detailDate">-</p>
+                </div>
+                <div class=" col-md-2 mb-3">
+                    <label class="form-label text-muted small">Onay Durumu</label>
+                    <p class="fw-bold" id="detailApproved">-</p>
+
+                </div>
+                <div class=" col-md-2 mb-3">
+                    <label class="form-label text-muted small">Tamamlanma Durumu</label>
+                    <p class="fw-bold" id="detailCompleted">-</p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="mb-3">
+                        <label class="form-label text-muted small">İptal Nedeni</label>
+                        <p class="fw-bold" id="detailReason">-</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-light">
+            <h5 class="card-title mb-0">Ödeme Bilgileri</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Ödeme ID</th>
+                            <th>Fiyat</th>
+                            <th>Başlangıç</th>
+                            <th>Bitiş</th>
+                            <th>Ödendi mi?</th>
+                        </tr>
+                    </thead>
+                    <tbody id="paymentsTableBody">
+                        <tr>
+                            <td colspan="5" class="text-center">Veri yükleniyor...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-light">
+            <h5 class="card-title mb-0">Mağaza Bilgileri</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Mağaza Adı</th>
+                            <th>Email</th>
+                            <th>Domain</th>
+                            <th>Logo</th>
+                        </tr>
+                    </thead>
+                    <tbody id="storesTableBody">
+                        <tr>
+                            <td colspan="4" class="text-center">Veri yükleniyor...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .card {
+            border: none;
+            border-radius: 10px;
+        }
+
+        .card-header {
+            border-radius: 10px 10px 0 0 !important;
+        }
+
+        .table th {
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.5px;
+        }
+
+        .form-label {
+            font-size: 0.8rem;
+        }
+
+        .btn {
+            border-radius: 6px;
+            padding: 8px 16px;
+            font-weight: 500;
+        }
+        
+        /* Buton grubuna boşluk ekleme */
+        .btn-group {
+            display: flex;
+            flex-wrap: nowrap;
+        }
+    </style>
+}
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function getRequestIdFromUrl() {
+            const pathSegments = window.location.pathname.split('/');
+            return pathSegments[pathSegments.length - 1];
+        }
+
+        $(document).ready(function () {
+            const requestId = getRequestIdFromUrl();
+
+            if (!requestId || isNaN(requestId)) {
+                showErrorAlert("URL'de geçerli bir ID bulunamadı.");
+                return;
+            }
+
+            // Loading state
+            $('#paymentsTableBody').html('<tr><td colspan="5" class="text-center">Veri yükleniyor...</td></tr>');
+            $('#storesTableBody').html('<tr><td colspan="4" class="text-center">Veri yükleniyor...</td></tr>');
+
+            $.ajax({
+                url: `/Tenant/Request/GetCancellationRequestDetails?id=${requestId}`,
+                method: 'GET',
+                success: function (data) {
+                    $('#requestDetails').show();
+
+                    $('#detailId').text(data.id);
+                    $('#detailLicenseId').text(data.licenseId);
+                    $('#detailReason').text(data.reason || '-');
+                    $('#detailDate').text(data.requestDate || '-');
+                    $('#detailApproved').html(data.isApproved ?
+                        '<span class="badge bg-success">Evet</span>' :
+                        '<span class="badge bg-warning text-dark">Hayır</span>');
+                    $('#detailCompleted').html(data.isCompleted ?
+                        '<span class="badge bg-success">Evet</span>' :
+                        '<span class="badge bg-secondary">Hayır</span>');
+
+                    // Buton durumlarını ayarla
+                    updateButtonStates(data.isApproved, data.isCompleted);
+
+                    const paymentsBody = $('#paymentsTableBody');
+                    paymentsBody.empty();
+                    if (data.licensePayments && data.licensePayments.length > 0) {
+                        data.licensePayments.forEach(p => {
+                            paymentsBody.append(`
+                                <tr>
+                                    <td>${p.id}</td>
+                                    <td>${p.price ? p.price + ' ₺' : '-'}</td>
+                                    <td>${p.startPeriod || '-'}</td>
+                                    <td>${p.endPeriod || '-'}</td>
+                                    <td>${p.isPaid ?
+                                    '<span class="badge bg-success">Evet</span>' :
+                                    '<span class="badge bg-danger">Hayır</span>'}</td>
+                                </tr>
+                            `);
+                        });
+                    } else {
+                        paymentsBody.append('<tr><td colspan="5" class="text-center">Ödeme bilgisi bulunamadı</td></tr>');
+                    }
+
+                    const storesBody = $('#storesTableBody');
+                    storesBody.empty();
+                    if (data.tenantStores && data.tenantStores.length > 0) {
+                        data.tenantStores.forEach(ts => {
+                            storesBody.append(`
+                                <tr>
+                                    <td>${ts.storeName || '-'}</td>
+                                    <td>${ts.email || '-'}</td>
+                                    <td>${ts.domain || '-'}</td>
+                                    <td>
+                                        ${ts.logoUrl ?
+                                        `<img src="${ts.logoUrl}" class="img-thumbnail" style="width:80%; object-fit:contain; padding: 10px;">` :
+                                        '-'}
+                                    </td>
+                                </tr>
+                            `);
+                        });
+                    } else {
+                        storesBody.append('<tr><td colspan="4" class="text-center">Mağaza bilgisi bulunamadı</td></tr>');
+                    }
+                },
+                error: function (xhr) {
+                    showErrorAlert("Detay alınamadı: " + (xhr.responseText || 'Sunucu hatası'));
+                    $('#requestDetails').hide();
+                    $('#paymentsTableBody').html('<tr><td colspan="5" class="text-center text-danger">Veri yüklenirken hata oluştu</td></tr>');
+                    $('#storesTableBody').html('<tr><td colspan="4" class="text-center text-danger">Veri yüklenirken hata oluştu</td></tr>');
+                }
+            });
+
+            function updateButtonStates(isApproved, isCompleted) {
+                // Tüm butonları önce disable yapalım
+                $('#approveButton').prop('disabled', true);
+                $('#prepareButton').prop('disabled', true);
+                $('#completeButton').prop('disabled', true);
+                
+                // Duruma göre butonları ayarla
+                if (!isApproved) {
+                    $('#approveButton').prop('disabled', false);
+                } else {
+                    $('#prepareButton').prop('disabled', false);
+                    
+                    if (!isCompleted) {
+                        $('#completeButton').prop('disabled', false);
+                    }
+                }
+            }
+
+            $('#prepareButton').on('click', function () {
+                // URL'den id'yi al
+                const pathname = window.location.pathname;
+                const id = pathname.split('/').pop();  // URL'nin son segmentini alıyoruz
+
+                if (id) {
+                    showAlert('info', 'Veriler hazırlanıyor...', 'Lütfen bekleyiniz.');
+                    
+                    // Complete butonunu aktif et
+                    $('#completeButton').prop('disabled', false);
+                    
+                    // POST isteğini id ile backend'e gönder
+                    fetchAndDownloadReport(id);
+                } else {
+                    alert("ID parametresi bulunamadı.");
+                }
+            });
+            
+            $('#completeButton').on('click', function () {
+                const pathname = window.location.pathname;
+                const id = pathname.split('/').pop();  // URL'nin son segmentini alıyoruz
+
+                if (!id) {
+                    alert("ID parametresi bulunamadı.");
+                    return;
+                }
+
+                $.ajax({
+                    url: '/Tenant/Request/CompleteProcess',
+                    type: 'POST',
+                    data: { id: id },
+                    success: function (response) {
+                        if (response.success) {
+                            showAlert('info','İşlem Başarılı','Veriler mail olarak gönderildi ve işlem tamamlandı.');
+                            // Tamamlandıktan sonra butonu devre dışı bırak
+                            $('#completeButton').prop('disabled', true);
+                        } else {
+                            showAlert('error','Mail gönderme işlemi başarısız: ','Bir hata oluştu' + response.message);
+                        }
+                    },
+                    error: function () {
+                        alert('Sunucu hatası oluştu.');
+                    }
+                });
+            });
+
+            async function fetchAndDownloadReport(id) {
+                try {
+                    // Backend'e POST isteği gönder
+                    const response = await fetch('/Tenant/Request/verileriHazirlaVeExcelYap', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(id) // id'yi JSON formatında gönderiyoruz
+                    });
+
+                    // Eğer başarılıysa, Excel dosyasını indir
+                    if (response.ok) {
+                        const blob = await response.blob();
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.style.display = 'none';
+                        a.href = url;
+                        a.download = 'TamRapor.xlsx'; // Dosya adı
+                        document.body.appendChild(a);
+                        a.click();
+                        window.URL.revokeObjectURL(url);
+                    } else {
+                        alert("Rapor oluşturulurken bir hata oluştu.");
+                    }
+                } catch (error) {
+                    console.error('Error during report generation:', error);
+                    alert("Bir hata oluştu. Lütfen tekrar deneyin.");
+                }
+            }
+            
+            $('#approveButton').on('click', function () {
+                showConfirmDialog(
+                    "Onay İşlemi",
+                    "Bu talebi onaylamak istediğinize emin misiniz? Bu işlem geri alınamaz.",
+                    "Onayla",
+                    "warning",
+                    function () {
+                        const requestId = getRequestIdFromUrl();
+
+                        $.ajax({
+                            url: `/Tenant/Request/ApproveCancellationRequest`,
+                            method: 'POST',
+                            contentType: 'application/json',
+                            data: JSON.stringify(requestId), // sadece int olarak gönder
+                            success: function () {
+                                showAlert('success', 'Talep başarıyla onaylandı.', '');
+                                setTimeout(() => location.reload(), 1500);
+                            },
+                            error: function (xhr) {
+                                showErrorAlert("Onaylama işlemi başarısız: " + (xhr.responseText || 'Sunucu hatası'));
+                            }
+                        });
+                    }
+                );
+            });
+
+            function showAlert(type, title, message) {
+                // Bootstrap 5 alert gösterme fonksiyonu
+                const alertHtml = `
+                    <div class="alert alert-${type} alert-dismissible fade show position-fixed top-0 end-0 m-3" role="alert" style="z-index: 9999;">
+                        <strong>${title}</strong> ${message}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                `;
+                $('body').append(alertHtml);
+                setTimeout(() => $('.alert').alert('close'), 3000);
+            }
+
+            function showErrorAlert(message) {
+                showAlert('danger', 'Hata!', message);
+            }
+
+            function showConfirmDialog(title, text, confirmButtonText, icon, confirmCallback) {
+                // Basit bir confirm dialog simülasyonu
+                if (confirm(`${title}\n\n${text}`)) {
+                    confirmCallback();
+                }
+            }
+        });
+    </script>
+}

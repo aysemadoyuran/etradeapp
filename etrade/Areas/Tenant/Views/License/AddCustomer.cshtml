@@ -1,0 +1,237 @@
+@{
+    ViewData["Title"] = "Müşteri Ekle";
+}
+<link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet">
+
+<style>
+    .form-container {
+        margin: 0 auto;
+        padding: 30px;
+        background-color: #f8f9fa;
+        border-radius: 10px;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .form-header {
+        text-align: center;
+        margin-bottom: 30px;
+        color: #343a40;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-control {
+        border-radius: 5px;
+        border: 1px solid #ced4da;
+        padding: 10px 15px;
+        transition: border-color 0.3s ease;
+    }
+
+    .form-control:focus {
+        border-color: #80bdff;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+
+    .btn-primary {
+        width: 100%;
+        padding: 12px;
+        background-color: #007bff;
+        border: none;
+        border-radius: 5px;
+        font-weight: 600;
+        transition: background-color 0.3s ease;
+    }
+
+    .btn-primary:hover {
+        background-color: #0069d9;
+    }
+
+    .toast-container {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+    }
+
+    .toast {
+        min-width: 300px;
+        border-radius: 5px;
+        overflow: hidden;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        animation: slideIn 0.5s forwards, fadeOut 0.5s 2.5s forwards;
+    }
+
+    @@keyframes slideIn {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+
+    @@keyframes fadeOut {
+        from {
+            opacity: 1;
+        }
+
+        to {
+            opacity: 0;
+        }
+    }
+</style>
+
+<div class="form-container">
+    <h2 class="form-header">@ViewData["Title"]</h2>
+
+    <form id="customerForm">
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label for="FullName">Ad Soyad:</label>
+                    <input type="text" id="FullName" class="form-control" placeholder="Ad Soyad" required />
+                </div>
+            </div>
+            <div class="col-md-4">
+            <div class="form-group">
+                <label for="UserName">Kullanıcı Adı:</label>
+                <input type="text" id="UserName" class="form-control" placeholder="Kullanıcı Adı" required />
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="Email">E-posta:</label>
+                <input type="email" id="Email" class="form-control" placeholder="E-posta" required />
+            </div>
+        </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="form-group">
+            <label for="Phone">Telefon:</label>
+            <input type="text" id="Phone" class="form-control" placeholder="Telefon" required />
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="form-group">
+            <label for="CompanyName">Firma Adı:</label>
+            <input type="text" id="CompanyName" class="form-control" placeholder="Firma Adı" required />
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="form-group">
+            <label for="TaxNumber">Vergi Numarası:</label>
+            <input type="text" id="TaxNumber" class="form-control" placeholder="Vergi Numarası" required />
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="form-group">
+            <label for="TaxOffice">Vergi Dairesi:</label>
+            <input type="text" id="TaxOffice" class="form-control" placeholder="Vergi Dairesi" required />
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="form-group">
+            <label for="ZipCode">Posta Kodu:</label>
+            <input type="text" id="ZipCode" class="form-control" placeholder="Posta Kodu" required />
+        </div>
+    </div>
+</div>
+
+<div class="form-group">
+    <label for="Address">Adres:</label>
+    <input type="text" id="Address" class="form-control" placeholder="Adres" required />
+</div>
+
+<div class="form-group">
+    <label for="IlId">Şehir:</label>
+    <select id="IlId" class="form-control" required>
+        <option value="">Seçiniz</option>
+        @foreach (var city in ViewData["Cities"] as List<City>)
+        {
+            <option value="@city.Id">@city.Ad</option>
+        }
+    </select>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="form-group">
+            <label for="Password">Şifre:</label>
+            <input type="password" id="Password" class="form-control" placeholder="Şifre" required />
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="form-group">
+            <label for="ConfirmPassword">Şifre Tekrar:</label>
+            <input type="password" id="ConfirmPassword" class="form-control" placeholder="Şifre Tekrar" required />
+        </div>
+    </div>
+</div>
+
+<button type="submit" class="btn btn-primary">Müşteri Ekle</button>
+</form>
+</div>
+
+<div id="toastContainer" class="toast-container"></div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
+<script>
+    $(document).ready(function () {
+        toastr.options = {
+            "closeButton": true,
+            "progressBar": true,
+            "positionClass": "toast-top-right",
+            "timeOut": "3000"
+        };
+
+        $('#customerForm').submit(function (e) {
+            e.preventDefault();
+
+            var customerData = {
+                fullName: $('#FullName').val(),
+                userName: $('#UserName').val(),
+                email: $('#Email').val(),
+                phone: $('#Phone').val(),
+                companyName: $('#CompanyName').val(),
+                taxNumber: $('#TaxNumber').val(),
+                taxOffice: $('#TaxOffice').val(),
+                address: $('#Address').val(),
+                zipCode: $('#ZipCode').val(),
+                ilId: $('#IlId').val(),
+                password: $('#Password').val(),
+                confirmPassword: $('#ConfirmPassword').val()
+            };
+
+            if (customerData.password !== customerData.confirmPassword) {
+                toastr.error('Şifreler uyuşmuyor.', 'Hata');
+                return;
+            }
+
+            $.ajax({
+                type: "POST",
+                url: "/Tenant/License/AddCustomer",
+                contentType: "application/json",
+                data: JSON.stringify(customerData),
+                success: function (response) {
+                    toastr.success(response.message || 'Müşteri başarıyla eklendi', 'Başarılı');
+                    $('#customerForm')[0].reset();
+                },
+                error: function (xhr) {
+                    toastr.error(xhr.responseJSON?.message || 'Bir hata oluştu', 'Hata');
+                }
+            });
+        });
+    });
+</script>

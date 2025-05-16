@@ -1,0 +1,45 @@
+@model IEnumerable<etrade.Models.ColorImageViewModel>
+
+    <input type="hidden" id="productId" value="@Model.FirstOrDefault()?.ProductId" />
+    
+    @if (Model == null || !Model.Any() || Model.All(c => !c.ImageUrls.Any()))
+    {
+        <div class="alert alert-danger">
+   <p>Bu Ürüne Ait Görsel Bulunmamaktadır.</p>
+        </div>    }
+    else
+    {
+        <table class="table table-bordered table-striped">
+            <thead>
+                <tr>
+
+                    <th>Renk</th>
+                    <th>Fotoğraflar</th>
+                    <th>İşlem</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var color in Model)
+                {
+                    <tr data-color-id="@color.ColorId">
+                        <td>@color.ColorName</td>
+                        <td>
+                            @foreach (var img in color.ImageUrls)
+                            {
+                                <img src="@img" alt="Color Image" class="color-image"
+                                     onclick="openModal('@img', '@color.ColorId', '@color.ProductId')"
+                                     style="width: 50px; height: 50px; margin: 5px;" />
+                            }
+                        </td>
+                        <td style="width:15%; align-items: center;">
+                            <button id="deleteAllButton" class="btn btn-danger" data-color-id="@color.ColorId">
+                                <i class='bx bx-trash'></i> Tümünü Sil
+                            </button>
+                            
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    

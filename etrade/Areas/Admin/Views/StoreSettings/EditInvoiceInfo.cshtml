@@ -1,0 +1,240 @@
+@{
+    ViewData["Title"] = "Fatura Bilgileri Düzenle";
+}
+
+<div class="container">
+    <div class="card shadow-lg">
+        <div class="card-header">
+            <h2 class="h4 mb-0"><i class="fas fa-file-invoice me-2"></i>Fatura Bilgilerini Düzenle</h2>
+        </div>
+
+        <div class="card-body">
+            <!-- Fatura Bilgileri Formu -->
+            <form id="invoiceInfoForm" enctype="multipart/form-data" class="needs-validation" novalidate>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="storeName" class="form-label">Mağaza Adı</label>
+                            <input type="text" class="form-control" id="storeName" name="storeName" required>
+                            <div class="invalid-feedback">Lütfen mağaza adını giriniz.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="cityCountry" class="form-label">Şehir / Ülke</label>
+                            <input type="text" class="form-control" id="cityCountry" name="cityCountry" required>
+                            <div class="invalid-feedback">Lütfen şehir/ülke bilgisini giriniz.</div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="tel" class="form-label">Telefon Numarası</label>
+                            <input type="text" class="form-control" id="tel" name="tel" required>
+                            <div class="invalid-feedback">Lütfen telefon numarasını giriniz.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="email" class="form-label">E-posta</label>
+                            <input type="email" class="form-control" id="email" name="email" required>
+                            <div class="invalid-feedback">Lütfen geçerli bir e-posta adresi giriniz.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label">Logo</label>
+                    <div class="d-flex align-items-center">
+                        <!-- Mevcut logo görüntüleme -->
+                        <div class="me-4">
+                            <div id="currentLogoContainer" class="border p-2 rounded bg-light"
+                                style="width: 150px; height: 100px; display: flex; align-items: center; justify-content: center;">
+                                <img id="currentLogo" src="" alt="Mevcut Logo"
+                                    style="max-width: 100%; max-height: 100%; display: none;">
+                                <span id="noLogoText" class="text-muted">Logo yüklenmemiş</span>
+                            </div>
+                        </div>
+
+                        <!-- Yeni logo yükleme -->
+                        <div class="flex-grow-1">
+                            <input type="file" class="form-control" id="logoPath" name="logoPath" accept="image/*">
+                            <div class="form-text">PNG, JPG veya GIF formatında logo yükleyin (max 2MB)</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end mt-4">
+                    <button type="button" id="updateInvoiceInfoBtn" class="btn btn-primary px-4">
+                        <i class="fas fa-save me-2"></i>Bilgileri Güncelle
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Toast notification -->
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+    <div id="toastNotification" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header">
+            <strong class="me-auto">Bildirim</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body"></div>
+    </div>
+</div>
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    $(document).ready(function () {
+        // Initialize toast
+        var toastEl = document.getElementById('toastNotification');
+        var toast = new bootstrap.Toast(toastEl);
+
+        // Load invoice info
+        function loadInvoiceInfo() {
+            $.ajax({
+                url: '/Admin/StoreSettings/GetInvoiceInfo',
+                type: 'GET',
+                success: function (data) {
+                    $('#storeName').val(data.storeName);
+                    $('#cityCountry').val(data.cityCountry);
+                    $('#tel').val(data.contactInfo.tel);
+                    $('#email').val(data.contactInfo.email);
+
+                    // Handle logo display
+                    if (data.logoPath) {
+                        $('#currentLogo').attr('src', data.logoPath).show();
+                        $('#noLogoText').hide();
+                    } else {
+                        $('#currentLogo').hide();
+                        $('#noLogoText').show();
+                    }
+                },
+                error: function (error) {
+                    console.error('Veri çekme hatası:', error);
+                    showToast('error', 'Veriler yüklenirken bir hata oluştu.');
+                }
+            });
+        }
+
+        // Show toast notification
+        function showToast(type, message) {
+            var toastBody = $('.toast-body');
+            var toastHeader = $('.toast-header');
+
+            toastHeader.removeClass('bg-success bg-danger bg-warning text-white text-dark');
+            toastBody.text(message);
+
+            if (type === 'success') {
+                toastHeader.addClass('bg-success text-white');
+                toastHeader.find('strong').text('Başarılı');
+            } else if (type === 'error') {
+                toastHeader.addClass('bg-danger text-white');
+                toastHeader.find('strong').text('Hata');
+            } else {
+                toastHeader.addClass('bg-warning text-dark');
+                toastHeader.find('strong').text('Uyarı');
+            }
+
+            toast.show();
+            setTimeout(function () {
+                toast.hide();
+            }, 5000);
+        }
+
+        // Form validation
+        (function () {
+            'use strict'
+            var forms = document.querySelectorAll('.needs-validation')
+            Array.prototype.slice.call(forms)
+                .forEach(function (form) {
+                    form.addEventListener('submit', function (event) {
+                        if (!form.checkValidity()) {
+                            event.preventDefault()
+                            event.stopPropagation()
+                        }
+                        form.classList.add('was-validated')
+                    }, false)
+                })
+        })()
+
+        // Initial load
+        loadInvoiceInfo();
+
+        // Update invoice info
+        $('#updateInvoiceInfoBtn').on('click', function () {
+            var form = document.getElementById('invoiceInfoForm');
+            if (!form.checkValidity()) {
+                form.classList.add('was-validated');
+                showToast('error', 'Lütfen tüm gerekli alanları doldurunuz.');
+                return;
+            }
+
+            var formData = new FormData();
+            formData.append('StoreName', $('#storeName').val());
+            formData.append('CityCountry', $('#cityCountry').val());
+            formData.append('Tel', $('#tel').val());
+            formData.append('Email', $('#email').val());
+
+            // Logo dosyası seçilmişse ekle - BACKEND'DEKİ PARAMETRE İSMİNE DİKKAT!
+            var fileInput = $('#logoPath')[0];
+            if (fileInput.files.length > 0) {
+                formData.append('LogoPath', fileInput.files[0]); // Backend'de "LogoPath" olarak tanımlı
+            }
+
+            $.ajax({
+                url: '/Admin/StoreSettings/UpdateInvoiceInfo',
+                type: 'POST',
+                data: formData,
+                contentType: false,
+                processData: false,
+                success: function (response) {
+                    if (response && response.message) {
+                        showToast('success', response.message);
+
+                        // Logoyu güncelle (cache önlemek için timestamp ekle)
+                        if (response.logoPath) {
+                            $('#currentLogo').attr('src', response.logoPath + '?' + new Date().getTime()).show();
+                            $('#noLogoText').hide();
+                        }
+
+                        // Dosya seçimini temizle
+                        $('#logoPath').val('');
+                    }
+                },
+                error: function (xhr) {
+                    var errorMessage = "İşlem sırasında bir hata oluştu!";
+                    try {
+                        var errorResponse = JSON.parse(xhr.responseText);
+                        errorMessage = errorResponse.message || errorMessage;
+                    } catch (e) {
+                        console.error('Hata ayrıntıları:', e);
+                    }
+                    showToast('error', errorMessage);
+                }
+            });
+        });
+
+        // Preview new logo before upload
+        $('#logoPath').change(function () {
+            var input = this;
+            if (input.files && input.files[0]) {
+                if (input.files[0].size > 2 * 1024 * 1024) {
+                    showToast('error', 'Dosya boyutu 2MB\'dan büyük olamaz!');
+                    $(this).val('');
+                    return;
+                }
+
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    $('#currentLogo').attr('src', e.target.result).show();
+                    $('#noLogoText').hide();
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        });
+    });
+</script>

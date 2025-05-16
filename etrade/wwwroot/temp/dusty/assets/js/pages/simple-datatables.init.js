@@ -1,0 +1,1 @@
+"use strict";try{new simpleDatatables.DataTable("#datatable_1",{searchable:!1,fixedHeight:!0})}catch(a){}

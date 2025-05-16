@@ -1,0 +1,197 @@
+@model List<ProductDto>
+
+<section class="mt-5 mb-5">
+    <div class="container">
+        <div class="heading-section text-center wow fadeInUp">
+            <h3 class="heading">Favorilerim</h3>
+            <div class="heading-section-2 wow fadeInUp">
+                <h3></h3>
+            </div>
+        </div>
+        <div class="col-xl-12 col-md-12 col-sm-12">
+            <div class="tf-list-layout wrapper-shop">
+                <div class="container">
+                    @if (Model.Any())
+                    {
+                        <div class="row" id="favorite-products-list">
+                            @foreach (var product in Model)
+                            {
+                                <div class="col-md-3 mb-4" data-product-id="@product.Id">
+                                    <div class="card-product card-product-size wow fadeInUp">
+                                        <div class="card-product-wrapper">
+                                            <!-- Ürün Resmi -->
+                                            <a href="/Shop/Product/Details?id=@product.Id" class="product-img">
+                                                @if (product.ImageUrls != null && product.ImageUrls.Count > 0)
+                                                {
+                                                    <!-- İndirim ibaresi (sadece indirim varsa) -->
+                                                    @if (product.OriginalPrice != 0.00m && product.OriginalPrice > product.Price)
+                                                    {
+                                                        <div class="discount-ribbon">
+                                                            İNDİRİM
+                                                        </div>
+                                                    }
+                                                    
+                                                    <img class="lazyload img-product"
+                                                         data-src="@product.ImageUrls.FirstOrDefault()"
+                                                         src="@product.ImageUrls.FirstOrDefault()" alt="@product.Name">
+                                                    @if (product.ImageUrls.Count > 1)
+                                                    {
+                                                        <img class="lazyload img-hover"
+                                                             data-src="@product.ImageUrls.ElementAtOrDefault(1)"
+                                                             src="@product.ImageUrls.ElementAtOrDefault(1)" alt="@product.Name">
+                                                    }
+                                                }
+                                            </a>
+
+                                            <div class="variant-wrap size-list">
+                                                <ul class="variant-box">
+                                                    @foreach (var size in product.Variants.OrderBy(v => v.SizeId).Select(v => v.SizeName).Distinct())
+                                                    {
+                                                        <li class="size-item">@size</li>
+                                                    }
+                                                </ul>
+                                            </div>
+
+                                            <!-- Ürün Özellik Butonları -->
+                                            <div class="list-product-btn">
+                                                <a href="javascript:void(0);" class="box-icon wishlist btn-icon-action" data-product-id="@product.Id" onclick="toggleFavorite(this)">
+                                                    <span class="fas fa-heart" style="color: red;"></span>
+                                                </a>
+                                            </div>
+
+                                            <!-- Sepete Ekle Butonu -->
+                                            <div class="list-btn-main">
+                                            </div>
+                                        </div>
+
+                                        <!-- Ürün Bilgileri -->
+                                        <div class="card-product-info">
+                                            <a href="/Shop/Product/Details?id=@product.Id" class="title link">
+                                             @product.Name 
+                                            </a>
+                                            <span class="price">
+                                                @if (product.OriginalPrice != 0.00m && product.OriginalPrice > product.Price)
+                                                {
+                                                    <span class="old-price">@product.OriginalPrice ₺</span>
+                                                    <span class="new-price" style="color: red;">@product.Price.ToString("N2") ₺</span>
+                                                }
+                                                else
+                                                {
+                                                    <span>@product.Price.ToString("N2") ₺</span>
+                                                }
+                                            </span>
+
+                                            <!-- Renk Seçenekleri -->
+                                            <ul class="list-color-product">
+                                                @foreach (var variant in product.Variants.Select(v => v.Color).DistinctBy(c => c.Id))
+                                                {
+                                                    <li>
+                                                        <span class="color-swatch" data-color-code="@variant.ColorCode"
+                                                              data-color-id="@variant.Id" title="@variant.Name"
+                                                              style="background-color:@variant.ColorCode;">
+                                                        </span>
+                                                    </li>
+                                                }
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="empty-favorites text-center py-5">
+                            <div class="empty-icon mb-4">
+                                <i class="far fa-heart fa-4x" style="color: #ddd;"></i>
+                            </div>
+                            <h4 class="mb-3">Henüz favori ürün eklemediniz</h4>
+                            <p class="text-muted mb-4">Beğendiğiniz ürünleri favorilere ekleyerek burada görebilirsiniz</p>
+                            <a href="/Shop/Product/List" class="btn btn-dark rounded-pill px-4">Ürünlere Gözat</a>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    .discount-ribbon {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background-color: #ff0000;
+        color: white;
+        padding: 5px 10px;
+        font-size: 12px;
+        font-weight: bold;
+        border-radius: 3px;
+        z-index: 2;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+    
+    .product-img {
+        position: relative;
+        display: block;
+    }
+    
+    .empty-favorites {
+        background-color: #f8f9fa;
+        border-radius: 10px;
+        padding: 40px 20px;
+        margin: 20px 0;
+    }
+    
+    .empty-icon {
+        color: #e9ecef;
+    }
+</style>
+<script>
+    function toggleFavorite(button) {
+        var productId = $(button).data("product-id");
+        var productElement = $(button).closest('.col-md-3');
+
+        $.ajax({
+            url: '/Shop/Product/ToggleFavorite',
+            type: 'POST',
+            data: { productId: productId },
+            success: function(response) {
+                if (response.success) {
+                    var icon = $(button).find("span.fa-heart");
+                    
+                    if (response.isFavorite) {
+                        $(button).addClass("favorited");
+                        icon.removeClass("far fa-heart").addClass("fas fa-heart").css("color", "red");
+                    } else {
+                        $(button).removeClass("favorited");
+                        icon.removeClass("fas fa-heart").addClass("far fa-heart").css("color", "");
+                        
+                        productElement.fadeOut(function() {
+                            $(this).remove();
+                            
+                            // Son ürün silindiğinde boş liste mesajını göster
+                            if ($("#favorite-products-list").children().length === 0) {
+                                $("#favorite-products-list").parent().html(
+                                    '<div class="empty-favorites text-center py-5">' +
+                                    '<div class="empty-icon mb-4">' +
+                                    '<i class="far fa-heart fa-4x" style="color: #ddd;"></i>' +
+                                    '</div>' +
+                                    '<h4 class="mb-3">Henüz favori ürün eklemediniz</h4>' +
+                                    '<p class="text-muted mb-4">Beğendiğiniz ürünleri favorilere ekleyerek burada görebilirsiniz</p>' +
+                                    '<a href="/Shop/Product/List" class="btn btn-dark rounded-pill px-4">Ürünlere Gözat</a>' +
+                                    '</div>'
+                                );
+                            }
+                        });
+                    }
+                } else {
+                    alert(response.message || "İşlem sırasında bir hata oluştu");
+                }
+            },
+            error: function() {
+                alert("Sunucu ile iletişim kurulamadı. Lütfen tekrar deneyin.");
+            }
+        });
+    }
+</script>

@@ -1,0 +1,353 @@
+@{
+    ViewData["Title"] = "İade Talepleri Yönetimi";
+}
+
+<div class="container-fluid px-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0 text-gray-800">
+            <i class="fas fa-exchange-alt me-2"></i> İade Talepleri
+        </h1>
+        <div class="d-flex">
+            <select id="statusFilter" class="form-select" style="width: 180px;">
+                <option value="">Tüm Durumlar</option>
+                <option value="Beklemede">Beklemede</option>
+                <option value="Onaylandı">Onaylandı</option>
+                <option value="Reddedildi">Reddedildi</option>
+                <option value="KargoyaVerildi">Kargoya Verildi</option>
+                <option value="Inceleniyor">İnceleniyor</option>
+                <option value="KabulEdildi">Kabul Edildi</option>
+                <option value="KabulEdilmedi">İade Kabul Edilmedi</option>
+                <option value="UrunTeslimEdildi">Ürün Teslim Edildi</option>
+                <option value="ParaIadesiYapildi">Para İadesi Yapıldı</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">İade Talepleri Listesi</h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover" id="refundTable" style="width:100%">
+                    <thead>
+                        <tr>
+                            <th width="5%">ID</th>
+                            <th width="20%">Sipariş No</th>
+                            <th width="20%">Durum</th>
+                            <th width="15%">Talep Tarihi</th>
+                            <th width="15%">İşlemler</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Veriler JavaScript ile doldurulacak -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Sayfalama -->
+            <div class="d-flex justify-content-between align-items-center mt-3">
+                <div class="text-muted small">
+                    Toplam <span id="totalCount">0</span> kayıttan 
+                    <span id="fromCount">0</span>-<span id="toCount">0</span> arası gösteriliyor
+                </div>
+                <nav>
+                    <ul class="pagination pagination-sm" id="pagination">
+                        <!-- Sayfa numaraları buraya eklenecek -->
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$(document).ready(function() {
+    const pageSize = 10;
+    let currentPage = 1;
+    let currentStatus = '';
+
+    // Durum renkleri
+    const statusColors = {
+        'Beklemede': 'status-pending',
+        'Onaylandı': 'status-approved',
+        'Reddedildi': 'status-rejected',
+        'KargoyaVerildi': 'status-shipped',
+        'Inceleniyor': 'status-review',
+        'KabulEdildi': 'status-accepted',
+        'KabulEdilmedi': 'status-rejected',
+        'UrunTeslimEdildi': 'status-delivered',
+        'ParaIadesiYapildi': 'status-completed'
+    };
+
+    // Tarih formatlama fonksiyonu
+    function formatDate(dateString) {
+        if (!dateString) return '-';
+        const date = new Date(dateString);
+        return date.toLocaleDateString('tr-TR', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    }
+
+    // Kayıt bulunamadı mesajını göster
+    function showNoRecordsMessage() {
+        $('#refundTable tbody').html(`
+            <tr>
+                <td colspan="5" class="text-center py-4">
+                    <div class="alert alert-info mb-0">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Kayıt bulunamadı
+                    </div>
+                </td>
+            </tr>
+        `);
+        
+        $('#pagination').empty();
+        $('#totalCount').text('0');
+        $('#fromCount').text('0');
+        $('#toCount').text('0');
+    }
+
+    // Sayfalama bilgilerini güncelle
+    function updatePagination(response) {
+        const pagination = $('#pagination');
+        pagination.empty();
+
+        // Önceki butonu
+        const prevItem = $(`
+            <li class="page-item ${response.pageNumber === 1 ? 'disabled' : ''}">
+                <a class="page-link prev-page" href="#" tabindex="-1">Önceki</a>
+            </li>
+        `);
+        prevItem.find('a').on('click', function(e) {
+            e.preventDefault();
+            if (response.pageNumber > 1) {
+                loadRefunds(response.pageNumber - 1);
+            }
+        });
+        pagination.append(prevItem);
+
+        // Sayfa numaraları
+        const startPage = Math.max(1, response.pageNumber - 2);
+        const endPage = Math.min(response.totalPages, response.pageNumber + 2);
+
+        if (startPage > 1) {
+            pagination.append('<li class="page-item disabled"><a class="page-link">...</a></li>');
+        }
+
+        for (let i = startPage; i <= endPage; i++) {
+            const pageItem = $(`
+                <li class="page-item ${i === response.pageNumber ? 'active' : ''}">
+                    <a class="page-link page-number" href="#" data-page="${i}">${i}</a>
+                </li>
+            `);
+            pageItem.find('a').on('click', function(e) {
+                e.preventDefault();
+                loadRefunds(i);
+            });
+            pagination.append(pageItem);
+        }
+
+        if (endPage < response.totalPages) {
+            pagination.append('<li class="page-item disabled"><a class="page-link">...</a></li>');
+        }
+
+        // Sonraki butonu
+        const nextItem = $(`
+            <li class="page-item ${response.pageNumber === response.totalPages ? 'disabled' : ''}">
+                <a class="page-link next-page" href="#">Sonraki</a>
+            </li>
+        `);
+        nextItem.find('a').on('click', function(e) {
+            e.preventDefault();
+            if (response.pageNumber < response.totalPages) {
+                loadRefunds(response.pageNumber + 1);
+            }
+        });
+        pagination.append(nextItem);
+    }
+
+    // Kayıt sayısı bilgisini güncelle
+    function updateCountInfo(response) {
+        const from = ((response.pageNumber - 1) * response.pageSize) + 1;
+        const to = Math.min(response.pageNumber * response.pageSize, response.totalRecords);
+        
+        $('#totalCount').text(response.totalRecords);
+        $('#fromCount').text(from);
+        $('#toCount').text(to);
+    }
+
+    // API'den verileri çek
+    function loadRefunds(page = 1) {
+        currentPage = page;
+        const url = `/Admin/Refund/GetRefunds?pageNumber=${page}&pageSize=${pageSize}` +
+                     `&status=${currentStatus}`;
+
+        $.ajax({
+            url: url,
+            method: 'GET',
+            beforeSend: function() {
+                $('#refundTable tbody').html(`
+                    <tr>
+                        <td colspan="5" class="text-center py-4">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Yükleniyor...</span>
+                            </div>
+                        </td>
+                    </tr>
+                `);
+            },
+            success: function(response) {
+                if (response && response.data) {
+                    renderTable(response.data);
+                    updatePagination(response);
+                    updateCountInfo(response);
+                } else {
+                    showNoRecordsMessage();
+                }
+            },
+            error: function(xhr, status, error) {
+                $('#refundTable tbody').html(`
+                    <tr>
+                        <td colspan="5" class="text-center py-4 text-danger">
+                            Veriler yüklenirken bir hata oluştu: ${error}
+                        </td>
+                    </tr>
+                `);
+            }
+        });
+    }
+
+    // Durum metnini formatla
+    function formatStatusText(status) {
+        const statusTexts = {
+            'Beklemede': 'Beklemede',
+            'Onaylandı': 'Onaylandı',
+            'Reddedildi': 'Reddedildi',
+            'KargoyaVerildi': 'Kargoya Verildi',
+            'Inceleniyor': 'İnceleniyor',
+            'KabulEdildi': 'Kabul Edildi',
+            'KabulEdilmedi': 'İade Kabul Edilmedi',
+            'UrunTeslimEdildi': 'Ürün Teslim Edildi',
+            'ParaIadesiYapildi': 'Para İadesi Yapıldı'
+        };
+        return statusTexts[status] || status;
+    }
+
+    // Tabloyu render et
+    function renderTable(refunds) {
+        const tbody = $('#refundTable tbody');
+        tbody.empty();
+
+        if (!refunds || refunds.length === 0) {
+            showNoRecordsMessage();
+            return;
+        }
+
+        refunds.forEach(refund => {
+            const statusClass = statusColors[refund.status] || 'bg-secondary';
+            const row = `
+                <tr>
+                    <td>${refund.id}</td>
+                    <td>${refund.orderNumber || ''}</td>
+                    <td>
+                        <span class="status-badge ${statusClass}">
+                            ${formatStatusText(refund.status)}
+                        </span>
+                    </td>
+                    <td>${formatDate(refund.requestDate)}</td>
+                    <td>
+                        <a href="/Admin/Refund/Details/${refund.id}" class="btn btn-sm btn-outline-info action-btn" title="Detay">
+                            <i class="fas fa-eye"></i>
+                        </a>
+                    </td>
+                </tr>
+            `;
+            tbody.append(row);
+        });
+    }
+
+    // Status filtresi eventi
+    $('#statusFilter').on('change', function() {
+        currentStatus = $(this).val();
+        loadRefunds(1);
+    });
+
+    // İlk yükleme
+    loadRefunds();
+});
+</script>
+
+<style>
+    .status-badge {
+        font-size: 0.75rem;
+        padding: 0.35em 0.65em;
+        border-radius: 0.25rem;
+        display: inline-block;
+    }
+    
+    .status-pending {
+        background-color: #fff3cd;
+        color: #856404;
+    }
+    
+    .status-approved {
+        background-color: #d4edda;
+        color: #155724;
+    }
+    
+    .status-rejected {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+    
+    .status-shipped {
+        background-color: #cce5ff;
+        color: #004085;
+    }
+    
+    .status-review {
+        background-color: #e2e3e5;
+        color: #383d41;
+    }
+    
+    .status-accepted {
+        background-color: #d1ecf1;
+        color: #0c5460;
+    }
+    
+    .status-delivered {
+        background-color: #d4edda;
+        color: #155724;
+    }
+    
+    .status-completed {
+        background-color: #d1e7dd;
+        color: #0f5132;
+    }
+    
+    .action-btn {
+        width: 30px;
+        height: 30px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+    }
+    
+    .page-item.active .page-link {
+        background-color: #0d6efd;
+        border-color: #0d6efd;
+    }
+    
+    .page-link {
+        color: #0d6efd;
+    }
+</style>
+}

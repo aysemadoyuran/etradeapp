@@ -1,0 +1,671 @@
+<style>
+    :root {
+        --primary-color: #6C5CE7;
+        --secondary-color: #A29BFE;
+        --accent-color: #11b76c;
+        --dark-color: #2D3436;
+        --light-color: #F5F6FA;
+        --success-color: #00B894;
+        --warning-color: #FDCB6E;
+    }
+
+    body {
+        background-color: var(--light-color);
+        color: var(--dark-color);
+        min-height: 100vh;
+    }
+
+    .coin-card {
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        color: white;
+        border-radius: 20px;
+        padding: 25px;
+        text-align: center;
+        margin-bottom: 20px;
+        box-shadow: 0 10px 30px rgba(108, 92, 231, 0.3);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .coin-card::before {
+        content: '';
+        position: absolute;
+        top: -50px;
+        right: -50px;
+        width: 200px;
+        height: 200px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+    }
+
+    .coin-card::after {
+        content: '';
+        position: absolute;
+        bottom: -80px;
+        left: -80px;
+        width: 250px;
+        height: 250px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+    }
+
+    .coin-header {
+        margin-bottom: 15px;
+        position: relative;
+        z-index: 1;
+    }
+
+    .coin-header h2 {
+        font-weight: 600;
+        font-size: 20px;
+    }
+
+    .coin-header p {
+        opacity: 0.9;
+        font-size: 13px;
+    }
+
+    .coin-amount {
+        font-size: 48px;
+        font-weight: 700;
+        margin: 15px 0;
+        position: relative;
+        z-index: 1;
+    }
+
+    .coin-progress {
+        background: rgba(255, 255, 255, 0.2);
+        height: 8px;
+        border-radius: 5px;
+        margin: 20px 0;
+        position: relative;
+        z-index: 1;
+    }
+
+    .coin-progress-bar {
+        height: 100%;
+        border-radius: 5px;
+        background: white;
+        width: 0%;
+        transition: width 1s ease;
+    }
+
+    .coin-target {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 5px;
+        font-size: 11px;
+        opacity: 0.8;
+        position: relative;
+        z-index: 1;
+    }
+
+    .info-card {
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    }
+
+    .info-card h3 {
+        color: var(--primary-color);
+        margin-bottom: 15px;
+        font-size: 18px;
+    }
+
+    .benefit-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 12px;
+    }
+
+    .benefit-icon {
+        width: 36px;
+        height: 36px;
+        background: var(--light-color);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 12px;
+        color: var(--primary-color);
+        font-size: 16px;
+    }
+
+    .benefit-text {
+        flex: 1;
+    }
+
+    .benefit-text h4 {
+        font-size: 14px;
+        margin-bottom: 3px;
+    }
+
+    .benefit-text p {
+        font-size: 12px;
+        opacity: 0.7;
+    }
+
+    .action-btn {
+        display: block;
+        width: 100%;
+        padding: 12px;
+        border: none;
+        border-radius: 10px;
+        background: var(--accent-color);
+        color: white;
+        font-weight: 600;
+        font-size: 15px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-bottom: 10px;
+    }
+
+    .action-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(0, 206, 201, 0.4);
+    }
+
+    .action-btn:disabled {
+        background: #DFE6E9;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+    }
+
+    .invite-btn {
+        background: var(--primary-color);
+    }
+
+    .coin-value {
+        position: relative;
+        display: inline-block;
+    }
+
+    .coin-value::after {
+        content: 'coin';
+        position: absolute;
+        bottom: 5px;
+        right: -40px;
+        font-size: 16px;
+        opacity: 0.8;
+    }
+
+    .left-column {
+        padding-right: 10px;
+    }
+
+    .right-column {
+        padding-left: 10px;
+    }
+
+    .toast {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+    }
+
+    .ticket-card {
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 15px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        border-left: 5px solid var(--accent-color);
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .ticket-card.disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        border-left-color: #DFE6E9;
+    }
+
+    .ticket-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 30px;
+        width: 20px;
+        background-image: radial-gradient(circle, var(--dark-color) 2px, transparent 3px);
+        background-size: 20px 20px;
+        opacity: 0.1;
+    }
+
+    .ticket-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+
+    .ticket-amount {
+        font-size: 22px;
+        font-weight: 700;
+        color: var(--primary-color);
+    }
+
+    .ticket-price {
+        background: var(--light-color);
+        color: var(--primary-color);
+        padding: 5px 10px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .ticket-desc {
+        font-size: 12px;
+        opacity: 0.7;
+        margin-bottom: 5px;
+    }
+
+    .ticket-valid {
+        font-size: 10px;
+        opacity: 0.5;
+    }
+
+    .ticket-card:hover:not(.disabled) {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .ticket-card.active:not(.disabled)::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 0;
+        height: 0;
+        border-style: solid;
+        border-width: 0 30px 30px 0;
+        border-color: transparent var(--success-color) transparent transparent;
+    }
+
+    .ticket-card.active:not(.disabled)::before {
+        content: '✓';
+        position: absolute;
+        top: 2px;
+        right: 5px;
+        color: white;
+        font-size: 12px;
+        z-index: 1;
+    }
+
+    .ticket-footer {
+        margin-top: 15px;
+        padding-top: 10px;
+        border-top: 1px dashed rgba(0, 0, 0, 0.1);
+    }
+
+    .convert-btn {
+        display: block;
+        width: 100%;
+        padding: 8px;
+        border: none;
+        border-radius: 8px;
+        background: var(--accent-color);
+        color: white;
+        font-weight: 600;
+        font-size: 13px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .convert-btn:hover {
+        background: #0e9d5b;
+        transform: translateY(-2px);
+        box-shadow: 0 3px 10px rgba(17, 183, 108, 0.3);
+    }
+
+    .convert-btn:disabled {
+        background: #DFE6E9;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+    }
+</style>
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
+<div class="container mt-3">
+    <div class="row">
+        <!-- Sol sütun (col-3) -->
+        <div class="col-md-3 col-12 left-column">
+            <div class="coin-card">
+                <div class="coin-header">
+                    <h2 style="color:white">Para Puanlarım</h2>
+                    <p>Kazandığınız puanları takip edin</p>
+                </div>
+                <div class="coin-amount">
+                    <span class="coin-value" id="currentCoin">0</span>
+                </div>
+                <div class="coin-progress">
+                    <div class="coin-progress-bar" id="coinProgress"></div>
+                </div>
+                <div class="coin-target">
+                    <span>0 coin</span>
+                    <span>200 coin</span>
+                </div>
+            </div>
+
+            <button id="copyInviteBtn" class="action-btn invite-btn">DAVET KODUMU KOPYALA</button>
+        </div>
+
+        <!-- Sağ sütun (col-9) -->
+        <div class="col-md-9 col-12 right-column">
+            <!-- Hediye Çeki Kartları -->
+            <div class="row">
+                <div class="col-md-3 col-6 mb-3">
+                    <div class="ticket-card disabled" id="ticket200" data-amount="200" data-price="200"
+                        data-min-order="500">
+                        <div class="ticket-header">
+                            <div class="ticket-amount">200₺</div>
+                            <div class="ticket-price">200 coin</div>
+                        </div>
+                        <div class="ticket-desc">Hediye Çeki</div>
+                        <div class="ticket-valid">Tüm ürünlerde geçerlidir</div>
+                        <div class="ticket-footer">
+                            <button class="convert-btn" disabled>ÇEVİR</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3 col-6 mb-3">
+                    <div class="ticket-card disabled" id="ticket300" data-amount="300" data-price="300"
+                        data-min-order="800">
+                        <div class="ticket-header">
+                            <div class="ticket-amount">300₺</div>
+                            <div class="ticket-price">300 coin</div>
+                        </div>
+                        <div class="ticket-desc">Hediye Çeki</div>
+                        <div class="ticket-valid">Tüm ürünlerde geçerlidir</div>
+                        <div class="ticket-footer">
+                            <button class="convert-btn" disabled>ÇEVİR</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3 col-6 mb-3">
+                    <div class="ticket-card disabled" id="ticket400" data-amount="400" data-price="400"
+                        data-min-order="1000">
+                        <div class="ticket-header">
+                            <div class="ticket-amount">400₺</div>
+                            <div class="ticket-price">400 coin</div>
+                        </div>
+                        <div class="ticket-desc">Hediye Çeki</div>
+                        <div class="ticket-valid">Tüm ürünlerde geçerlidir</div>
+                        <div class="ticket-footer">
+                            <button class="convert-btn" disabled>ÇEVİR</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3 col-6 mb-3">
+                    <div class="ticket-card disabled" id="ticket500" data-amount="500" data-price="500"
+                        data-min-order="1200">
+                        <div class="ticket-header">
+                            <div class="ticket-amount">500₺</div>
+                            <div class="ticket-price">500 coin</div>
+                        </div>
+                        <div class="ticket-desc">Hediye Çeki</div>
+                        <div class="ticket-valid">Tüm ürünlerde geçerlidir</div>
+                        <div class="ticket-footer">
+                            <button class="convert-btn" disabled>ÇEVİR</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-card">
+                <h3>Coin Nasıl Kazanılır?</h3>
+
+                <div class="benefit-item">
+                    <div class="benefit-icon">🎁</div>
+                    <div class="benefit-text">
+                        <h4>Hoş Geldin Bonusu</h4>
+                        <p>İlk kaydınızda 10 coin hediye</p>
+                    </div>
+                </div>
+
+                <div class="benefit-item">
+                    <div class="benefit-icon">🛒</div>
+                    <div class="benefit-text">
+                        <h4>Alışveriş Yap</h4>
+                        <p>Her siparişte harcadığınız tutarın %1'i kadar coin kazanın</p>
+                    </div>
+                </div>
+
+                <div class="benefit-item">
+                    <div class="benefit-icon">⭐</div>
+                    <div class="benefit-text">
+                        <h4>Yorum Yap</h4>
+                        <p>Ürün değerlendirmesi yaparak fotoğraflı yorum 8 fotoğrafsız yorum 5 olmak üzere coin kazanın
+                        </p>
+                    </div>
+                </div>
+
+                <div class="benefit-item">
+                    <div class="benefit-icon">👥</div>
+                    <div class="benefit-text">
+                        <h4>Arkadaş Davet Et</h4>
+                        <p>Davet ettiğiniz her arkadaş için 10 coin kazanın; en fazla 5 arkadaş için coin
+                            kazanabilirsiniz. </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast bildirimi -->
+<div class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive"
+    aria-atomic="true" id="toastNotification">
+    <div class="d-flex">
+        <div class="toast-body" id="toastMessage">
+            Davet kodu panoya kopyalandı!
+        </div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
+            aria-label="Close"></button>
+    </div>
+</div>
+
+<!-- SweetAlert JS -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Toast bildirimi başlatma
+        const toastEl = document.getElementById('toastNotification');
+        const toastMessage = document.getElementById('toastMessage');
+        const toast = new bootstrap.Toast(toastEl, { autohide: true, delay: 3000 });
+
+        // API'den coin bilgisini al
+        fetch('/Shop/Coin/GetUserCoins')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                const currentCoin = data.currentCoin || 0;
+
+                // Coin miktarını göster
+                document.getElementById('currentCoin').textContent = currentCoin;
+
+                // Progress bar'ı güncelle (maksimum 200 coin üzerinden)
+                const progressPercent = Math.min((currentCoin / 200) * 100, 100);
+                document.getElementById('coinProgress').style.width = `${progressPercent}%`;
+
+                // Hediye çeki kartlarını aktif/pasif yap
+                const ticketCards = document.querySelectorAll('.ticket-card');
+                ticketCards.forEach(card => {
+                    const requiredCoin = parseInt(card.dataset.price);
+                    if (currentCoin >= requiredCoin) {
+                        card.classList.remove('disabled');
+                        card.classList.add('active');
+                        card.querySelector('.convert-btn').disabled = false;
+                    }
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching coin data:', error);
+            });
+
+        // Hediye çeki kartlarına tıklama eventi
+        document.querySelectorAll('.ticket-card').forEach(card => {
+            const btn = card.querySelector('.convert-btn');
+
+            btn.addEventListener('click', function (e) {
+                e.stopPropagation();
+
+                // Eğer buton disabled ise işlem yapma
+                if (this.disabled) return;
+
+                const amount = card.dataset.amount;
+                const price = card.dataset.price;
+                const minOrder = card.dataset.minOrder;
+
+                // SweetAlert ile onay süreci
+                Swal.fire({
+                    title: `${amount}₺ Hediye Çeki Oluştur`,
+                    html: `
+                <div style="text-align:left; margin:15px 0;">
+                    <p><b>Kupon Şartları:</b></p>
+                    <ul style="padding-left:20px; margin-top:10px;">
+                        <li>Kuponu <b>15 gün içinde</b> kullanmanız gerekmektedir</li>
+                        <li>Minimum <b>${minOrder}₺</b> değerindeki siparişlerde geçerlidir</li>
+                        <li>1 siparişte 1 kupon kullanabilirsiniz</li>
+                    </ul>
+                    <p style="margin-top:15px;">${price} coin karşılığında hediye çeki oluşturmak istiyor musunuz?</p>
+                </div>
+            `,
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Evet, Oluştur',
+                    cancelButtonText: 'Vazgeç',
+                    confirmButtonColor: '#11b76c',
+                    cancelButtonColor: '#dfe6e9',
+                    reverseButtons: true
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Burada API'ye istek atarak coinleri hediye çekine çevirebilirsiniz
+                        fetch('/Shop/Coin/ConvertToVoucher', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                amount: amount,
+                                price: price,
+                                minOrder: minOrder
+                            })
+                        })
+                            .then(response => {
+                                if (!response.ok) {
+                                    throw new Error('Dönüşüm başarısız');
+                                }
+                                return response.json();
+                            })
+                            .then(data => {
+                                Swal.fire({
+                                    title: 'Başarılı!',
+                                    text: `${amount}₺ değerinde hediye çeki oluşturuldu!`,
+                                    icon: 'success',
+                                    confirmButtonColor: '#11b76c'
+                                }).then(() => {
+                                    window.location.reload();
+                                });
+                            })
+                            .catch(error => {
+                                Swal.fire({
+                                    title: 'Hata!',
+                                    text: 'Hediye çeki oluşturulurken bir hata oluştu: ' + error.message,
+                                    icon: 'error',
+                                    confirmButtonColor: '#11b76c'
+                                });
+                            });
+                    }
+                });
+            });
+        });
+
+        // Davet kodu kopyalama butonu - DÜZELTİLMİŞ VERSİYON
+        document.getElementById('copyInviteBtn').addEventListener('click', function () {
+            // API'den davet kodunu al
+            fetch('/Shop/Coin/GetUserCoins')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // API'den gelen veriyi log'layalım
+                    console.log('API Response:', data);
+
+                    // Eğer userCode var ise, kopyalama işlemini yapalım
+                    if (data.userCode) {
+                        const inviteCode = data.userCode;
+                        
+                        // Alternatif kopyalama yöntemi (navigator.clipboard yerine)
+                        const textArea = document.createElement('textarea');
+                        textArea.value = inviteCode;
+                        textArea.style.position = 'fixed';  // Ekran dışında tut
+                        document.body.appendChild(textArea);
+                        textArea.select();
+                        
+                        try {
+                            const successful = document.execCommand('copy');
+                            if (successful) {
+                                toastMessage.textContent = 'Davet kodu panoya kopyalandı!';
+                                toast.show();
+                            } else {
+                                throw new Error('Kopyalama başarısız');
+                            }
+                        } catch (err) {
+                            console.error('Kopyalama işlemi başarısız: ', err);
+                            toastMessage.textContent = 'Kopyalama başarısız: Tarayıcı izni gerekli';
+                            toastEl.classList.remove('bg-success');
+                            toastEl.classList.add('bg-danger');
+                            toast.show();
+                            setTimeout(() => {
+                                toastEl.classList.remove('bg-danger');
+                                toastEl.classList.add('bg-success');
+                            }, 3000);
+                        } finally {
+                            document.body.removeChild(textArea);
+                        }
+                    } else {
+                        console.error('Davet kodu bulunamadı.');
+                        toastMessage.textContent = 'Davet kodu alınırken hata oluştu';
+                        toastEl.classList.remove('bg-success');
+                        toastEl.classList.add('bg-danger');
+                        toast.show();
+                        setTimeout(() => {
+                            toastEl.classList.remove('bg-danger');
+                            toastEl.classList.add('bg-success');
+                        }, 3000);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching invite code:', error);
+                    toastMessage.textContent = 'Davet kodu alınırken hata oluştu';
+                    toastEl.classList.remove('bg-success');
+                    toastEl.classList.add('bg-danger');
+                    toast.show();
+                    setTimeout(() => {
+                        toastEl.classList.remove('bg-danger');
+                        toastEl.classList.add('bg-success');
+                    }, 3000);
+                });
+        });
+    });
+</script>

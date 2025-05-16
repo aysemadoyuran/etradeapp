@@ -1,0 +1,487 @@
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+    :root {
+        --primary-color: #7367f0;
+        --primary-hover: #5d50e6;
+        --secondary-color: #82868b;
+        --success-color: #28c76f;
+        --danger-color: #ea5455;
+        --warning-color: #ff9f43;
+        --light-bg: #f8f7fa;
+        --card-shadow: 0 4px 24px 0 rgba(34, 41, 47, 0.1);
+    }
+
+
+
+    .btn-purple {
+        background-color: var(--primary-color);
+        color: white;
+        border: none;
+        padding: 0.5rem 1.5rem;
+        border-radius: 6px;
+        transition: all 0.3s;
+    }
+
+    .btn-purple:hover {
+        background-color: var(--primary-hover);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(115, 103, 240, 0.4);
+    }
+
+    .card {
+        border: none;
+        border-radius: 10px;
+        overflow: hidden;
+        transition: all 0.3s;
+        box-shadow: var(--card-shadow);
+        margin-bottom: 1.5rem;
+    }
+
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(34, 41, 47, 0.2);
+    }
+
+    .card-img-top {
+        height: 180px;
+        object-fit: cover;
+        transition: transform 0.5s;
+    }
+
+    .card:hover .card-img-top {
+        transform: scale(1.05);
+    }
+
+    .modal-content {
+        border: none;
+        border-radius: 10px;
+    }
+
+    .form-control,
+    .form-select {
+        border-radius: 6px;
+        padding: 0.75rem 1rem;
+        border: 1px solid #ddd;
+    }
+
+    .form-control:focus,
+    .form-select:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 0.25rem rgba(115, 103, 240, 0.25);
+    }
+
+    .action-buttons .btn {
+        margin-left: 0.5rem;
+        border-radius: 6px;
+        font-weight: 500;
+    }
+
+    .status-badge {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .badge-active {
+        background-color: rgba(40, 199, 111, 0.12);
+        color: var(--success-color);
+    }
+
+    .badge-inactive {
+        background-color: rgba(234, 84, 85, 0.12);
+        color: var(--danger-color);
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+        background-color: white;
+        border-radius: 10px;
+        box-shadow: var(--card-shadow);
+    }
+
+    .empty-state i {
+        font-size: 3rem;
+        color: var(--secondary-color);
+        margin-bottom: 1rem;
+    }
+
+    .image-preview-container {
+        position: relative;
+        margin-bottom: 1rem;
+    }
+
+    .image-preview {
+        max-width: 100%;
+        border-radius: 6px;
+        border: 1px dashed #ddd;
+        padding: 5px;
+    }
+
+    .remove-image {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        background: var(--danger-color);
+        color: white;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+    }
+
+    .category-badge {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        background-color: rgba(115, 103, 240, 0.12);
+        color: var(--primary-color);
+    }
+
+    /* Modal backdrop fix */
+    .modal-backdrop {
+        z-index: 1040 !important;
+    }
+
+    body.modal-open {
+        overflow: auto;
+        padding-right: 0 !important;
+    }
+</style>
+
+<div class="container py-2">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold text-dark">Slider Yönetimi</h2>
+        <button class="btn btn-purple" data-bs-toggle="modal" data-bs-target="#sliderModal">
+            <i class="fas fa-plus me-2"></i>Yeni Slider Ekle
+        </button>
+    </div>
+
+    <!-- Slider Modal -->
+    <div class="modal fade" id="sliderModal" tabindex="-1" aria-labelledby="sliderModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-light">
+                    <h5 class="modal-title fw-bold" id="sliderModalLabel">Slider Ekle/Güncelle</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="sliderForm" enctype="multipart/form-data">
+                        <input type="hidden" id="sliderId" name="id">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold">Üst Başlık</label>
+                                <input type="text" class="form-control" name="topTitle" id="topTitle" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold">Ana Başlık</label>
+                                <input type="text" class="form-control" name="title" id="title" required>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold">Slider Kategorisi</label>
+                                <select class="form-select" name="sliderCategory" id="sliderCategory" required>
+                                    <option value="mainslider">Giriş Görselleri</option>
+                                    <option value="homeslider">Yönlendirme Görselleri (Max 2)</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold">Görsel</label>
+                                <input type="file" class="form-control" name="image" id="image" accept="image/*">
+                                <div class="form-text">Önerilen boyutlar: 807x337px (2:1 oran)</div>
+                            </div>
+                        </div>
+
+                        <div class="image-preview-container">
+                            <img id="currentImage" src="" class="image-preview mb-2" style="display: none;">
+                            <span id="removeImage" class="remove-image" style="display: none;"><i
+                                    class="fas fa-times"></i></span>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold">Buton Yazısı</label>
+                                <input type="text" class="form-control" name="buttonTitle" id="buttonTitle" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold">Yönlendirme Linki</label>
+                                <input type="text" class="form-control" name="buttonUrl" id="buttonUrl" required>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-end mt-4">
+                            <button type="button" class="btn btn-outline-secondary me-2"
+                                data-bs-dismiss="modal">İptal</button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>Kaydet
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slider Listesi -->
+    <div class="row" id="sliderContainer">
+        <!-- Sliderlar buraya eklenecek -->
+    </div>
+</div>
+
+<!-- Scriptler -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+    $(document).ready(function () {
+        let isAdmin = false;
+        let modal = new bootstrap.Modal(document.getElementById('sliderModal'));
+
+        // Kullanıcı rolünü al
+        $.get("/Admin/Slider/GetUserRole", function (response) {
+            isAdmin = response.isAdmin;
+            loadSliders();
+        }).fail(function () {
+            console.error("Kullanıcı rol bilgisi alınamadı");
+            loadSliders();
+        });
+
+        // Resim önizleme
+        $('#image').change(function (e) {
+            if (this.files && this.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    $('#currentImage').attr('src', e.target.result).show();
+                    $('#removeImage').show();
+                }
+                reader.readAsDataURL(this.files[0]);
+            }
+        });
+
+        // Resmi kaldır
+        $('#removeImage').click(function () {
+            $('#currentImage').attr('src', '').hide();
+            $('#image').val('');
+            $(this).hide();
+        });
+
+        function loadSliders() {
+            $.get("/Admin/Slider/GetSliders", function (data) {
+                $("#sliderContainer").html("");
+
+                if (data.length > 0) {
+                    data.forEach(slider => {
+                        let activeButton = "";
+                        let statusBadge = slider.isActive
+                            ? `<span class="status-badge badge-active"><i class="fas fa-circle me-1"></i>Aktif</span>`
+                            : `<span class="status-badge badge-inactive"><i class="fas fa-circle me-1"></i>Pasif</span>`;
+
+                        let categoryBadge = slider.sliderCategory === 'mainslider'
+                            ? `<span class="category-badge"><i class="fas fa-home me-1"></i>Giriş</span>`
+                            : `<span class="category-badge"><i class="fas fa-exchange-alt me-1"></i>Yönlendirme</span>`;
+
+                        if (isAdmin) {
+                            activeButton = slider.isActive
+                                ? `<button class="btn btn-sm btn-outline-danger" onclick="toggleActive(${slider.id})">
+                                        <i class="fas fa-eye-slash me-1"></i>Kaldır
+                                   </button>`
+                                : `<button class="btn btn-sm btn-outline-success" onclick="toggleActive(${slider.id})">
+                                        <i class="fas fa-eye me-1"></i>Yayınla
+                                   </button>`;
+                        }
+
+                        $("#sliderContainer").append(`
+                            <div class="col-lg-4 col-md-6 mt-3" id="slider-${slider.id}">
+                                <div class="card h-100">
+                                    <div class="position-relative">
+                                        <img src="${slider.imageUrl}" class="card-img-top" alt="${slider.title}">
+                                        ${statusBadge}
+                                        ${categoryBadge}
+                                    </div>
+                                    <div class="card-body">
+                                        <small class="text-muted">${slider.topTitle}</small>
+                                        <h5 class="card-title mt-1 mb-2">${slider.title}</h5>
+                                        <a href="${slider.buttonUrl}" class="btn btn-sm btn-outline-primary w-100 mb-3">
+                                            ${slider.buttonTitle} <i class="fas fa-arrow-right ms-2"></i>
+                                        </a>
+                                        
+                                        <div class="d-flex justify-content-between action-buttons">
+                                            <div>
+                                                ${activeButton}
+                                            </div>
+                                            <div>
+                                                <button class="btn btn-sm btn-outline-warning" onclick="editSlider(${slider.id})">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                <button class="btn btn-sm btn-outline-danger" onclick="deleteSlider(${slider.id})">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `);
+                    });
+                } else {
+                    $("#sliderContainer").html(`
+                        <div class="col-12">
+                            <div class="empty-state">
+                                <i class="fas fa-images"></i>
+                                <h4 class="mb-2">Slider Bulunamadı</h4>
+                                <p class="text-muted mb-4">Henüz hiç slider eklenmemiş. Yeni bir slider eklemek için butona tıklayın.</p>
+                                <button class="btn btn-purple" data-bs-toggle="modal" data-bs-target="#sliderModal">
+                                    <i class="fas fa-plus me-2"></i>Slider Ekle
+                                </button>
+                            </div>
+                        </div>
+                    `);
+                }
+            }).fail((xhr) => {
+                console.error("Slider listesi yüklenirken hata oluştu:", xhr.status, xhr.responseText);
+                showErrorAlert('Slider listesi yüklenirken hata oluştu!');
+            });
+        }
+
+        window.editSlider = function (id) {
+            $.get("/Admin/Slider/GetSliderById?id=" + id, function (slider) {
+                $('#sliderId').val(slider.id);
+                $('#topTitle').val(slider.topTitle);
+                $('#title').val(slider.title);
+                $('#buttonTitle').val(slider.buttonTitle);
+                $('#buttonUrl').val(slider.buttonUrl);
+                $('#sliderCategory').val(slider.sliderCategory || 'mainslider');
+
+                if (slider.imageUrl) {
+                    $('#currentImage').attr('src', slider.imageUrl).show();
+                    $('#removeImage').show();
+                } else {
+                    $('#currentImage').hide();
+                    $('#removeImage').hide();
+                }
+
+                modal.show();
+            }).fail(() => {
+                showErrorAlert('Slider bilgileri alınırken hata oluştu!');
+            });
+        };
+
+        $('#sliderForm').submit(function (e) {
+            e.preventDefault();
+
+            let formData = new FormData(this);
+            let url = $('#sliderId').val() ? '/Admin/Slider/UpdateSlider' : '/Admin/Slider/AddSlider';
+
+            $.ajax({
+                url: url,
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                beforeSend: function () {
+                    $('button[type="submit"]').prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Kaydediliyor...');
+                },
+                success: function () {
+                    showSuccessAlert('Slider başarıyla kaydedildi.');
+                    loadSliders();
+                    modal.hide();
+                    $('#sliderForm')[0].reset();
+                    $('#currentImage').hide();
+                    $('#removeImage').hide();
+                },
+                error: function (xhr) {
+                    console.error("Hata kodu:", xhr.status, "Hata mesajı:", xhr.responseText);
+                    showErrorAlert('Slider kaydedilirken hata oluştu: ' + (xhr.responseJSON?.message || ''));
+                },
+                complete: function () {
+                    $('button[type="submit"]').prop('disabled', false).html('<i class="fas fa-save me-2"></i>Kaydet');
+                }
+            });
+        });
+
+        window.deleteSlider = function (id) {
+            Swal.fire({
+                title: 'Emin misiniz?',
+                text: "Bu sliderı silmek istediğinize emin misiniz? Bu işlem geri alınamaz!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#7367f0',
+                cancelButtonColor: '#82868b',
+                confirmButtonText: 'Evet, sil!',
+                cancelButtonText: 'Vazgeç'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: "/Admin/Slider/DeleteSlider?id=" + id,
+                        type: "DELETE",
+                        success: function () {
+                            showSuccessAlert('Slider başarıyla silindi.');
+                            loadSliders();
+                        },
+                        error: function (xhr) {
+                            const errorMessage = xhr.responseJSON?.message || 'Bilinmeyen bir hata oluştu.';
+                            showErrorAlert('Slider silinirken hata oluştu: ' + errorMessage);
+                        }
+                    });
+                }
+            });
+        };
+
+        window.toggleActive = function (id) {
+            $.post("/Admin/Slider/ToggleActive", { id: id }, function (response) {
+                if (response.success) {
+                    showSuccessAlert('Slider durumu başarıyla güncellendi.');
+                    loadSliders();
+                } else {
+                    // Özel uyarı mesajı dönerse onu göster
+                    showErrorAlert(response.message || 'Bilinmeyen bir hata oluştu.');
+                }
+            }).fail((xhr) => {
+                showErrorAlert('Durum güncellenirken hata oluştu: ' + (xhr.responseJSON?.message || ''));
+            });
+        };
+
+        function showSuccessAlert(message) {
+            Swal.fire({
+                title: 'Başarılı!',
+                text: message,
+                icon: 'success',
+                confirmButtonColor: '#7367f0',
+                timer: 2000
+            });
+        }
+
+        function showErrorAlert(message) {
+            Swal.fire({
+                title: 'Hata!',
+                text: message,
+                icon: 'error',
+                confirmButtonColor: '#ea5455'
+            });
+        }
+
+        // Modal kapatıldığında temizlik yap
+        $('#sliderModal').on('hidden.bs.modal', function () {
+            $('#sliderForm')[0].reset();
+            $('#currentImage').hide();
+            $('#removeImage').hide();
+            $('body').removeClass('modal-open');
+            $('.modal-backdrop').remove();
+        });
+    });
+</script>

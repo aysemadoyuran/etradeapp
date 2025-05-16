@@ -1,0 +1,60 @@
+@model List<Comment>
+
+<section class="flat-spacing">
+    <div class="container">
+        <div class="heading-section text-center wow fadeInUp">
+<h3 class="heading">Müşteri Yorumları</h3>
+<p class="subheading">Ürünlerimizle ilgili değerli geri bildirimleriniz bizim için çok kıymetli. Sizden aldığımız ilhamla daha iyisini hedefliyoruz.</p>        </div>
+        <div dir="ltr" class="swiper tf-sw-testimonial wow fadeInUp" data-wow-delay="0.1s" data-preview="3"
+            data-tablet="2" data-mobile="1" data-space-lg="30" data-space-md="30" data-space="15" data-pagination="1"
+            data-pagination-md="1" data-pagination-lg="1">
+            <div class="swiper-wrapper">
+                @foreach (var review in Model)
+                {
+                    <div class="swiper-slide">
+                        <div class="testimonial-item style-2">
+                            <div class="content-top">
+                                <div class="list-star-default">
+                                    @for (int i = 0; i < review.Rating; i++)
+                                    {
+                                        <i class="icon icon-star"></i>
+                                    }
+                                </div>
+                                <p class="text-secondary">"@review.Text"</p>
+                                <div class="box-author">
+                                    <div class="text-title author">user******</div>
+                                    <svg class="icon" width="20" height="21" viewBox="0 0 20 21" fill="none"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <g clip-path="url(#clip0_15758_14563)">
+                                            <path d="M6.875 11.6255L8.75 13.5005L13.125 9.12549" stroke="#3DAB25"
+                                                stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                                            <path
+                                                d="M10 18.5005C14.1421 18.5005 17.5 15.1426 17.5 11.0005C17.5 6.85835 14.1421 3.50049 10 3.50049C5.85786 3.50049 2.5 6.85835 2.5 11.0005C2.5 15.1426 5.85786 18.5005 10 18.5005Z"
+                                                stroke="#3DAB25" stroke-width="1.5" stroke-linecap="round"
+                                                stroke-linejoin="round" />
+                                        </g>
+                                        <defs>
+                                            <clipPath id="clip0_15758_14563">
+                                                <rect width="20" height="20" fill="white"
+                                                    transform="translate(0 0.684082)" />
+                                            </clipPath>
+                                        </defs>
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="box-avt">
+                                <div class="avatar avt-60 round">
+                                    <img src="@review.Product.ColorImages.FirstOrDefault()?.ImageUrl" alt="avt">
+                                </div>
+                                <div class="box-price">
+                                    <a href="/Shop/Product/Details/@review.Product.Id" class="text-title text-line-clamp-1">@review.Product.Name</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+            <div class="sw-pagination-testimonial sw-dots type-circle d-flex justify-content-center"></div>
+        </div>
+    </div>
+</section>

@@ -1,0 +1,319 @@
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@model CouponCreateViewModel
+
+<div class="container ">
+    <div class="row justify-content-center">
+        <div class="col-lg-12">
+            <div class="card shadow-lg border-0 rounded-lg">
+                <div class="card-body ">
+                    <form id="couponForm" class="needs-validation" novalidate>
+                        @Html.AntiForgeryToken()
+                        
+                        <!-- Kupon Kodu -->
+                        <div class="mb-4">
+                            <label for="code" class="form-label fw-bold">
+                                <i class="fas fa-barcode me-2"></i>Kupon Kodu*
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light">
+                                    <i class="fas fa-ticket-alt"></i>
+                                </span>
+                                <input type="text" id="code" name="Code" class="form-control form-control-lg" 
+                                       required placeholder="YILBASI25" maxlength="20" />
+                                <div class="invalid-feedback">
+                                    Lütfen geçerli bir kupon kodu giriniz
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Açıklama -->
+                        <div class="mb-4">
+                            <label for="description" class="form-label fw-bold">
+                                <i class="fas fa-align-left me-2"></i>Açıklama
+                            </label>
+                            <textarea id="description" name="Description" class="form-control" 
+                                     rows="3" placeholder="Kupon açıklaması" maxlength="500"></textarea>
+                        </div>
+
+                        <div class="row">
+                            <!-- İndirim Miktarı -->
+                            <div class="col-md-6 mb-4">
+                                <label for="discountValue" class="form-label fw-bold">
+                                    <i class="fas fa-percentage me-2"></i>İndirim Miktarı*
+                                </label>
+                                <div class="input-group">
+                                    <input type="number" id="discountValue" name="DiscountValue" 
+                                           class="form-control form-control-lg" required min="0.01" step="0.01" 
+                                           placeholder="25.00" />
+                                    <span class="input-group-text">₺</span>
+                                    <div class="invalid-feedback">
+                                        Lütfen geçerli bir indirim miktarı giriniz
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Minimum Sipariş Tutarı -->
+                            <div class="col-md-6 mb-4">
+                                <label for="minimumOrderAmount" class="form-label fw-bold">
+                                    <i class="fas fa-shopping-cart me-2"></i>Minimum Sipariş Tutarı
+                                </label>
+                                <div class="input-group">
+                                    <input type="number" id="minimumOrderAmount" name="MinimumOrderAmount" 
+                                           class="form-control form-control-lg" min="0" step="0.01" 
+                                           placeholder="100.00" />
+                                    <span class="input-group-text">₺</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tarih Aralığı -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-calendar-alt me-2"></i>Geçerlilik Tarihleri*
+                            </label>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light">
+                                            <i class="fas fa-play"></i>
+                                        </span>
+                                        <input type="date" id="startDate" name="StartDate" 
+                                               class="form-control form-control-lg" required />
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light">
+                                            <i class="fas fa-stop"></i>
+                                        </span>
+                                        <input type="date" id="endDate" name="EndDate" 
+                                               class="form-control form-control-lg" required />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <!-- Maksimum Kullanım -->
+                            <div class="col-md-6 mb-4">
+                                <label for="maxUsageCount" class="form-label fw-bold">
+                                    <i class="fas fa-users me-2"></i>Maksimum Kullanım*
+                                </label>
+                                <input type="number" id="maxUsageCount" name="MaxUsageCount" 
+                                       class="form-control form-control-lg" required min="1" 
+                                       placeholder="1000" />
+                            </div>
+
+                            <!-- Kategori -->
+                            <div class="col-md-6 mb-4">
+                                <label for="couponCategory" class="form-label fw-bold">
+                                    <i class="fas fa-tags me-2"></i>Kategori*
+                                </label>
+                                <select id="couponCategory" name="CouponCategory" 
+                                        class="form-select form-select-lg" required>
+                                    <option value="">-- Seçiniz --</option>
+                                    <option value="FirstPurchase">İlk Alışveriş</option>
+                                    <option value="LoyalCustomer">Devamlı Müşteri</option>
+                                    <option value="BasketDiscount">Şartsız</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Aktif/Pasif -->
+                        <div class="form-check form-switch mb-4">
+                            <input class="form-check-input" type="checkbox" id="isActive" 
+                                   name="IsActive" checked style="width: 3em; height: 1.5em;">
+                            <label class="form-check-label fw-bold ms-3" for="isActive">
+                                <i class="fas fa-power-off me-2"></i>Kupon Aktif
+                            </label>
+                        </div>
+
+                        <!-- Gönder Butonu -->
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-save me-2"></i>Kuponu Kaydet
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+</div>
+<style>
+    :root {
+        --primary-color: #4e73df;
+        --secondary-color: #f8f9fc;
+        --accent-color: #2e59d9;
+    }
+    
+    body {
+        background-color: #f8f9fa;
+    }
+    
+    .card {
+        border: none;
+        overflow: hidden;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    }
+    
+    .card-header {
+        padding: 1.5rem;
+        border-bottom: none;
+    }
+    
+    .form-control, .form-select {
+        padding: 0.50rem 0.75rem;
+        border-radius: 0.5rem;
+        border: 1px solid #d1d3e2;
+        transition: border-color 0.3s ease;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 0.25rem rgba(78, 115, 223, 0.25);
+    }
+    
+    .form-control-lg {
+        font-size: 0.90rem;
+    }
+    
+    .input-group-text {
+        background-color: var(--secondary-color);
+        border-color: #d1d3e2;
+    }
+    
+    .btn-primary {
+        background-color: var(--primary-color);
+        border: none;
+        padding: 0.75rem;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+    }
+    
+    .btn-primary:hover {
+        background-color: var(--accent-color);
+    }
+    
+    .form-check-input:checked {
+        background-color: var(--primary-color);
+        border-color: var(--primary-color);
+    }
+    
+    .form-label {
+        color: #5a5c69;
+        margin-bottom: 0.5rem;
+    }
+    
+    .invalid-feedback {
+        font-size: 0.85rem;
+    }
+    
+    @@media (max-width: 768px) {
+        .card-body {
+            padding: 1.5rem;
+        }
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('couponForm');
+        
+        // Bootstrap validation
+        form.addEventListener('submit', function(event) {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            
+            form.classList.add('was-validated');
+        }, false);
+
+        // Modern form submission
+        form.addEventListener('submit', async function(event) {
+            event.preventDefault();
+            
+            if (!form.checkValidity()) {
+                return;
+            }
+
+            try {
+                const formData = new FormData(form);
+                const data = {
+                    Code: formData.get("Code").toUpperCase(),
+                    Description: formData.get("Description"),
+                    DiscountValue: parseFloat(formData.get("DiscountValue")),
+                    MinimumOrderAmount: formData.get("MinimumOrderAmount") ? 
+                        parseFloat(formData.get("MinimumOrderAmount")) : null,
+                    StartDate: new Date(formData.get("StartDate")).toISOString(),
+                    EndDate: new Date(formData.get("EndDate")).toISOString(),
+                    IsActive: document.getElementById("isActive").checked,
+                    MaxUsageCount: parseInt(formData.get("MaxUsageCount")),
+                    CouponCategory: formData.get("CouponCategory")
+                };
+
+                const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+
+                const response = await fetch('/Admin/Coupon/Create', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': token
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    showError(result.message || 'Kupon oluşturulamadı', result.errors);
+                    return;
+                }
+
+                showSuccess(result.message);
+                setTimeout(() => window.location.href = '/Admin/Coupon', 1500);
+            } catch (error) {
+                console.error('Hata:', error);
+                showError('İşlem sırasında bir hata oluştu: ' + error.message);
+            }
+        });
+
+        function showError(message, errors = null) {
+            const errorHtml = `
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <strong>Hata!</strong> ${message}
+                    ${errors ? `<hr><ul class="mb-0">${errors.map(e => `<li>${e}</li>`).join('')}</ul>` : ''}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            `;
+            
+            document.querySelector('.card-body').insertAdjacentHTML('afterbegin', errorHtml);
+        }
+
+        function showSuccess(message) {
+            const successHtml = `
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <strong>Başarılı!</strong> ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            `;
+            
+            document.querySelector('.card-body').insertAdjacentHTML('afterbegin', successHtml);
+        }
+
+        // Date picker improvements
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('startDate').min = today;
+        
+        document.getElementById('startDate').addEventListener('change', function() {
+            document.getElementById('endDate').min = this.value;
+        });
+    });
+</script>

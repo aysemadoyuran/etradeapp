@@ -1,0 +1,247 @@
+@model IEnumerable<etrade.Entity.ProductVariant>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 class="mb-0 text-primary">
+                <i class="bx bx-package me-2"></i>Stok Durumu
+            </h4>
+            <div class="search-bar position-relative w-25">
+                <input type="text" id="searchInput" class="form-control ps-4" 
+                       placeholder="Ürün, renk veya beden ara...">
+                <i class="bx bx-search fs-5 position-absolute top-50 start-0 translate-middle-y ms-2 text-muted"></i>
+            </div>
+        </div>
+
+        <!-- Filtre Çipleri -->
+        <div class="d-flex flex-wrap gap-3 mb-4">
+            <div class="chip-filter" data-filter="out-of-stock">
+                <span class="color-dot bg-secondary"></span>
+                <span>Tükenen Ürünler</span>
+                <span class="badge bg-light text-dark ms-2">@Model.Count(x => x.Stock == 0)</span>
+            </div>
+            <div class="chip-filter" data-filter="low-stock">
+                <span class="color-dot bg-danger"></span>
+                <span>Stok Az (0-10)</span>
+                <span class="badge bg-light text-dark ms-2">@Model.Count(x => x.Stock > 0 && x.Stock < 10)</span>
+            </div>
+            <div class="chip-filter" data-filter="medium-stock">
+                <span class="color-dot bg-warning"></span>
+                <span>Stok Orta (10-20)</span>
+                <span class="badge bg-light text-dark ms-2">@Model.Count(x => x.Stock >= 10 && x.Stock <= 20)</span>
+            </div>
+            <div class="chip-filter" data-filter="high-stock">
+                <span class="color-dot bg-success"></span>
+                <span>Stok Yüksek (20+)</span>
+                <span class="badge bg-light text-dark ms-2">@Model.Count(x => x.Stock > 20)</span>
+            </div>
+        </div>
+
+        <div class="table-responsive rounded-3 border">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-4">Stok Kodu</th>
+                        <th>Ürün Adı</th>
+                        <th>Renk</th>
+                        <th>Beden</th>
+                        <th class="text-end pe-4">Stok Miktarı</th>
+                    </tr>
+                </thead>
+                <tbody id="productTableBody">
+                    @foreach (var item in Model)
+                    {
+                        var rowClass = "";
+                        var stockStatus = "";
+                        if (item.Stock == 0)
+                        {
+                            rowClass = "table-secondary";
+                            stockStatus = "out-of-stock";
+                        }
+                        else if (item.Stock < 10)
+                        {
+                            rowClass = "table-danger";
+                            stockStatus = "low-stock";
+                        }
+                        else if (item.Stock <= 20)
+                        {
+                            rowClass = "table-warning";
+                            stockStatus = "medium-stock";
+                        }
+                        else
+                        {
+                            rowClass = "table-success";
+                            stockStatus = "high-stock";
+                        }
+
+                        <tr class="@rowClass" data-stock-status="@stockStatus" onclick="window.location='@Url.Action("ProductEdit", "Product", new { id = item.ProductId })'">
+                            <td class="ps-4 fw-medium">@item.Product.ProductCode</td>
+                            <td>
+                                <div class="d-flex align-items-center">
+    
+                                    <span>@item.Product.Name</span>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="d-inline-flex align-items-center">
+                                    <span class="color-circle me-2" style="background-color: @item.Color.ColorCode"></span>
+                                    @item.Color.Name
+                                </span>
+                            </td>
+                            <td>@item.Size.Name</td>
+                            <td class="text-end pe-4 fw-bold">@item.Stock</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Modern Card Styling */
+    .card {
+        border-radius: 12px;
+        overflow: hidden;
+        background-color: #ffffff;
+    }
+    
+    /* Search Bar Styling */
+    .search-bar input {
+        border-radius: 8px;
+        border: 1px solid #e0e3e8;
+        padding-left: 2.5rem;
+        transition: all 0.3s;
+    }
+    
+    .search-bar input:focus {
+        border-color: #5a8dee;
+        box-shadow: 0 0 0 3px rgba(90, 141, 238, 0.1);
+    }
+    
+    /* Chip Filter Styling */
+    .chip-filter {
+        display: inline-flex;
+        align-items: center;
+        padding: 6px 12px;
+        border-radius: 20px;
+        background-color: #f8f9fa;
+        border: 1px solid #e0e3e8;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+    
+    .chip-filter:hover {
+        background-color: #f1f5ff;
+        border-color: #5a8dee;
+    }
+    
+    .chip-filter.active {
+        background-color: #f1f5ff;
+        border-color: #5a8dee;
+    }
+    
+    .color-dot {
+        display: inline-block;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        margin-right: 8px;
+    }
+    
+    .color-circle {
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        border: 1px solid #e0e3e8;
+    }
+    
+    /* Table Styling */
+    .table {
+        --bs-table-hover-bg: rgba(90, 141, 238, 0.05);
+    }
+    
+    .table th {
+        border-bottom: 1px solid #e0e3e8;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.5px;
+        color: #6c757d;
+    }
+    
+    .table td {
+        vertical-align: middle;
+        padding-top: 12px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid #f0f2f5;
+    }
+    
+    .table tr:last-child td {
+        border-bottom: none;
+    }
+    
+    .table tr {
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    
+    /* Status Colors */
+    .table-danger {
+        --bs-table-bg: rgba(220, 53, 69, 0.05);
+    }
+    
+    .table-warning {
+        --bs-table-bg: rgba(255, 193, 7, 0.05);
+    }
+    
+    .table-success {
+        --bs-table-bg: rgba(25, 135, 84, 0.05);
+    }
+    
+    .table-secondary {
+        --bs-table-bg: rgba(108, 117, 125, 0.05);
+    }
+</style>
+
+<script>
+    // Arama işlevi
+    document.getElementById("searchInput").addEventListener("input", function() {
+        const filter = this.value.toLowerCase();
+        const rows = document.querySelectorAll("#productTableBody tr");
+        
+        rows.forEach(row => {
+            const text = row.textContent.toLowerCase();
+            row.style.display = text.includes(filter) ? "" : "none";
+        });
+    });
+    
+    // Filtreleme işlevi
+    document.querySelectorAll(".chip-filter").forEach(chip => {
+        chip.addEventListener("click", function() {
+            const filter = this.getAttribute("data-filter");
+            
+            // Tüm çipleri aktif durumdan çıkar
+            document.querySelectorAll(".chip-filter").forEach(c => {
+                c.classList.remove("active");
+            });
+            
+            // Tıklanan çipi aktif yap
+            this.classList.add("active");
+            
+            // Tablo satırlarını filtrele
+            const rows = document.querySelectorAll("#productTableBody tr");
+            
+            if (filter === "all") {
+                rows.forEach(row => row.style.display = "");
+                return;
+            }
+            
+            rows.forEach(row => {
+                row.style.display = row.getAttribute("data-stock-status") === filter ? "" : "none";
+            });
+        });
+    });
+    
+    // Tüm satırları göster butonu ekleyebilirsiniz
+</script>

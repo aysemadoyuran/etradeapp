@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Müşteri Rehberi</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #6366f1;
+            --primary-light: #e0e7ff;
+            --secondary-color: #f43f5e;
+            --dark-color: #1e293b;
+            --light-color: #f8fafc;
+            --border-color: #e2e8f0;
+        }
+
+        body {
+            background-color: #f9fafc;
+            color: #334155;
+        }
+
+        .customer-header {
+            background: linear-gradient(135deg, var(--primary-color), #8b5cf6);
+            color: white;
+            border-radius: 0 0 20px 20px;
+            box-shadow: 0 4px 20px rgba(99, 102, 241, 0.2);
+            margin-bottom: 2rem;
+        }
+
+        .customer-card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+            background-color: white;
+        }
+
+        .customer-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+        }
+
+        .customer-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: var(--primary-light);
+            color: var(--primary-color);
+            font-weight: bold;
+            font-size: 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .customer-name {
+            font-weight: 600;
+            color: var(--dark-color);
+            margin-bottom: 0.25rem;
+        }
+
+        .customer-company {
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+
+        .customer-contact {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+
+        .contact-item i {
+            width: 20px;
+            color: var(--primary-color);
+        }
+
+        .license-badge {
+            background-color: var(--primary-light);
+            color: var(--primary-color);
+            border-radius: 50px;
+            padding: 0.25rem 0.75rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .license-badge i {
+            font-size: 0.65rem;
+        }
+
+        .license-active {
+            background-color: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+        }
+
+        .license-expired {
+            background-color: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+        }
+
+        .search-container {
+            position: relative;
+            max-width: 400px;
+        }
+
+        .search-input {
+            padding-left: 2.5rem;
+            border-radius: 50px;
+            border: 1px solid var(--border-color);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+        }
+
+        .filter-btn {
+            border-radius: 50px;
+            padding: 0.5rem 1rem;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            border: 1px solid var(--border-color);
+            background-color: white;
+            color: #64748b;
+        }
+
+        .filter-btn:hover {
+            background-color: #f1f5f9;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem 0;
+        }
+
+        .empty-state img {
+            max-width: 200px;
+            margin-bottom: 1.5rem;
+            opacity: 0.7;
+        }
+
+        .customer-detail {
+            padding: 1rem;
+            border-left: 1px solid var(--border-color);
+        }
+
+        @@media (max-width: 768px) {
+            .customer-detail {
+                border-left: none;
+                border-top: 1px solid var(--border-color);
+                padding-top: 1.5rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header class="customer-header py-4 mb-4">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <h4 class="h3 mb-0"><i class="fas fa-users me-2"></i> Müşteri Rehberi</h4>
+                </div>
+                <div class="col-md-6 d-flex justify-content-md-end gap-2 mt-3 mt-md-0">
+                    <div class="search-container">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" class="form-control search-input" placeholder="Müşteri ara..."
+                            id="searchInput">
+                    </div>
+                    <a href="/Tenant/License/AddCustomer" class="btn btn-success rounded-lg">
+                        <i class="fa fa-address-book" aria-hidden="true"></i>
+                        <span class="d-none d-sm-inline">Yeni Müşteri Ekle</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div id="customer-container" class="row">
+            <!-- Müşteri kartları buraya gelecek -->
+            <div class="col-12 text-center py-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Yükleniyor...</span>
+                </div>
+            </div>
+        </div>
+
+        <div id="empty-state" class="empty-state d-none">
+            <img src="https://cdn-icons-png.flaticon.com/512/4076/4076478.png" alt="No customers" class="img-fluid">
+            <h5 class="text-muted mb-2">Müşteri bulunamadı</h5>
+            <p class="text-muted mb-3">Arama kriterlerinize uygun müşteri bulunamadı</p>
+            <button class="btn btn-outline-primary" onclick="resetSearch()">
+                <i class="fas fa-times me-1"></i> Aramayı Sıfırla
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Müşteri verilerini tutacak global değişken
+        let allCustomers = [];
+
+        // API'den müşteri verilerini çekme fonksiyonu
+        async function fetchCustomers() {
+            try {
+                const response = await fetch('/Tenant/License/GetCustomersWithLicenses');
+                const data = await response.json();
+
+                if (data.isSuccess) {
+                    allCustomers = data.customers;
+                    renderCustomers(allCustomers);
+                } else {
+                    showError('Müşteriler alınırken hata oluştu!');
+                }
+            } catch (error) {
+                console.error('Hata:', error);
+                showError('Bir hata oluştu, lütfen tekrar deneyin.');
+            }
+        }
+
+        // Müşterileri ekrana render etme fonksiyonu
+        function renderCustomers(customers) {
+            const container = document.getElementById('customer-container');
+            const emptyState = document.getElementById('empty-state');
+
+            if (customers.length === 0) {
+                container.innerHTML = '';
+                emptyState.classList.remove('d-none');
+                return;
+            }
+
+            emptyState.classList.add('d-none');
+            container.innerHTML = '';
+
+            customers.forEach(customer => {
+                // Müşteri adının baş harflerini al (avatar için)
+                const initials = getInitials(customer.fullName);
+
+                // Müşteri kartını oluştur
+                const customerCard = document.createElement('div');
+                customerCard.className = 'col-12';
+                customerCard.innerHTML = `
+                    <div class="customer-card p-3">
+                        <div class="row">
+                            <div class="col-md-3 d-flex align-items-center gap-3">
+                                <div class="customer-avatar">${initials}</div>
+                                <div>
+                                    <h5 class="customer-name">${customer.fullName}</h5>
+                                    <p class="customer-company mb-0">${customer.companyName || 'Firma bilgisi yok'}</p>
+                                </div>
+                            </div>
+                            <div class="col-md-3 d-flex align-items-center">
+                                <div class="customer-contact">
+                                    <div class="contact-item">
+                                        <i class="fas fa-envelope"></i>
+                                        <span>${customer.email || 'Email yok'}</span>
+                                    </div>
+                                    <div class="contact-item">
+                                        <i class="fas fa-phone"></i>
+                                        <span>${customer.phone || 'Telefon yok'}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 d-flex align-items-center">
+                                <div class="customer-contact">
+                                    <div class="contact-item">
+                                        <i class="fas fa-map-marker-alt"></i>
+                                        <span>${customer.address || 'Adres bilgisi yok'}</span>
+                                    </div>
+                                    <div class="contact-item">
+                                        <i class="fas fa-city"></i>
+                                        <span>${customer.ad || 'Şehir bilgisi yok'}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 d-flex align-items-center customer-detail">
+                                <div>
+                                    <h6 class="mb-2 text-muted">Lisanslar</h6>
+                                    <div class="d-flex flex-wrap">
+                                        ${renderLicenses(customer.licenses)}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                container.appendChild(customerCard);
+            });
+        }
+
+        // Lisans bilgilerini render etme fonksiyonu
+        function renderLicenses(licenses) {
+            if (!licenses || licenses.length === 0) {
+                return '<span class="text-muted">Lisans bilgisi yok</span>';
+            }
+
+            return licenses.map(license => {
+                const today = new Date();
+                const endDate = new Date(license.endDate);
+                const isActive = today <= endDate && !license.isDeleted;
+                const isTerminated = license.isDeleted;
+
+                // Format dates for display
+                const formatDate = (dateString) => {
+                    if (!dateString) return '';
+                    const date = new Date(dateString);
+                    return date.toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                };
+
+                let licenseText = '';
+                if (isTerminated) {
+                    const startDate = formatDate(license.startDate);
+                    const deletionDate = formatDate(license.deletionDate);
+                    licenseText = `${license.durationInMonths} ay (${startDate} - ${deletionDate}) (Sonlandırılmış)`;
+                } else {
+                    licenseText = `${license.durationInMonths} ay`;
+                }
+
+                // Determine badge class based on status
+                let badgeClass = '';
+                if (isTerminated) {
+                    badgeClass = 'license-expired';
+                } else if (isActive) {
+                    badgeClass = 'license-active';
+                } else {
+                    badgeClass = 'license-expired';
+                }
+
+                return `
+            <span class="license-badge ${badgeClass}">
+                <i class="fas ${isTerminated ? 'fa-times-circle' : (isActive ? 'fa-check-circle' : 'fa-exclamation-circle')}"></i>
+                ${licenseText}
+            </span>
+        `;
+            }).join('');
+        }
+
+        // İsimden baş harfleri çıkarma fonksiyonu
+        function getInitials(name) {
+            if (!name) return '';
+            return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+        }
+
+        // Hata gösterimi fonksiyonu
+        function showError(message) {
+            const container = document.getElementById('customer-container');
+            container.innerHTML = `
+                <div class="col-12">
+                    <div class="alert alert-danger d-flex align-items-center" role="alert">
+                        <i class="fas fa-exclamation-circle me-2"></i>
+                        <div>${message}</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Arama fonksiyonu
+        function searchCustomers() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+
+            if (!searchTerm) {
+                renderCustomers(allCustomers);
+                return;
+            }
+
+            const filteredCustomers = allCustomers.filter(customer => {
+                return (
+                    (customer.fullName && customer.fullName.toLowerCase().includes(searchTerm)) ||
+                    (customer.companyName && customer.companyName.toLowerCase().includes(searchTerm)) ||
+                    (customer.email && customer.email.toLowerCase().includes(searchTerm)) ||
+                    (customer.phone && customer.phone.includes(searchTerm)) ||
+                    (customer.ad && customer.ad.toLowerCase().includes(searchTerm))
+                );
+            });
+
+            renderCustomers(filteredCustomers);
+        }
+
+        // Arama sıfırlama fonksiyonu
+        function resetSearch() {
+            document.getElementById('searchInput').value = '';
+            renderCustomers(allCustomers);
+        }
+
+        // Sayfa yüklendiğinde verileri çek
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchCustomers();
+
+            // Arama inputuna event listener ekle
+            document.getElementById('searchInput').addEventListener('input', searchCustomers);
+        });
+    </script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0-alpha1/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+</body>
+
+</html>

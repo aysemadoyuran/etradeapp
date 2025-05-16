@@ -1,0 +1,122 @@
+<!-- Yorumlar listesi -->
+<div class="row g-4">
+    @if (Model != null && Model.Count > 0)
+    {
+        @foreach (var comment in Model)
+        {
+            <div class="col-md-6" id="comment-@comment.Id">
+                <div class="card border-0 shadow-sm h-100 position-relative">
+                    <!-- Silme butonu -->
+                    <button type="button" class="btn btn-icon btn-sm btn-outline-danger position-absolute top-0 end-0 m-3" 
+                            data-bs-toggle="tooltip" title="Yorumu Sil" onclick="deleteComment(@comment.Id)">
+                        <i class="far fa-trash-alt"></i>
+                    </button>
+
+                    <div class="card-body p-4">
+                        <!-- Üst bilgi -->
+                        <div class="d-flex align-items-center mb-3">
+                            <div>
+                                <h6 class="mb-0 fw-semibold">@comment.Product.Name</h6>
+                            </div>
+                        </div>
+
+                        <!-- Yorum içeriği -->
+                        <div class="mb-3">
+                            <div class="d-flex align-items-center mb-2">
+                                <div class="rating-display small text-warning me-2">
+                                    @for (int i = 1; i <= 5; i++)
+                                    {
+                                        <i class="@(i <= comment.Rating ? "fas" : "far") fa-star"></i>
+                                    }
+                                </div>
+                                <span class="text-muted small">@comment.Rating/5</span>
+                            </div>
+                            <p class="mb-0 text-dark" style="line-height: 1.6;">@comment.Text</p>
+                        </div>
+
+                        <!-- Yorum fotoğrafları (varsa) -->
+                        @if (!string.IsNullOrEmpty(comment.ImageUrl) || !string.IsNullOrEmpty(comment.ImageUrl2))
+                        {
+                            <div class="d-flex gap-2 mt-3">
+                                @if (!string.IsNullOrEmpty(comment.ImageUrl))
+                                {
+                                    <a href="@comment.ImageUrl" data-lightbox="comment-@comment.Id" class="d-block" style="width: 80px; height: 80px;">
+                                        <img src="@comment.ImageUrl" alt="Yorum fotoğrafı" class="img-fluid rounded-2 h-100" style="object-fit: cover;">
+                                    </a>
+                                }
+                                @if (!string.IsNullOrEmpty(comment.ImageUrl2))
+                                {
+                                    <a href="@comment.ImageUrl2" data-lightbox="comment-@comment.Id" class="d-block" style="width: 80px; height: 80px;">
+                                        <img src="@comment.ImageUrl2" alt="Yorum fotoğrafı" class="img-fluid rounded-2 h-100" style="object-fit: cover;">
+                                    </a>
+                                }
+                            </div>
+                        }
+                    </div>
+
+                    <!-- Durum badge -->
+
+                </div>
+            </div>
+        }
+    }
+    else
+    {
+        <div class="col-12">
+            <div class="card border-0 text-center py-5">
+                <div class="card-body">
+                    <i class="far fa-comment-dots fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted mb-2">Bu kategoride yorum bulunmamaktadır</h5>
+                    <p class="text-muted small">Henüz bir değerlendirme yapmadınız veya yorumlar onay bekliyor.</p>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<!-- CSS -->
+<style>
+    .card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
+    }
+
+    .rating-display {
+        color: #ffc107;
+    }
+
+    .btn-icon {
+        width: 32px;
+        height: 32px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50% !important;
+    }
+
+    .card .fa-comment-dots {
+        opacity: 0.5;
+    }
+
+    @@media (max-width: 768px) {
+        .card-body {
+            padding: 1.5rem;
+        }
+    }
+</style>
+
+<!-- Lightbox -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.3/css/lightbox.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.3/js/lightbox.min.js"></script>
+
+<script>
+    $(document).ready(function(){
+        $('[data-bs-toggle="tooltip"]').tooltip();
+    });
+</script>

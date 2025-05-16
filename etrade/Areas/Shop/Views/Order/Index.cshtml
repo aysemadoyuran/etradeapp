@@ -1,0 +1,350 @@
+@model IEnumerable<OrderListViewModel>
+
+<div class="container mt-5 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="order-list-container">
+                @foreach (var order in Model)
+                {
+                    bool isRefunded = order.TotalPrice == 0.00m;
+                    bool isDelivered = order.OrderStatus == "Teslim Edildi";
+                    var updateDate = order.UpdateDate ?? DateTime.MinValue; // Null kontrolü
+                    var daysPassed = (DateTime.Now - updateDate).TotalDays;
+
+                    <div class="order-card @(isRefunded ? "refunded" : "")">
+                        <div class="order-header">
+                            <div class="order-meta">
+                                <div class="order-number">
+                                    <span class="meta-label">Sipariş No:</span>
+                                    <strong>#@order.OrderCode</strong>
+                                    @if(isRefunded) {
+                                        <span class="refund-tag">İade Tamamlandı</span>
+                                    }
+                                </div>
+                                <div class="order-date">
+                                    <span class="meta-label">Tarih:</span>
+                                    <span>@order.OrderDateFormatted</span>
+                                </div>
+                                
+                            </div>
+                            <div class="order-status @order.OrderStatusClass.ToLower()">
+                                <i class="status-icon fas @order.OrderStatusIconClass"></i>
+                                <span>@order.OrderStatus</span>
+                            </div>
+                        </div>
+                        
+                        <div class="order-body">
+                            <div class="order-summary">
+                                <div class="summary-item customer">
+                                    <i class="fas fa-user"></i>
+                                    <span>@order.AlıcıAdSoyad</span>
+                                </div>
+                                <div class="summary-item products">
+                                    <i class="fas fa-box-open"></i>
+                                    <span>@order.OrderItemCount ürün</span>
+                                </div>
+                                <div class="summary-item amount">
+                                    <i class="fas fa-receipt"></i>
+                                    <span class="price">
+                                        @if(isRefunded) {
+                                            <span class="original-price">@order.TotalPrice.ToString("N2")</span>
+                                            <span class="refund-price">0,00₺</span>
+                                        } else {
+                                            @order.TotalPrice.ToString("N2")
+                                        }
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <div class="order-actions">
+                                <a href="@Url.Action("Details", "Order", new { orderCode = order.OrderCode })" class="btn-details">
+                                    <i class="fas fa-list-ul me-2"></i>
+                                    Detayları Gör
+                                </a>
+
+@if (isDelivered && !isRefunded)
+{
+    <div class="action-buttons">
+        <a href="@Url.Action("Index", "Comment", new { orderCode = order.OrderCode })" class="btn-review">
+            <i class="fas fa-star me-2"></i>
+            Değerlendir
+        </a>
+        
+        @if (daysPassed <= 7) // Bu koşul sadece 7 gün içinde iade talebi butonunu gösterir
+        {
+            <a href="@Url.Action("Index", "Refund", new { orderCode = order.OrderCode })" class="btn-refund">
+                <i class="fas fa-undo-alt me-2"></i>
+                İade Talebi
+            </a>
+        }
+    </div>
+}
+                            </div>
+                        </div>
+                        
+                        @if(isRefunded) {
+                            <div class="refund-notice">
+                                <i class="fas fa-check-circle"></i>
+                                <span>Bu siparişteki tüm ürünler başarıyla iade edilmiştir</span>
+                            </div>
+                        }
+                    </div>
+                   
+                }
+                @if (!Model.Any())
+                {
+                    <div class="empty-orders">
+                        <i class="fas fa-box-open"></i>
+                        <h4>Henüz siparişiniz bulunmamaktadır</h4>
+                        <p>Alışverişe başlamak için mağazamızı ziyaret edin</p>
+                        <a href="/shop" class="btn btn-primary">Alışverişe Başla</a>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .order-list-container {
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.05);
+        overflow: hidden;
+    }
+    
+    .order-card {
+        padding: 24px;
+        border-bottom: 1px solid #f0f0f0;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+    
+    .order-card:hover {
+        background-color: #fafafa;
+    }
+    
+    .order-card.refunded {
+        background-color: #f8fafc;
+    }
+    
+    .order-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+    
+    .order-meta {
+        display: flex;
+        gap: 20px;
+    }
+    
+    .meta-label {
+        color: #6c757d;
+        margin-right: 6px;
+        font-size: 13px;
+    }
+    
+    .refund-tag {
+        background: #e8f5e9;
+        color: #2e7d32;
+        padding: 3px 8px;
+        border-radius: 4px;
+        font-size: 11px;
+        font-weight: 600;
+        margin-left: 8px;
+    }
+    
+    .order-status {
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+    }
+    
+    .order-status i {
+        margin-right: 6px;
+    }
+    
+    .order-status.pending {
+        background-color: #fff3cd;
+        color: #856404;
+    }
+    
+    .order-status.processing {
+        background-color: #cce5ff;
+        color: #004085;
+    }
+    
+    .order-status.shipped {
+        background-color: #d4edda;
+        color: #155724;
+    }
+    
+    .order-status.delivered {
+        background-color: #d1ecf1;
+        color: #0c5460;
+    }
+    
+    .order-status.cancelled {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+    
+    .order-body {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .order-summary {
+        display: flex;
+        gap: 20px;
+    }
+    
+    .summary-item {
+        display: flex;
+        align-items: center;
+        font-size: 14px;
+        color: #495057;
+    }
+    
+    .summary-item i {
+        margin-right: 8px;
+        color: #adb5bd;
+    }
+    
+    .price {
+        font-weight: 700;
+        color: #dc3545;
+    }
+    
+    .original-price {
+        text-decoration: line-through;
+        color: #adb5bd;
+        margin-right: 8px;
+    }
+    
+    .refund-price {
+        color: #28a745;
+        font-weight: 700;
+    }
+    
+    .order-actions {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+    
+    .btn-details {
+        background: #f8f9fa;
+        color: #212529;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 600;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        transition: all 0.2s;
+    }
+    
+    .btn-details:hover {
+        background: #e9ecef;
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 10px;
+    }
+    
+    .btn-review, .btn-refund {
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 600;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        transition: all 0.2s;
+    }
+    
+    .btn-review {
+        background: #28a745;
+        color: white;
+    }
+    
+    .btn-review:hover {
+        background: #218838;
+    }
+    
+    .btn-refund {
+        background: #ffc107;
+        color: #212529;
+    }
+    
+    .btn-refund:hover {
+        background: #e0a800;
+    }
+    
+    .refund-notice {
+        margin-top: 16px;
+        padding: 12px;
+        background: #e8f5e9;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        font-size: 13px;
+        color: #2e7d32;
+    }
+    
+    .refund-notice i {
+        margin-right: 8px;
+        font-size: 16px;
+    }
+    
+    .empty-orders {
+        padding: 40px;
+        text-align: center;
+    }
+    
+    .empty-orders i {
+        font-size: 60px;
+        color: #dee2e6;
+        margin-bottom: 20px;
+    }
+    
+    .empty-orders h4 {
+        color: #343a40;
+        margin-bottom: 10px;
+    }
+    
+    .empty-orders p {
+        color: #6c757d;
+        margin-bottom: 20px;
+    }
+    
+    @@media (max-width: 768px) {
+        .order-header, .order-body {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        
+        .order-summary {
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+        
+        .order-actions {
+            width: 100%;
+            justify-content: space-between;
+        }
+        
+        .action-buttons {
+            margin-top: 10px;
+        }
+    }
+</style>

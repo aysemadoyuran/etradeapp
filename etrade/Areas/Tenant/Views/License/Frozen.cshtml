@@ -1,0 +1,94 @@
+<style>
+    #frozenLicensesTable {
+        width: 100%;
+        border-collapse: collapse;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        margin: 20px 0;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    
+    #frozenLicensesTable thead th {
+        background-color: #f8f9fa;
+        color: #495057;
+        padding: 12px 15px;
+        text-align: left;
+        font-weight: 600;
+        border-bottom: 2px solid #e9ecef;
+    }
+    
+    #frozenLicensesTable tbody td {
+        padding: 12px 15px;
+        border-bottom: 1px solid #e9ecef;
+        color: #212529;
+    }
+    
+    #frozenLicensesTable tbody tr:last-child td {
+        border-bottom: none;
+    }
+    
+    #frozenLicensesTable tbody tr:hover {
+        background-color: #f8f9fa;
+    }
+    
+    .table-striped tbody tr:nth-of-type(odd) {
+        background-color: rgba(0,0,0,.02);
+    }
+    
+    .table-striped tbody tr:hover {
+        background-color: rgba(0,0,0,.05);
+    }
+</style>
+
+<table id="frozenLicensesTable" class="table table-striped">
+    <thead>
+        <tr>
+            <th>Müşteri</th>
+            <th>Başlangıç</th>
+            <th>Bitiş</th>
+            <th>Dondurma Tarihi</th>
+            <th>Mağaza</th>
+            <th>Lisans Türü</th>
+        </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $.ajax({
+            url: '/Tenant/License/GetFrozenLicenses',
+            method: 'GET',
+            success: function (data) {
+                console.log(data);
+                data.forEach(function (license) {
+                    $('#frozenLicensesTable tbody').append(`
+                        <tr>
+                            <td>${license.customerName}</td>
+                            <td>${formatDate(license.startDate)}</td>
+                            <td>${formatDate(license.endDate)}</td>
+                            <td>${license.freezeDate ? formatDateTime(license.freezeDate) : '-'}</td>
+                            <td>${license.stores.map(s => s.storeName).join(', ')}</td>
+                            <td>${license.licenseType ?? '-'}</td>
+                        </tr>
+                    `);
+                });
+            },
+            error: function () {
+                alert("Dondurulmuş lisanslar yüklenirken bir hata oluştu.");
+            }
+        });
+
+        function formatDate(dateString) {
+            if (!dateString) return '-';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('tr-TR');
+        }
+        
+        function formatDateTime(dateString) {
+            if (!dateString) return '-';
+            const date = new Date(dateString);
+            return date.toLocaleString('tr-TR');
+        }
+    });
+</script>

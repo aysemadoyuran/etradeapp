@@ -1,0 +1,103 @@
+@{
+    ViewData["Title"] = "Canlı Destek";
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4>Canlı Destek</h4>
+                </div>
+                <div class="card-body">
+                    <div id="messageHistory" class="chat-history" style="height: 400px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; margin-bottom: 10px;"></div>
+                    <div class="input-group mt-3">
+                        <input type="text" id="messageInput" class="form-control" placeholder="Mesajınızı yazın...">
+                        <button id="sendButton" class="btn btn-primary">Gönder</button>
+                    </div>
+                </div>
+                <div class="card-footer text-muted">
+                    <div id="connectionStatus" class="text-center">Bağlanıyor...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
+    <script>
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/chatHub")
+            .configureLogging(signalR.LogLevel.Information)
+            .build();
+
+        connection.on("ReceiveMessageFromAdmin", (adminId, content, timestamp) => {
+            addMessageToChat(adminId, content, timestamp, true);
+        });
+
+        connection.onclose(() => {
+            updateConnectionStatus("Bağlantı kesildi. Yeniden bağlanılıyor...");
+            setTimeout(startConnection, 5000);
+        });
+
+        function addMessageToChat(userId, content, timestamp, isAdminMessage) {
+            const messageElement = document.createElement("div");
+            messageElement.className = `message ${isAdminMessage ? 'admin-message' : 'user-message'}`;
+            
+            const time = new Date(timestamp).toLocaleTimeString();
+            messageElement.innerHTML = `<strong>${isAdminMessage ? 'Destek' : 'Siz'}</strong> (${time}): ${content}`;
+            
+            document.getElementById("messageHistory").appendChild(messageElement);
+            messageElement.scrollIntoView();
+        }
+
+        function updateConnectionStatus(status) {
+            document.getElementById("connectionStatus").textContent = status;
+        }
+
+        document.getElementById("sendButton").addEventListener("click", async () => {
+            const messageInput = document.getElementById("messageInput");
+            const message = messageInput.value.trim();
+            
+            if (message) {
+                const tenant = "@User.FindFirst("Tenant")?.Value"; // Tenant bilgisini al
+                await connection.invoke("SendMessageToAdmin", message, tenant);
+                addMessageToChat("me", message, new Date(), false);
+                messageInput.value = "";
+            }
+        });
+
+        document.getElementById("messageInput").addEventListener("keypress", async (e) => {
+            if (e.key === "Enter") {
+                document.getElementById("sendButton").click();
+            }
+        });
+
+        async function startConnection() {
+            try {
+                updateConnectionStatus("Bağlanıyor...");
+                await connection.start();
+                
+                const userId = "@User.Identity.Name"; // Kullanıcı ID'si
+                const tenant = "@User.FindFirst("Tenant")?.Value"; // Tenant bilgisi
+                
+                await connection.invoke("RegisterUser", userId, tenant);
+                updateConnectionStatus("Çevrimiçi");
+                
+                // Önceki mesajları yükle
+                const messages = await connection.invoke("GetMessageHistory", "admin");
+                messages.forEach(msg => {
+                    const isAdminMessage = msg.fromUserId !== userId;
+                    addMessageToChat(msg.fromUserId, msg.content, msg.timestamp, isAdminMessage, false);
+                });
+            } catch (err) {
+                console.log(err);
+                updateConnectionStatus("Bağlantı hatası. Yeniden deniyor...");
+                setTimeout(startConnection, 5000);
+            }
+        }
+
+        startConnection();
+    </script>
+}

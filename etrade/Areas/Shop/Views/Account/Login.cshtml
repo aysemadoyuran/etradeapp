@@ -1,0 +1,43 @@
+@model LoginViewModel
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+}
+<section class="flat-spacing">
+    <div class="container">
+        <div class="login-wrap">
+            <div class="left">
+                <div class="heading">
+                    <h4>Giriş Yap</h4>
+                </div>
+                <form asp-area="Shop" asp-controller="Account" asp-action="Login" method="post" class="form-login form-has-password">
+                    <div class="wrap">
+                        <fieldset>
+                            <input class="" type="email" placeholder="Mail Adresi" name="Email" tabindex="2" value="" aria-required="true" required="">
+                        </fieldset>
+                        <fieldset class="position-relative password-item">
+                            <input class="input-password" type="password" placeholder="Şifre" name="Password" tabindex="2" aria-required="true" required="">
+                            <span class="toggle-password unshow">
+                                <i class="icon-eye-hide-line"></i>
+                            </span>
+                        </fieldset>
+                        <div class="d-flex align-items-center mt-2">
+                            <input asp-for="RememberMe" class="form-check-input">
+                            <label asp-for="RememberMe" class="ms-2"></label>
+                        </div>
+                    </div>
+                    <div class="button-submit">
+                        <button class="tf-btn btn-fill" type="submit">
+                            <span class="text text-button">Giriş Yap</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+            <div class="right">
+                <h4 class="mb_8">Yeni Kullanıcı</h4>
+                <p class="text-secondary">Büyüyen müşteri ailemizin bir parçası olun! Bugün bize katılın ve özel avantajlar, fırsatlar ve kişiselleştirilmiş deneyimlerle dolu bir dünyanın kapılarını aralayın.</p>
+                <a asp-action="Register" asp-controller="Account" class="tf-btn btn-fill"><span class="text text-button">Kayıt Ol</span></a>
+            </div>
+        </div>
+    </div>
+</section>

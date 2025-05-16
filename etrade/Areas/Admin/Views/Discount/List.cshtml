@@ -1,0 +1,714 @@
+<div class="discount-management-container">
+    <!-- Başlık ve Filtreleme Alanı -->
+    <div class="dashboard-header">
+        <h2 class="page-title">
+            <i class="bi bi-percent"></i> İndirim Yönetimi
+            <span class="badge bg-primary" id="discountCount">0</span>
+        </h2>
+
+        <div class="control-panel">
+            <!-- Filtreleme Butonları -->
+            <div class="filter-tabs">
+                <button class="filter-btn active" data-filter="all">
+                    <i class="bi bi-grid"></i> Tümü
+                </button>
+                <button class="filter-btn" data-filter="active">
+                    <i class="bi bi-lightning-charge"></i> Aktif
+                </button>
+                <button class="filter-btn" data-filter="pending">
+                    <i class="bi bi-clock"></i> Bekleyen
+                </button>
+                <button class="filter-btn" data-filter="expired">
+                    <i class="bi bi-archive"></i> Tamamlanan
+                </button>
+            </div>
+
+            <!-- İşlem Butonları -->
+            <div class="action-buttons">
+                @if (User.IsInRole("admin"))
+                {
+                    <a href="/Admin/Discount/Index" class="action-btn primary">
+                        <i class="bi bi-plus-lg"></i> Yeni İndirim
+                    </a>
+                }
+                <a href="/Admin/Discount/DiscountProduct" class="action-btn secondary">
+                    <i class="bi bi-tag"></i> İndirimli Ürünler
+                </a>
+                <a href="/Admin/Discount/Calendar" class="action-btn tertiary">
+                    <i class="bi bi-calendar-week"></i> Takvim Görünümü
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- İndirim Listesi -->
+    <div class="discount-card-container">
+        <div class="table-container">
+            <table class="modern-table">
+                <thead>
+                    <tr>
+                        <th class="min-width">ID</th>
+                        <th>İndirim Adı</th>
+                        <th>Tür</th>
+                        <th>Değer</th>
+                        <th>Koşul</th>
+                        <th>Başlangıç</th>
+                        <th>Bitiş</th>
+                        <th class="status-col">Durum</th>
+                        <th class="action-col">İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody id="discountTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Boş Durum Göstergesi -->
+    <div class="empty-state" id="emptyState" style="display: none;">
+        <i class="bi bi-percent"></i>
+        <h3>Gösterilecek İndirim Bulunamadı</h3>
+        <p>Yeni bir indirim oluşturmak için "Yeni İndirim" butonuna tıklayın</p>
+        <a href="/Admin/Discount/Index" class="action-btn primary">
+            <i class="bi bi-plus-lg"></i> İndirim Oluştur
+        </a>
+    </div>
+</div>
+
+<!-- JavaScript -->
+<script>
+    const discountTypeMap = {
+        0: '<span class="badge bg-blue">Yüzdesel</span>',
+        1: '<span class="badge bg-purple">Sabit</span>'
+    };
+
+    const conditionTypeMap = {
+        0: '<span class="badge bg-green">Ürün Bazlı</span>',
+        1: '<span class="badge bg-orange">Kategori Bazlı</span>'
+    };
+
+    let allDiscounts = [];
+    let isAdmin = false;
+
+    async function checkUserRole() {
+        try {
+            const response = await fetch('/Admin/Discount/GetUserRole');
+            const data = await response.json();
+            isAdmin = data.isAdmin;
+            await fetchDiscounts();
+        } catch (error) {
+            console.error('Rol bilgisi alınamadı:', error);
+            isAdmin = false;
+            await fetchDiscounts();
+        }
+    }
+
+    async function fetchDiscounts() {
+        try {
+            const response = await fetch('/Admin/Discount/GetDiscounts');
+            allDiscounts = await response.json();
+            updateDiscountCount(allDiscounts.length);
+            renderDiscounts(allDiscounts);
+        } catch (error) {
+            console.error('İndirimler alınamadı:', error);
+            showEmptyState();
+        }
+    }
+
+    function updateDiscountCount(count) {
+        document.getElementById('discountCount').textContent = count;
+    }
+
+    function renderDiscounts(discounts) {
+        const tableBody = document.getElementById('discountTableBody');
+        const emptyState = document.getElementById('emptyState');
+
+        if (discounts.length === 0) {
+            tableBody.innerHTML = '';
+            showEmptyState();
+            return;
+        }
+
+        emptyState.style.display = 'none';
+        tableBody.innerHTML = '';
+
+        discounts.forEach(discount => {
+            const currentDate = new Date();
+            const startDate = new Date(discount.startDateTime);
+            const endDate = new Date(discount.endDateTime);
+
+            let statusBadge = '';
+            let rowClass = '';
+            let showEditButton = true;
+
+            if (currentDate < startDate) {
+                statusBadge = '<span class="badge bg-warning"><i class="bi bi-clock"></i> Bekliyor</span>';
+                rowClass = 'pending';
+            } else if (currentDate >= startDate && currentDate <= endDate) {
+                statusBadge = '<span class="badge bg-success"><i class="bi bi-lightning"></i> Aktif</span>';
+                rowClass = 'active';
+                showEditButton = false;
+
+            } else if (currentDate > endDate) {
+                statusBadge = '<span class="badge bg-secondary"><i class="bi bi-check-circle"></i> Tamamlandı</span>';
+                rowClass = 'expired';
+                showEditButton = false;
+            }
+
+            const actionButtons = isAdmin
+                ? `<div class="action-btns">
+                    ${showEditButton ?
+                    `<button class="icon-btn edit-btn" onclick="editDiscount(${discount.id})" title="Düzenle">
+                        <i class="bi bi-pencil"></i>
+                       </button>` : ''}
+                    <button class="icon-btn delete-btn" onclick="deleteDiscount(${discount.id})" title="Sil">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                   </div>`
+                : '<div class="action-btns disabled">Yetki Yok</div>';
+
+            const row = `<tr class="${rowClass}">
+                <td class="min-width">#${discount.id}</td>
+                <td class="discount-name">
+                    <strong>${discount.name}</strong>
+                </td>
+                <td>${discountTypeMap[discount.discountType] || "Bilinmiyor"}</td>
+                <td class="discount-value">
+                    ${discount.discountType === 0 ?
+                    `<span class="value-badge">${discount.value}%</span>` :
+                    `<span class="value-badge">₺${discount.value}</span>`}
+                </td>
+                <td>${conditionTypeMap[discount.conditionType] || "Bilinmiyor"}</td>
+                <td class="date-cell">${formatDateTime(discount.startDateTime)}</td>
+                <td class="date-cell">${formatDateTime(discount.endDateTime)}</td>
+                <td class="status-cell">${statusBadge}</td>
+                <td class="action-cell">${actionButtons}</td>
+            </tr>`;
+            tableBody.innerHTML += row;
+        });
+    }
+
+    function formatDateTime(dateString) {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('tr-TR', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    }
+
+    function showEmptyState() {
+        const tableBody = document.getElementById('discountTableBody');
+        const emptyState = document.getElementById('emptyState');
+
+        tableBody.innerHTML = '';
+        emptyState.style.display = 'flex';
+        updateDiscountCount(0);
+    }
+
+    function filterDiscounts(filter) {
+        const filterButtons = document.querySelectorAll('.filter-btn');
+        filterButtons.forEach(btn => btn.classList.remove('active'));
+        event.target.classList.add('active');
+
+        let filteredDiscounts = allDiscounts;
+        const currentDate = new Date();
+
+        if (filter === "active") {
+            filteredDiscounts = allDiscounts.filter(d => {
+                const start = new Date(d.startDateTime);
+                const end = new Date(d.endDateTime);
+                return currentDate >= start && currentDate <= end;
+            });
+        } else if (filter === "pending") {
+            filteredDiscounts = allDiscounts.filter(d => new Date(d.startDateTime) > currentDate);
+        } else if (filter === "expired") {
+            filteredDiscounts = allDiscounts.filter(d => new Date(d.endDateTime) < currentDate);
+        }
+
+        updateDiscountCount(filteredDiscounts.length);
+        renderDiscounts(filteredDiscounts);
+    }
+
+    async function deleteDiscount(id) {
+        // SweetAlert ile onay penceresi
+        const result = await Swal.fire({
+            title: 'İndirim Silinsin mi?',
+            text: "Bu işlem geri alınamaz!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Evet, sil',
+            cancelButtonText: 'Hayır, iptal et'
+        });
+
+        if (result.isConfirmed) {
+            try {
+                const response = await fetch(`/Admin/Discount/DeleteDiscount/${id}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    Swal.fire(
+                        'Silindi!',
+                        'İndirim başarıyla silindi.',
+                        'success'
+                    );
+                    fetchDiscounts();
+                } else {
+                    throw new Error('Silme işlemi başarısız');
+                }
+            } catch (error) {
+                Swal.fire(
+                    'Hata!',
+                    'Silme işlemi sırasında bir hata oluştu.',
+                    'error'
+                );
+                console.error('Silme hatası:', error);
+            }
+        }
+    }
+
+    function editDiscount(id) {
+        window.location.href = `/Admin/Discount/Edit/${id}`;
+    }
+
+    // Filtreleme butonlarına event listener ekleme
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', function () {
+            filterDiscounts(this.dataset.filter);
+        });
+    });
+
+    // Sayfa yüklendiğinde çalışacaklar
+    document.addEventListener("DOMContentLoaded", function () {
+        checkUserRole();
+    });
+</script>
+
+<!-- Stil -->
+<style>
+    :root {
+        --primary-color: #4361ee;
+        --secondary-color: #3a0ca3;
+        --success-color: #4cc9f0;
+        --warning-color: #f8961e;
+        --danger-color: #f72585;
+        --light-color: #f8f9fa;
+        --dark-color: #212529;
+        --border-radius: 8px;
+        --box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        --transition: all 0.3s ease;
+    }
+
+    .discount-management-container {
+        color: #333;
+        max-width: 100%;
+        padding: 20px;
+    }
+
+    .dashboard-header {
+        margin-bottom: 30px;
+    }
+
+    .page-title {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: var(--dark-color);
+        font-weight: 600;
+        margin-bottom: 20px;
+    }
+
+    .page-title .badge {
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+
+    .control-panel {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        gap: 20px;
+        margin-bottom: 20px;
+    }
+
+    .filter-tabs {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .filter-btn {
+        padding: 8px 16px;
+        border: none;
+        border-radius: var(--border-radius);
+        background-color: #f0f0f0;
+        color: #555;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        cursor: pointer;
+        transition: var(--transition);
+    }
+
+    .filter-btn:hover {
+        background-color: #e0e0e0;
+    }
+
+    .filter-btn.active {
+        background-color: var(--primary-color);
+        color: white;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .action-btn {
+        padding: 8px 16px;
+        border-radius: var(--border-radius);
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        text-decoration: none;
+        transition: var(--transition);
+    }
+
+    .action-btn.primary {
+        background-color: var(--primary-color);
+        color: white;
+        border: 1px solid var(--primary-color);
+    }
+
+    .action-btn.primary:hover {
+        background-color: #3a56d4;
+        transform: translateY(-2px);
+    }
+
+    .action-btn.secondary {
+        background-color: white;
+        color: var(--primary-color);
+        border: 1px solid var(--primary-color);
+    }
+
+    .action-btn.secondary:hover {
+        background-color: #f0f5ff;
+    }
+
+    .action-btn.tertiary {
+        background-color: white;
+        color: var(--dark-color);
+        border: 1px solid #ddd;
+    }
+
+    .action-btn.tertiary:hover {
+        background-color: #f8f9fa;
+    }
+
+    .discount-card-container {
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--box-shadow);
+        overflow: hidden;
+    }
+
+    .table-container {
+        overflow-x: auto;
+    }
+
+    .modern-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .modern-table thead {
+        background-color: #f8f9fa;
+    }
+
+    .modern-table th {
+        padding: 16px;
+        text-align: left;
+        font-weight: 600;
+        color: #555;
+        border-bottom: 2px solid #eee;
+    }
+
+    .modern-table td {
+        padding: 14px 16px;
+        border-bottom: 1px solid #f0f0f0;
+        vertical-align: middle;
+    }
+
+    .modern-table tr:last-child td {
+        border-bottom: none;
+    }
+
+    .modern-table tr:hover {
+        background-color: #f9f9f9;
+    }
+
+    /* Durum renkleri */
+    .modern-table tr.active {
+        border-left: 3px solid var(--success-color);
+    }
+
+    .modern-table tr.pending {
+        border-left: 3px solid var(--warning-color);
+    }
+
+    .modern-table tr.expired {
+        border-left: 3px solid #ddd;
+    }
+
+    /* Badge stilleri */
+    .badge {
+        display: inline-block;
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 500;
+    }
+
+    .bg-primary {
+        background-color: var(--primary-color);
+        color: white;
+    }
+
+    .bg-success {
+        background-color: var(--success-color);
+        color: white;
+    }
+
+    .bg-warning {
+        background-color: var(--warning-color);
+        color: white;
+    }
+
+    .bg-danger {
+        background-color: var(--danger-color);
+        color: white;
+    }
+
+    .bg-secondary {
+        background-color: #6c757d;
+        color: white;
+    }
+
+    .bg-dark {
+        background-color: var(--dark-color);
+        color: white;
+    }
+
+    .bg-blue {
+        background-color: #4895ef;
+        color: white;
+    }
+
+    .bg-purple {
+        background-color: #7209b7;
+        color: white;
+    }
+
+    .bg-green {
+        background-color: #4cc9f0;
+        color: white;
+    }
+
+    .bg-orange {
+        background-color: #f8961e;
+        color: white;
+    }
+
+    .discount-name {
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .value-badge {
+        font-weight: 600;
+        color: var(--primary-color);
+    }
+
+    .date-cell {
+        white-space: nowrap;
+        color: #666;
+        font-size: 0.9rem;
+    }
+
+    .status-cell {
+        white-space: nowrap;
+    }
+
+    .action-cell {
+        white-space: nowrap;
+    }
+
+    .action-btns {
+        display: flex;
+        gap: 8px;
+    }
+
+    .icon-btn {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        border: none;
+        background-color: transparent;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: var(--transition);
+    }
+
+    .icon-btn:hover {
+        transform: scale(1.1);
+    }
+
+    .edit-btn {
+        color: var(--primary-color);
+    }
+
+    .edit-btn:hover {
+        background-color: rgba(67, 97, 238, 0.1);
+    }
+
+    .delete-btn {
+        color: var(--danger-color);
+    }
+
+    .delete-btn:hover {
+        background-color: rgba(247, 37, 133, 0.1);
+    }
+
+    .disabled {
+        color: #999;
+        cursor: not-allowed;
+    }
+
+    .min-width {
+        width: 1px;
+        white-space: nowrap;
+    }
+
+    .empty-state {
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 20px;
+        text-align: center;
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--box-shadow);
+        margin-top: 20px;
+    }
+
+    .empty-state i {
+        font-size: 48px;
+        color: #ccc;
+        margin-bottom: 20px;
+    }
+
+    .empty-state h3 {
+        color: #555;
+        margin-bottom: 10px;
+    }
+
+    .empty-state p {
+        color: #777;
+        margin-bottom: 20px;
+        max-width: 400px;
+    }
+
+    /* Responsive tasarım */
+    @@media (max-width: 992px) {
+        .control-panel {
+            flex-direction: column;
+        }
+
+        .filter-tabs,
+        .action-buttons {
+            width: 100%;
+        }
+
+        .filter-tabs {
+            overflow-x: auto;
+            padding-bottom: 10px;
+        }
+    }
+
+    @@media (max-width: 768px) {
+        .modern-table {
+            display: block;
+        }
+
+        .modern-table thead {
+            display: none;
+        }
+
+        .modern-table tr {
+            display: block;
+            margin-bottom: 15px;
+            border: 1px solid #eee;
+            border-radius: var(--border-radius);
+            padding: 10px;
+        }
+
+        .modern-table td {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 10px;
+            border-bottom: 1px solid #f5f5f5;
+        }
+
+        .modern-table td::before {
+            content: attr(data-label);
+            font-weight: 600;
+            color: #555;
+            margin-right: 15px;
+        }
+
+        .action-btns {
+            justify-content: flex-end;
+        }
+    }
+
+    /* Animasyonlar */
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .modern-table tbody tr {
+        animation: fadeIn 0.3s ease forwards;
+    }
+
+    .modern-table tbody tr:nth-child(odd) {
+        animation-delay: 0.05s;
+    }
+
+    .modern-table tbody tr:nth-child(even) {
+        animation-delay: 0.1s;
+    }
+</style>
+
+<!-- Bootstrap Icons -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">

@@ -1,0 +1,736 @@
+@model List<etrade.Entity.ProductVariant>
+
+@{
+    ViewData["Title"] = "Stok Yönetim Paneli";
+}
+
+<style>
+    :root {
+        --primary: #5e72e4;
+        --primary-light: rgba(94, 114, 228, 0.1);
+        --secondary: #f7fafc;
+        --success: #2dce89;
+        --success-light: rgba(45, 206, 137, 0.1);
+        --warning: #fb6340;
+        --warning-light: rgba(251, 99, 64, 0.1);
+        --info: #11cdef;
+        --info-light: rgba(17, 205, 239, 0.1);
+        --dark: #212529;
+        --light: #f8f9fa;
+        --border-radius: 16px;
+        --box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+        --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    }
+
+    body {
+        color: #3a3f51;
+    }
+
+    .dashboard-header {
+        margin-bottom: 2.5rem;
+        padding-top: 1rem;
+    }
+
+    .dashboard-title {
+        font-weight: 800;
+        color: var(--dark);
+        margin-bottom: 0.25rem;
+        font-size: 2rem;
+    }
+
+    .dashboard-subtitle {
+        color: #6c757d;
+        font-size: 1.05rem;
+        font-weight: 400;
+    }
+
+    /* Metrik Kartlar */
+    .metric-card {
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--box-shadow);
+        padding: 1.75rem;
+        height: 100%;
+        transition: var(--transition);
+        border: none;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .metric-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+    }
+
+    .metric-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 4px;
+        height: 100%;
+    }
+
+    .metric-card.primary::before {
+        background-color: var(--primary);
+    }
+
+    .metric-card.success::before {
+        background-color: var(--success);
+    }
+
+    .metric-card.info::before {
+        background-color: var(--info);
+    }
+
+    .metric-icon {
+        width: 64px;
+        height: 64px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.75rem;
+        margin-left: auto;
+        transition: var(--transition);
+    }
+
+    .metric-card:hover .metric-icon {
+        transform: scale(1.1);
+    }
+
+    .metric-value {
+        font-size: 1.5rem;
+        font-weight: 800;
+        margin-bottom: 0.5rem;
+        color: var(--dark);
+        line-height: 1.2;
+    }
+
+    .metric-label {
+        font-size: 0.95rem;
+        color: #6c757d;
+        margin-bottom: 1rem;
+        font-weight: 500;
+    }
+
+    .metric-change {
+        font-size: 0.9rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        padding: 0.5rem 0.75rem;
+        border-radius: 8px;
+        width: fit-content;
+    }
+
+    .positive-change {
+        background-color: var(--success-light);
+        color: var(--success);
+    }
+
+    .negative-change {
+        background-color: var(--warning-light);
+        color: var(--warning);
+    }
+
+    /* Grafik Kartları */
+    .chart-card {
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--box-shadow);
+        padding: 1.75rem;
+        margin-bottom: 1.5rem;
+        height: 100%;
+        transition: var(--transition);
+    }
+
+    .chart-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+    }
+
+    .chart-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.75rem;
+    }
+
+    .chart-title {
+        font-weight: 700;
+        color: var(--dark);
+        margin-bottom: 0;
+        font-size: 1.25rem;
+    }
+
+    /* Tablo Stilleri */
+    .data-table-container {
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--box-shadow);
+        padding: 1.75rem;
+        margin-top: 1.5rem;
+        transition: var(--transition);
+    }
+
+    .data-table-container:hover {
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+    }
+
+    .table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .table thead th {
+        background-color: var(--primary);
+        color: white;
+        font-weight: 600;
+        padding: 1.25rem;
+        border: none;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.5px;
+        position: sticky;
+        top: 0;
+    }
+
+    .table thead th:first-child {
+        border-top-left-radius: var(--border-radius);
+    }
+
+    .table thead th:last-child {
+        border-top-right-radius: var(--border-radius);
+    }
+
+    .table tbody tr td {
+        padding: 1.25rem;
+        border-bottom: 1px solid #f1f3f9;
+        vertical-align: middle;
+        transition: var(--transition);
+    }
+
+    .table tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    .table tbody tr:hover td {
+        background-color: var(--primary-light);
+    }
+
+    /* Badge Stilleri */
+    .badge {
+        padding: 0.5rem 0.75rem;
+        font-weight: 600;
+        font-size: 0.75rem;
+        border-radius: 8px;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .badge i {
+        font-size: 0.65rem;
+    }
+
+    .badge-success {
+        background-color: var(--success-light);
+        color: var(--success);
+    }
+
+    .badge-danger {
+        background-color: var(--warning-light);
+        color: var(--warning);
+    }
+
+    .badge-warning {
+        background-color: rgba(255, 193, 7, 0.1);
+        color: #ffc107;
+    }
+
+    .badge-primary {
+        background-color: var(--primary-light);
+        color: var(--primary);
+    }
+
+    .badge-info {
+        background-color: var(--info-light);
+        color: var(--info);
+    }
+
+    /* Filtre Stilleri */
+    .filter-container {
+        margin-bottom: 1.75rem;
+    }
+
+    .filter-select {
+        border-radius: var(--border-radius);
+        border: 1px solid #e9ecef;
+        padding: 0.875rem 1.5rem;
+        font-size: 0.95rem;
+        width: 100%;
+        max-width: 280px;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%236c757d' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 1.25rem center;
+        background-size: 14px;
+        transition: var(--transition);
+        font-weight: 500;
+    }
+
+    .filter-select:hover {
+        border-color: var(--primary);
+    }
+
+    .filter-select:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(94, 114, 228, 0.25);
+    }
+
+    /* Responsive Ayarlar */
+    @@media (max-width: 992px) {
+        .metric-value {
+            font-size: 1.75rem;
+        }
+        
+        .metric-icon {
+            width: 56px;
+            height: 56px;
+            font-size: 1.5rem;
+        }
+    }
+
+    @@media (max-width: 768px) {
+        .dashboard-title {
+            font-size: 1.75rem;
+        }
+        
+        .metric-card {
+            margin-bottom: 1.5rem;
+            padding: 1.5rem;
+        }
+        
+        .filter-select {
+            max-width: 100%;
+        }
+        
+        .table thead th, 
+        .table tbody tr td {
+            padding: 1rem;
+        }
+    }
+
+    /* Animasyonlar */
+    @@keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .fade-in {
+        animation: fadeIn 0.5s ease-out forwards;
+    }
+
+    .delay-1 { animation-delay: 0.1s; }
+    .delay-2 { animation-delay: 0.2s; }
+    .delay-3 { animation-delay: 0.3s; }
+</style>
+
+<div class="container-fluid py-4">
+
+    <!-- Metrik Kartlar -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-4 fade-in delay-1">
+            <div class="metric-card primary">
+                <div class="d-flex flex-column">
+                    <div class="metric-label">En Çok Satılan Ürün</div>
+                    <div class="metric-value" id="topSellingProduct">---</div>
+                    <div class="metric-change positive-change" id="soldCount">
+                        <i class="fas fa-arrow-up me-1"></i> <span>---</span> &nbsp; adet satış
+                    </div>
+                </div>
+                <div class="metric-icon bg-primary-light text-primary">
+                    <i class="fas fa-trophy"></i>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 fade-in delay-2">
+            <div class="metric-card success">
+                <div class="d-flex flex-column">
+                    <div class="metric-label">Bugünkü Satışlar</div>
+                    <div class="metric-value" id="dailySalesCount">0 Adet</div>
+                    <div class="metric-change positive-change" id="dailyRevenue">
+                        <i class="fas fa-arrow-up me-1"></i> <span>0.00₺</span> 
+                    </div>
+                </div>
+                <div class="metric-icon bg-success-light text-success">
+                    <i class="fas fa-chart-bar"></i>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 fade-in delay-3">
+            <div class="metric-card info">
+                <div class="d-flex flex-column">
+                    <div class="metric-label">Toplam Ciro</div>
+                    <div class="metric-value" id="total-revenue">0.00₺</div>
+                    <div class="metric-change positive-change" id="total-sold-quantity">
+                        <i class="fas fa-arrow-up me-1"></i> <span>0</span> &nbsp;adet ürün
+                    </div>
+                </div>
+                <div class="metric-icon bg-info-light text-info">
+                    <i class="fas fa-wallet"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Grafikler -->
+    <div class="row g-4">
+        <div class="col-lg-6 fade-in delay-1">
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h5 class="chart-title">Kritik Stok Seviyeleri</h5>
+                    <div class="badge badge-warning">
+                        <i class="fas fa-exclamation-circle"></i> Düşük Stok
+                    </div>
+                </div>
+                <div id="stokChart" style="height: 380px;"></div>
+            </div>
+        </div>
+        
+        <div class="col-lg-6 fade-in delay-2">
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h5 class="chart-title">Kategorilere Göre Stok Dağılımı</h5>
+                    <div class="badge badge-primary">
+                        <i class="fas fa-tags"></i> Kategoriler
+                    </div>
+                </div>
+                <div id="sales-category-chart" style="height: 380px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stok Hareketleri Tablosu -->
+    <div class="data-table-container fade-in delay-3">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h5 class="chart-title mb-1">Stok Hareket Kayıtları</h5>
+                <p class="text-muted mb-0">Son stok giriş/çıkış hareketleriniz</p>
+            </div>
+            <select id="dateFilter" class="filter-select">
+                <option value="today">Bugün</option>
+                <option value="last7Days">Son 7 Gün</option>
+                <option value="last30Days">Son 30 Gün</option>
+                <option value="last90Days">Son 90 Gün</option>
+            </select>
+        </div>
+        
+        <div id="stockMovementsContainer">
+            <div class="text-center py-5">
+                <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+                    <span class="visually-hidden">Yükleniyor...</span>
+                </div>
+                <p class="mt-3 text-muted">Stok hareketleri yükleniyor...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript Kütüphaneleri -->
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    $(document).ready(function () {
+        // Sayfa yüklendiğinde tüm verileri çek
+        fetchAllData();
+        
+        // Tüm verileri çeken fonksiyon
+        function fetchAllData() {
+            // Toplam satış ve ciro verilerini çek
+            $.ajax({
+                url: '/Admin/Stock/GetTotalSalesAndRevenue',
+                type: 'GET',
+                data: { period: 'all' },
+                success: function (response) {
+                    $('#total-revenue').text(response.totalRevenue.toFixed(2) + '₺');
+                    $('#total-sold-quantity span').text(response.totalSoldQuantity);
+                },
+                error: function(xhr, status, error) {
+                    console.error("Toplam satış verileri alınamadı:", error);
+                }
+            });
+
+            // Günlük satış verilerini çek
+            $.ajax({
+                url: '/Admin/Stock/GetDailySalesData',
+                success: function(data) {
+                    $('#dailySalesCount').text(data.dailySalesCount + ' Adet');
+                    $('#dailyRevenue span').text(data.dailyRevenue.toFixed(2) + '₺');
+                    
+                    // Günlük değişim yüzdesini hesapla ve göster
+                    if(data.dailyChangePercentage !== undefined) {
+                        const changeElement = $('#dailyRevenue i');
+                        if(data.dailyChangePercentage >= 0) {
+                            changeElement.removeClass('fa-arrow-down').addClass('fa-arrow-up');
+                            $('#dailyRevenue').removeClass('negative-change').addClass('positive-change');
+                        } else {
+                            changeElement.removeClass('fa-arrow-up').addClass('fa-arrow-down');
+                            $('#dailyRevenue').removeClass('positive-change').addClass('negative-change');
+                        }
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error("Günlük satış verileri alınamadı:", error);
+                }
+            });
+
+            // En çok satılan ürünü çek
+            $.ajax({
+                url: '/Admin/Stock/GetTopSellingProduct',
+                success: function(data) {
+                    $('#topSellingProduct').text(data.productName);
+                    $('#soldCount span').text(data.soldCount);
+                    
+                    // Ürün varyant bilgisi varsa göster
+                    if(data.size || data.color) {
+                        const variantInfo = [data.size, data.color].filter(Boolean).join(' / ');
+                        $('#topSellingProduct').append(`<small class="d-block text-muted fs-14">${variantInfo}</small>`);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error("En çok satılan ürün verisi alınamadı:", error);
+                }
+            });
+
+            // Kritik Stok Grafiği
+            $.ajax({
+                url: '@Url.Action("GetCriticalStockReport", "Stock")',
+                success: function (data) {
+                    if(data && data.length > 0) {
+                        new ApexCharts(document.querySelector("#stokChart"), {
+                            chart: { 
+                                type: 'bar', 
+                                height: 380,
+                                toolbar: { show: true }
+                            },
+                            series: [{ 
+                                name: 'Kritik Stok', 
+                                data: data.map(item => item.criticalStock) 
+                            }],
+                            xaxis: { 
+                                categories: data.map(item => item.productName),
+                                labels: { style: { colors: '#6c757d', fontSize: '12px' } }
+                            },
+                            yaxis: {
+                                labels: { style: { colors: '#6c757d' } },
+                                title: { text: 'Adet', style: { color: '#6c757d' } }
+                            },
+                            colors: ['#fb6340'],
+                            plotOptions: { 
+                                bar: { 
+                                    borderRadius: 8,
+                                    columnWidth: '60%',
+                                } 
+                            },
+                            dataLabels: { enabled: false },
+                            tooltip: { 
+                                y: { 
+                                    formatter: function(val) { return val + " adet (Kritik seviye)" } 
+                                } 
+                            },
+                            grid: { borderColor: '#f1f3f9' }
+                        }).render();
+                    } else {
+                        $('#stokChart').html('<div class="text-center py-5 text-muted">Kritik stok seviyesinde ürün bulunamadı</div>');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error("Kritik stok verileri alınamadı:", error);
+                    $('#stokChart').html('<div class="text-center py-5 text-danger">Veriler yüklenirken bir hata oluştu</div>');
+                }
+            });
+
+            // Kategori Stok Grafiği
+            $.ajax({
+                url: '@Url.Action("GetStockByCategory", "Stock")',
+                success: function (data) {
+                    if(data && data.length > 0) {
+                        new ApexCharts(document.querySelector("#sales-category-chart"), {
+                            chart: { 
+                                type: 'donut', 
+                                height: 380,
+                                toolbar: { show: true }
+                            },
+                            series: data.map(item => item.totalStock),
+                            labels: data.map(item => item.categoryName),
+                            colors: ['#5e72e4', '#2dce89', '#fb6340', '#11cdef', '#f5365c', '#ffc107'],
+                            legend: { 
+                                position: 'bottom',
+                                labels: { colors: '#6c757d' }
+                            },
+                            plotOptions: { 
+                                pie: { 
+                                    donut: { 
+                                        size: '55%',
+                                        labels: {
+                                            show: true,
+                                            total: {
+                                                show: true,
+                                                label: 'Toplam Stok',
+                                                color: '#6c757d',
+                                                formatter: function(w) {
+                                                    return w.globals.seriesTotals.reduce((a, b) => a + b, 0)
+                                                }
+                                            }
+                                        }
+                                    } 
+                                } 
+                            },
+                            tooltip: {
+                                y: {
+                                    formatter: function(val) { return val + " adet" }
+                                }
+                            },
+                            responsive: [{
+                                breakpoint: 480,
+                                options: {
+                                    chart: { height: 320 },
+                                    legend: { position: 'bottom' }
+                                }
+                            }]
+                        }).render();
+                    } else {
+                        $('#sales-category-chart').html('<div class="text-center py-5 text-muted">Kategori stok verisi bulunamadı</div>');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error("Kategori stok verileri alınamadı:", error);
+                    $('#sales-category-chart').html('<div class="text-center py-5 text-danger">Veriler yüklenirken bir hata oluştu</div>');
+                }
+            });
+
+            // İlk stok hareketlerini yükle
+            loadStockMovements('today');
+        }
+
+        // Stok Hareketleri Tablosu
+        function loadStockMovements(filter) {
+            $('#stockMovementsContainer').html(`
+                <div class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Yükleniyor...</span>
+                    </div>
+                    <p class="mt-3 text-muted">Stok hareketleri yükleniyor...</p>
+                </div>
+            `);
+            
+            $.ajax({
+                url: '@Url.Action("GetStockMovements", "Stock")',
+                data: { filter: filter },
+                success: function (data) {
+                    if(data && data.length > 0) {
+                        let tableHtml = `
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>Ürün</th>
+                                            <th>Tarih</th>
+                                            <th>Miktar</th>
+                                            <th>Tür</th>
+                                            <th>Açıklama</th>
+                                            <th>Güncel Stok</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>`;
+                        
+                        data.forEach(item => {
+                            let badgeClass = '';
+                            let icon = '';
+                            
+                            // Hareket türüne göre stil belirle
+                            if (item.description.includes("Satış")) {
+                                badgeClass = 'badge-danger';
+                                icon = '<i class="fas fa-arrow-down"></i>';
+                            } else if (item.description.includes("Alış")) {
+                                badgeClass = 'badge-success';
+                                icon = '<i class="fas fa-arrow-up"></i>';
+                            } else if (item.description.includes("İade")) {
+                                badgeClass = 'badge-primary';
+                                icon = '<i class="fas fa-undo"></i>';
+                            } else if (item.description.includes("Güncelleme")) {
+                                badgeClass = 'badge-warning';
+                                icon = '<i class="fas fa-sync-alt"></i>';
+                            }
+                            else if (item.description.includes("Sipariş yönetici tarafından iptal edildi")) {
+                                badgeClass = 'badge-warning';
+                                icon = '<i class="fas fa-sync-alt"></i>';
+                            }
+                            
+                            // Tarih formatını düzenle
+                            const date = new Date(item.date);
+                            const formattedDate = date.toLocaleDateString('tr-TR', {
+                                day: '2-digit',
+                                month: 'short',
+                                year: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                            });
+                            
+                            tableHtml += `
+                                <tr>
+                                    <td>
+                                        <div class="fw-semibold">${item.productName}</div>
+                                        <small class="text-muted">${item.variantName || ''}</small>
+                                    </td>
+                                    <td>${item.date}</td>
+                                    <td class="${item.quantity > 0 ? 'text-success' : 'text-danger'} fw-bold">
+                                        ${item.quantity > 0 ? '+' : ''}${item.quantity}
+                                    </td>
+                                    <td><span class="badge ${badgeClass}">${icon} ${item.movementType}</span></td>
+                                    <td>${item.description}</td>
+                                    <td class="fw-bold">${item.currentStock} adet</td>
+                                </tr>`;
+                        });
+                        
+                        tableHtml += `</tbody></table></div>`;
+                        $('#stockMovementsContainer').html(tableHtml);
+                    } else {
+                        $('#stockMovementsContainer').html(`
+                            <div class="text-center py-5">
+                                <i class="fas fa-box-open fa-3x text-muted mb-3"></i>
+                                <p class="text-muted">Seçilen döneme ait stok hareketi bulunamadı</p>
+                            </div>
+                        `);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error("Stok hareketleri alınamadı:", error);
+                    $('#stockMovementsContainer').html(`
+                        <div class="text-center py-5 text-danger">
+                            <i class="fas fa-exclamation-triangle fa-3x mb-3"></i>
+                            <p>Stok hareketleri yüklenirken bir hata oluştu</p>
+                        </div>
+                    `);
+                }
+            });
+        }
+
+        // Filtre değiştiğinde
+        $('#dateFilter').change(function() {
+            loadStockMovements($(this).val());
+        });
+
+        // 5 dakikada bir verileri yenile
+        setInterval(fetchAllData, 300000);
+    });
+</script>

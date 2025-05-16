@@ -1,0 +1,16 @@
+@model Product
+
+@{
+    ViewData["Title"] = "Silme Onayı";
+}
+
+<div class="alert alert-danger">
+    <h4 class="alert-heading">Dikkat!</h4>
+    <p><strong>@Model.Name</strong> adlı  ürünü silmek istediğinizden emin misiniz? Bu işlem geri alınamaz!</p>
+<i>Bu ürüne ait tüm renk,stok ve fotoğraf bilgileri de silinecektir.</i>
+</div>
+
+<form method="post" asp-action="Delete" asp-route-id="@Model.Id">
+    <button type="submit" class="btn btn-danger">Evet, Sil</button>
+    <a href="@Url.Action("ProductList")" class="btn btn-secondary">Hayır, Geri Dön</a>
+</form>

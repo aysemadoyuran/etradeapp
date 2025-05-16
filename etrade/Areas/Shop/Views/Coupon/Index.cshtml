@@ -1,0 +1,593 @@
+<!-- SweetAlert CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+<!-- Bootstrap Icons -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+
+<!-- Modal for Coupon Description -->
+<div class="modal fade" id="couponModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0">
+            <div class="modal-header border-0 bg-light">
+                <h5 class="modal-title text-dark">Kupon Detayları</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div id="couponInfoContent">
+                    <div class="text-center mb-4">
+                        <span id="couponCode" class="badge bg-soft-primary text-primary fs-5 fw-normal px-3 py-2 rounded-pill">KOD123</span>
+                        <h4 id="couponDiscount" class="mt-3 text-gradient-primary">50 TL İndirim</h4>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h6 class="fw-500 text-dark mb-2">Açıklama</h6>
+                        <p id="couponDescription" class="text-muted"></p>
+                    </div>
+                    
+                    <div class="bg-soft-light p-3 rounded mb-4">
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="bi bi-calendar text-muted me-2"></i>
+                            <span id="couponDates" class="text-muted small"></span>
+                        </div>
+                        <div id="couponConditions" class="text-muted small">
+                            <!-- Koşullar buraya eklenecek -->
+                        </div>
+                    </div>
+                </div>
+                <div id="couponInfoLoading" class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Yükleniyor...</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-0 bg-light">
+                <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Kapat</button>
+                <button type="button" class="btn btn-sm btn-success btn-copy-code" data-clipboard-target="#couponCode">
+                    <i class="bi bi-clipboard me-1"></i> Kodu Kopyala
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    :root {
+        --primary-color: #5e72e4;
+        --primary-soft: #f0f5ff;
+        --secondary-color: #6e3bff;
+        --text-color: #525f7f;
+        --light-bg: #f8fafc;
+        --border-radius: 12px;
+        --success-color: #2dce89;
+        --info-color: #11cdef;
+        --soft-gray: #f1f5f9;
+    }
+    
+    body {
+        background-color: var(--light-bg);
+        color: var(--text-color);
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+    
+    .coupon-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+    
+    .coupon-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 1.5rem;
+        margin-top: 1.5rem;
+    }
+    
+    .coupon-card {
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+        overflow: hidden;
+        transition: all 0.3s ease;
+        border: 1px solid rgba(0,0,0,0.05);
+        position: relative;
+    }
+    
+    .coupon-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+    }
+    
+    .coupon-header {
+        padding: 1.5rem;
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        color: white;
+        text-align: center;
+        position: relative;
+    }
+    
+    .coupon-code {
+        font-size: 1.4rem;
+        font-weight: 600;
+        letter-spacing: 1px;
+        font-family: 'Courier New', monospace;
+    }
+    
+    .coupon-discount {
+        font-size: 1.1rem;
+        margin-top: 0.5rem;
+        opacity: 0.95;
+        font-weight: 500;
+    }
+    
+    .coupon-body {
+        padding: 1.5rem;
+    }
+    
+    .coupon-desc {
+        margin-bottom: 1rem;
+        color: var(--text-color);
+        line-height: 1.6;
+        font-size: 0.95rem;
+    }
+    
+    .coupon-meta {
+        font-size: 0.85rem;
+        color: #64748b;
+        margin-bottom: 1rem;
+    }
+    
+    .coupon-meta span {
+        display: flex;
+        align-items: center;
+        margin-bottom: 0.5rem;
+    }
+    
+    .coupon-meta i {
+        margin-right: 0.5rem;
+        width: 1.2rem;
+        text-align: center;
+    }
+    
+    .coupon-dates {
+        background: var(--soft-gray);
+        padding: 0.75rem;
+        border-radius: 8px;
+        font-size: 0.8rem;
+        margin: 1rem 0;
+        color: var(--text-color);
+        text-align: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .coupon-actions {
+        display: flex;
+        gap: 0.75rem;
+    }
+    
+    .btn-claim {
+        flex: 1;
+        padding: 0.75rem;
+        border: none;
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        color: white;
+        border-radius: 8px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .btn-claim:hover {
+        opacity: 0.92;
+        transform: translateY(-1px);
+    }
+    
+    .btn-claim:disabled, .btn-claim.claimed {
+        background: #e2e8f0;
+        color: #94a3b8;
+        cursor: not-allowed;
+        transform: none;
+    }
+    
+    .btn-info {
+        padding: 0.75rem;
+        border: none;
+        background: var(--soft-gray);
+        color: var(--text-color);
+        border-radius: 8px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 3rem;
+    }
+    
+    .btn-info:hover {
+        background: #e2e8f0;
+    }
+    
+    .loading {
+        text-align: center;
+        padding: 3rem;
+        color: #94a3b8;
+    }
+    
+    .alert {
+        padding: 1rem;
+        border-radius: var(--border-radius);
+        margin-bottom: 1.5rem;
+        font-size: 0.95rem;
+        border: none;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    }
+    
+    .alert-info {
+        background: var(--primary-soft);
+        color: var(--primary-color);
+    }
+    
+    .alert-danger {
+        background: #fff5f5;
+        color: #f56565;
+    }
+
+    .coupon-badge {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        background: rgba(255,255,255,0.2);
+        backdrop-filter: blur(5px);
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 500;
+    }
+    
+    .coupon-tag {
+        display: inline-block;
+        background: var(--primary-soft);
+        color: var(--primary-color);
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        margin-right: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .coupon-saved {
+        position: relative;
+    }
+    
+    .coupon-saved::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255,255,255,0.6);
+        z-index: 1;
+    }
+    
+    .text-gradient-primary {
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-weight: 600;
+    }
+    
+    .bg-soft-primary {
+        background-color: var(--primary-soft);
+    }
+    
+    .bg-soft-light {
+        background-color: var(--soft-gray);
+    }
+    
+    .fw-500 {
+        font-weight: 500;
+    }
+    
+    /* Ribbon for saved coupons */
+    .ribbon {
+        position: absolute;
+        top: 1rem;
+        left: -0.5rem;
+        background: var(--success-color);
+        color: white;
+        padding: 0.25rem 1.5rem;
+        font-size: 0.75rem;
+        font-weight: 500;
+        transform: rotate(-45deg);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        z-index: 2;
+    }
+    
+    /* Category specific tags */
+    .tag-first-purchase {
+        background: #fff0f6;
+        color: #eb2f96;
+    }
+    
+    .tag-loyal-customer {
+        background: #f0f9ff;
+        color: #1890ff;
+    }
+    
+    .tag-basket-discount {
+        background: #f6ffed;
+        color: #52c41a;
+    }
+    
+    .tag-coin-conversion {
+        background: #fff7e6;
+        color: #fa8c16;
+    }
+</style>
+
+<!-- SweetAlert JS & Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/clipboard@2.0.8/dist/clipboard.min.js"></script>
+
+<script>
+    $(document).ready(function() {
+        const couponModal = new bootstrap.Modal(document.getElementById('couponModal'));
+        new ClipboardJS('.btn-copy-code');
+        
+        // Kuponları yükle
+        loadCoupons();
+        
+        function loadCoupons() {
+            $('#couponsContainer').html('<div class="loading"><div class="spinner-border text-primary mb-3"></div><p>Kuponlar yükleniyor...</p></div>');
+            
+            // Burada gerçek API endpoint'inizi kullanmalısınız
+            $.ajax({
+                url: '/Shop/Coupon/GetActiveCoupons',
+                type: 'GET',
+                success: function(coupons) {
+                    if (coupons.length === 0) {
+                        $('#couponsContainer').html('<div class="alert alert-info"><i class="bi bi-info-circle me-2"></i>Şu anda aktif kupon bulunmamaktadır.</div>');
+                        return;
+                    }
+                    
+                    renderCoupons(coupons);
+                },
+                error: function() {
+                    $('#couponsContainer').html('<div class="alert alert-danger"><i class="bi bi-exclamation-triangle me-2"></i>Kuponlar yüklenirken bir hata oluştu. Lütfen sayfayı yenileyin.</div>');
+                }
+            });
+        }
+        
+        function getCategoryTag(category) {
+            switch(category) {
+                case 'FirstPurchase':
+                    return '<span class="coupon-tag tag-first-purchase"><i class="bi bi-stars me-1"></i>İlk Siparişte Geçerli</span>';
+                case 'LoyalCustomer':
+                    return '<span class="coupon-tag tag-loyal-customer"><i class="bi bi-award me-1"></i>Devamlı Müşteri</span>';
+                case 'BasketDiscount':
+                    return '<span class="coupon-tag tag-basket-discount"><i class="bi bi-cart-check me-1"></i>Tüm Kullanıcılar</span>';
+                case 'CoinConversion':
+                    return '<span class="coupon-tag tag-coin-conversion"><i class="bi bi-coin me-1"></i>ParaPuandan Çeviri</span>';
+                default:
+                    return '';
+            }
+        }
+        
+        function renderCoupons(coupons) {
+            let html = '<div class="coupon-grid">';
+            
+            coupons.forEach(function(coupon) {
+                const startDate = new Date(coupon.startDate).toLocaleDateString('tr-TR');
+                const endDate = new Date(coupon.endDate).toLocaleDateString('tr-TR');
+                const remaining = coupon.maxUsageCount - coupon.currentUsageCount;
+                const isLimited = coupon.maxUsageCount > 0;
+                const isNew = new Date(coupon.startDate) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+                const isSaved = coupon.isSaved || false;
+                
+                // Buton metni ve durumu
+                const buttonText = isSaved ? '<i class="bi bi-check-circle me-1"></i> Kaydedildi' : '<i class="bi bi-bookmark-plus me-1"></i> Kaydet';
+                const buttonClass = isSaved ? 'btn-claim claimed' : 'btn-claim';
+                const buttonDisabled = isSaved ? 'disabled' : '';
+                
+                // Kategori etiketi
+                const categoryTag = coupon.couponCategory ? getCategoryTag(coupon.couponCategory) : '';
+                
+                html += `
+                    <div class="coupon-card position-relative" data-coupon-id="${coupon.couponId}">
+                        ${isNew ? '<span class="coupon-badge"><i class="bi bi-star-fill me-1"></i>Yeni</span>' : ''}
+                        ${isSaved ? '<div class="ribbon"><i class="bi bi-bookmark-check"></i></div>' : ''}
+                        
+                        <div class="coupon-header">
+                            <div class="coupon-code">${coupon.code}</div>
+                            <div class="coupon-discount">${coupon.discountValue} TL İndirim</div>
+                        </div>
+                        <div class="coupon-body">
+                            ${categoryTag}
+                            ${coupon.tags ? `<div class="mb-3">${coupon.tags.split(',').map(tag => `<span class="coupon-tag">${tag.trim()}</span>`).join('')}</div>` : ''}
+                            
+                            <div class="coupon-meta">
+                                ${coupon.minimumOrderAmount ? `<span><i class="bi bi-cart-check"></i> Min. Sipariş: ${coupon.minimumOrderAmount} TL</span>` : ''}
+                                ${coupon.minimumProductCount ? `<span><i class="bi bi-box-seam"></i> Min. Ürün: ${coupon.minimumProductCount} adet</span>` : ''}
+                                ${isLimited ? `<span><i class="bi bi-people"></i> Kalan: ${remaining > 0 ? remaining : '0'}/${coupon.maxUsageCount}</span>` : ''}
+                            </div>
+                            
+                            <div class="coupon-dates">
+                              ${startDate} - ${endDate}
+                            </div>
+                            
+                            <div class="coupon-actions">
+                                <button class="${buttonClass}" data-coupon-id="${coupon.couponId}" ${buttonDisabled}>
+                                    ${buttonText}
+                                </button>
+                                <button class="btn-info btn-info-desc" data-coupon-id="${coupon.couponId}">
+                                    <i class="bi bi-info-lg"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            $('#couponsContainer').html(html);
+        }
+        
+        $(document).on('click', '.btn-claim:not(.claimed)', function() {
+            const btn = $(this);
+            const couponId = btn.data('coupon-id');
+            
+            btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1" role="status"></span>İşleniyor');
+            
+            $.ajax({
+                url: '/Shop/Coupon/Save/' + couponId,
+                type: 'POST',
+                success: function(response) {
+                    btn.addClass('claimed')
+                       .html('<i class="bi bi-check-circle me-1"></i>Kaydedildi')
+                       .prop('disabled', true);
+                    
+                    // Add ribbon to card
+                    btn.closest('.coupon-card').prepend('<div class="ribbon"><i class="bi bi-bookmark-check"></i></div>');
+                    
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Başarılı!',
+                        text: 'Kupon başarıyla hesabınıza kaydedildi',
+                        confirmButtonText: 'Tamam',
+                        timer: 2000,
+                        timerProgressBar: true,
+                        background: 'white',
+                        backdrop: 'rgba(0,0,0,0.05)'
+                    });
+                },
+                error: function(xhr) {
+                    btn.html('<i class="bi bi-bookmark-plus me-1"></i>Kaydet').prop('disabled', false);
+                    
+                    if (xhr.status === 401) {
+                        showLoginAlert();
+                    } else if (xhr.status === 400) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Hata',
+                            text: xhr.responseText || 'Bu kuponu kaydedemezsiniz',
+                            confirmButtonText: 'Tamam',
+                            background: 'white'
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Hata',
+                            text: 'Beklenmeyen bir hata oluştu. Lütfen tekrar deneyin.',
+                            confirmButtonText: 'Tamam',
+                            background: 'white'
+                        });
+                    }
+                }
+            });
+        });
+
+        $(document).on('click', '.btn-info-desc', function() {
+            const couponId = $(this).data('coupon-id');
+            
+            // Modal içeriğini hazırla
+            $('#couponInfoContent').hide();
+            $('#couponInfoLoading').show();
+            couponModal.show();
+            
+            // Burada gerçek API endpoint'inizi kullanmalısınız
+            $.ajax({
+                url: '/Shop/Coupon/GetDetails/' + couponId,
+                type: 'GET',
+                success: function(coupon) {
+                    const startDate = new Date(coupon.startDate).toLocaleDateString('tr-TR');
+                    const endDate = new Date(coupon.endDate).toLocaleDateString('tr-TR');
+                    
+                    $('#couponCode').text(coupon.code);
+                    $('#couponDiscount').text(coupon.discountValue + ' TL İndirim');
+                    $('#couponDescription').html(coupon.description || 'Bu kupon için özel bir açıklama bulunmamaktadır.');
+                    $('#couponDates').html(`<i class="bi bi-calendar me-1"></i>${startDate} - ${endDate}`);
+                    
+                    // Koşulları ekle
+                    const conditionsList = $('#couponConditions').empty();
+                    
+                    // Kategori bilgisini ekle
+                    if (coupon.couponCategory) {
+                        const categoryText = 
+                            coupon.couponCategory === 'FirstPurchase' ? 'İlk Siparişte Geçerli' :
+                            coupon.couponCategory === 'LoyalCustomer' ? 'Devamlı Müşteri (En Az 5 Sipariş)' :
+                            coupon.couponCategory === 'BasketDiscount' ? 'Tüm Kullanıcılar İçin' :
+                            coupon.couponCategory === 'CoinConversion' ? 'ParaPuandan Çeviri Kuponu' : '';
+                        
+                        if (categoryText) {
+                            conditionsList.append(`<div class="d-flex align-items-center mb-1"><i class="bi bi-tag-fill text-primary me-2"></i><span>${categoryText}</span></div>`);
+                        }
+                    }
+                    
+                    if (coupon.minimumOrderAmount) {
+                        conditionsList.append(`<div class="d-flex align-items-center mb-1"><i class="bi bi-check-circle text-success me-2"></i><span>Minimum ${coupon.minimumOrderAmount} TL sipariş</span></div>`);
+                    }
+                    if (coupon.minimumProductCount) {
+                        conditionsList.append(`<div class="d-flex align-items-center mb-1"><i class="bi bi-check-circle text-success me-2"></i><span>Minimum ${coupon.minimumProductCount} adet ürün</span></div>`);
+                    }
+                    if (coupon.categoryRestriction) {
+                        conditionsList.append(`<div class="d-flex align-items-center mb-1"><i class="bi bi-check-circle text-success me-2"></i><span>${coupon.categoryRestriction} kategorisinde geçerli</span></div>`);
+                    }
+                    if (coupon.maxUsageCount > 0) {
+                        conditionsList.append(`<div class="d-flex align-items-center mb-1"><i class="bi bi-check-circle text-success me-2"></i><span>Kişi başı 1 kullanım hakkı</span></div>`);
+                    }
+                    
+                    $('#couponInfoLoading').hide();
+                    $('#couponInfoContent').show();
+                },
+                error: function() {
+                    $('#couponInfoLoading').html('<div class="alert alert-danger"><i class="bi bi-exclamation-triangle me-2"></i>Kupon bilgileri yüklenirken bir hata oluştu.</div>');
+                }
+            });
+        });
+
+        function showLoginAlert() {
+            Swal.fire({
+                icon: 'info',
+                title: 'Giriş Yapmalısınız',
+                html: 'Kupon kaydetmek için giriş yapmalısınız.<br><small>Kayıtlı kuponlarınızı hesabınızdan görüntüleyebilirsiniz.</small>',
+                showCancelButton: true,
+                confirmButtonText: '<i class="bi bi-box-arrow-in-right me-1"></i>Giriş Yap',
+                cancelButtonText: 'Vazgeç',
+                footer: '<a href="/Account/Register" class="text-decoration-none">Hesabınız yok mu? <strong>Kayıt olun</strong></a>',
+                background: 'white'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = '/Account/Login?returnUrl=' + encodeURIComponent(window.location.pathname);
+                }
+            });
+        }
+        
+        // Kopyalama butonu işlevi
+        $(document).on('click', '.btn-copy-code', function() {
+            Swal.fire({
+                icon: 'success',
+                title: 'Kopyalandı!',
+                text: 'Kupon kodu panonuza kopyalandı',
+                showConfirmButton: false,
+                timer: 1500,
+                background: 'white'
+            });
+        });
+    });
+</script>
+
+<!-- Container for Coupons -->
+<div class="coupon-container">
+    <h2 class="text-dark mb-4 fw-500">Mevcut Kuponlar</h2>
+    <p class="text-muted mb-4">Favori kuponlarınızı kaydedin ve alışverişlerinizde kullanın</p>
+    <div id="couponsContainer"></div>
+</div>

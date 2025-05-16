@@ -1,0 +1,211 @@
+@model etrade.Models.ProductCreateViewModel
+
+@{
+    Layout = "_AdminLayout";
+}
+
+<div class="container py-4">
+    <div class="card border-0 shadow-lg">
+        <div class="card-header py-3">
+            <h4 class="mb-0"><i class="fas fa-cube me-2"></i>Yeni Ürün Oluştur</h4>
+        </div>
+        
+        <div class="card-body p-4">
+            <form method="post" action="/Admin/Product/ProductCreate" enctype="multipart/form-data" class="needs-validation" novalidate>
+                <!-- Ürün Bilgileri -->
+                <div class="mb-4">
+                    <h5 class="text-primary mb-3"><i class="fas fa-info-circle me-2"></i>Ürün Bilgileri</h5>
+                    
+                    <div class="form-floating mb-3">
+                        <input type="text" class="form-control" id="Name" name="Name" placeholder="Ürün Adı" required>
+                        <label for="Name">Ürün Adı*</label>
+                        <div class="invalid-feedback">Lütfen ürün adını giriniz</div>
+                    </div>
+                    
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                <select asp-for="CategoryId" asp-items="ViewBag.Categories" class="form-select" id="CategoryId" required>
+                                    <option value="">Seçiniz</option>
+                                </select>
+                                <label asp-for="CategoryId">Ana Kategori*</label>
+                                <span asp-validation-for="CategoryId" class="text-danger small"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                <select asp-for="SubCategoryId" asp-items="ViewBag.subCategories" class="form-select" id="SubCategoryId">
+                                    <option value="">Önce ana kategori seçin</option>
+                                </select>
+                                <label asp-for="SubCategoryId">Alt Kategori</label>
+                                <span asp-validation-for="SubCategoryId" class="text-danger small"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Fiyat Bilgisi -->
+                <div class="mb-4">
+                    <h5 class="text-primary mb-3"><i class="fas fa-tag me-2"></i>Fiyat Bilgisi</h5>
+                    <div class="input-group mb-3">
+                        <span class="input-group-text bg-light">₺</span>
+                        <div class="form-floating flex-grow-1">
+                            <input asp-for="Price" class="form-control" id="Price" placeholder="Fiyat" step="0.01" required>
+                            <label for="Price">Ürün Fiyatı*</label>
+                            <div class="invalid-feedback">Lütfen geçerli bir fiyat giriniz</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Açıklama -->
+                <div class="mb-4">
+                    <h5 class="text-primary mb-3"><i class="fas fa-align-left me-2"></i>Ürün Açıklaması</h5>
+                    <textarea class="form-control" id="Description" name="Description" rows="6" placeholder="Ürün detaylarını buraya yazın..."></textarea>
+                </div>
+                
+                <!-- Görseller -->
+                
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                    <button type="submit" class="btn btn-primary btn-lg px-4 me-md-2">
+                        <i class="fas fa-save me-2"></i>Ürünü Kaydet
+                    </button>
+                    <a href="/Admin/Product/ProductList" class="btn btn-outline-secondary btn-lg px-4">
+                        <i class="fas fa-times me-2"></i>İptal
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+    <style>
+        .card {
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
+        }
+        
+        .card-header {
+            border-radius: 0 !important;
+            font-weight: 600;
+        }
+        
+        .form-control, .form-select {
+            border-radius: 8px;
+            padding: 1rem;
+            border: 1px solid #e0e0e0;
+            transition: all 0.3s;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: #7367f0;
+            box-shadow: 0 0 0 0.25rem rgba(115, 103, 240, 0.25);
+        }
+        
+        .form-floating > label {
+            padding: 1rem;
+            color: #6c757d;
+        }
+        
+        .invalid-feedback {
+            font-size: 0.85rem;
+        }
+        
+        .image-preview {
+            min-height: 100px;
+        }
+        
+        .image-preview-item {
+            width: 120px;
+            height: 120px;
+            border-radius: 8px;
+            object-fit: cover;
+            border: 2px dashed #dee2e6;
+            padding: 5px;
+        }
+        
+        .btn-primary {
+            background-color: #7367f0;
+            border-color: #7367f0;
+        }
+        
+        .btn-primary:hover {
+            background-color: #5d50e6;
+            border-color: #5d50e6;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(115, 103, 240, 0.3);
+        }
+        
+        .btn-outline-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(108, 117, 125, 0.2);
+        }
+    </style>
+
+
+@section Scripts {
+    <script>
+        // Kategori seçildiğinde alt kategorileri yükle
+        document.getElementById("CategoryId").addEventListener("change", function () {
+            const categoryId = this.value;
+            const subCategorySelect = document.getElementById("SubCategoryId");
+            subCategorySelect.innerHTML = "<option value=''>Yükleniyor...</option>";
+            subCategorySelect.disabled = true;
+
+            if (categoryId) {
+                fetch(`/Admin/Product/GetSubCategories?categoryId=${categoryId}`)
+                    .then(response => response.json())
+                    .then(subCategories => {
+                        subCategorySelect.innerHTML = "<option value=''>Alt kategori seçin</option>";
+                        subCategories.forEach(subCategory => {
+                            const option = document.createElement("option");
+                            option.value = subCategory.id;
+                            option.textContent = subCategory.name;
+                            subCategorySelect.appendChild(option);
+                        });
+                        subCategorySelect.disabled = false;
+                    })
+                    .catch(() => {
+                        subCategorySelect.innerHTML = "<option value=''>Yükleme hatası</option>";
+                    });
+            } else {
+                subCategorySelect.innerHTML = "<option value=''>Önce ana kategori seçin</option>";
+            }
+        });
+
+        // Fiyat formatlama
+        document.getElementById("Price").addEventListener("input", function(event) {
+            let inputValue = event.target.value;
+            event.target.value = inputValue.replace(",", ".");
+        });
+
+
+        // Form validation
+        (function () {
+            'use strict'
+            const forms = document.querySelectorAll('.needs-validation')
+            Array.from(forms).forEach(form => {
+                form.addEventListener('submit', event => {
+                    if (!form.checkValidity()) {
+                        event.preventDefault()
+                        event.stopPropagation()
+                    }
+                    form.classList.add('was-validated')
+                }, false)
+            })
+        })();
+    </script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/7.6.0/tinymce.min.js" integrity="sha512-/4EpSbZW47rO/cUIb0AMRs/xWwE8pyOLf8eiDWQ6sQash5RP1Cl8Zi2aqa4QEufjeqnzTK8CLZWX7J5ZjLcc1Q==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script>
+        tinymce.init({
+            selector: '#Description',
+            height: 300,
+            menubar: false,
+            plugins: 'lists link image table code help wordcount',
+            toolbar: 'undo redo | formatselect | bold italic underline | alignleft aligncenter alignright | bullist numlist | link image | table | code | help',
+            branding: false
+        });
+    </script>
+}

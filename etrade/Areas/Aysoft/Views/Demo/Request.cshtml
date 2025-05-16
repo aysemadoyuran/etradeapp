@@ -1,0 +1,156 @@
+@model DemoRequestViewModel
+
+<section class="demo-request-section py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body p-4 p-md-5">
+                        <div class="text-center mb-4">
+                            <h2 class="h4 mb-2">Demo Talebi Oluşturun</h2>
+                            <p class="text-muted">Profesyonel çözümlerimizi deneyimleyin</p>
+                        </div>
+                        
+                        @if (TempData["SuccessMessage"] != null)
+                        {
+                            <div class="alert alert-success alert-dismissible fade show mb-4">
+                                @TempData["SuccessMessage"]
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        }
+
+                        <form method="post" action="@Url.Action("Request", "Demo", new { area = "Aysoft" })">
+                            @Html.AntiForgeryToken()
+
+                            <div class="row g-3">
+                                <!-- Personal Information -->
+                                <div class="col-md-6">
+                                    <label class="form-label">Ad Soyad*</label>
+                                    <input type="text" class="form-control" asp-for="FullName" placeholder="Ad ve soyadınız">
+                                    <span asp-validation-for="FullName" class="text-danger small"></span>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">E-posta*</label>
+                                    <input type="email" class="form-control" asp-for="Email" placeholder="E-posta adresiniz">
+                                    <span asp-validation-for="Email" class="text-danger small"></span>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Telefon*</label>
+                                    <input type="tel" class="form-control" asp-for="Phone" placeholder="Telefon numaranız">
+                                    <span asp-validation-for="Phone" class="text-danger small"></span>
+                                </div>
+
+                                <!-- User Credentials -->
+                                <div class="col-md-6">
+                                    <label class="form-label">Kullanıcı Adı*</label>
+                                    <input type="text" class="form-control" asp-for="Username" placeholder="Kullanıcı adı seçin">
+                                    <span asp-validation-for="Username" class="text-danger small"></span>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Şifre*</label>
+                                    <input type="password" class="form-control" asp-for="Password" placeholder="Şifre oluşturun">
+                                    <span asp-validation-for="Password" class="text-danger small"></span>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Şifre Tekrar*</label>
+                                    <input type="password" class="form-control" asp-for="ConfirmPassword" placeholder="Şifreyi tekrar girin">
+                                    <span asp-validation-for="ConfirmPassword" class="text-danger small"></span>
+                                </div>
+
+                                <!-- Company Information -->
+                                <div class="col-md-6">
+                                    <label class="form-label">Firma Adı*</label>
+                                    <input type="text" class="form-control" asp-for="CompanyName" placeholder="Firma adı">
+                                    <span asp-validation-for="CompanyName" class="text-danger small"></span>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Vergi No</label>
+                                    <input type="text" class="form-control" asp-for="TaxNumber" placeholder="Vergi numarası">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Vergi Dairesi</label>
+                                    <input type="text" class="form-control" asp-for="TaxOffice" placeholder="Vergi dairesi">
+                                </div>
+
+                                <!-- Address -->
+                                <div class="col-12">
+                                    <label class="form-label">Adres</label>
+                                    <textarea class="form-control" asp-for="Address" rows="2" placeholder="Firma adresi"></textarea>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Şehir*</label>
+                                    <select class="form-select" asp-for="IlId" required>
+                                        <option value="" selected disabled>Şehir seçiniz</option>
+                                        @foreach (var city in ViewBag.Cities ?? new List<City>())
+                                        {
+                                            <option value="@city.Id">@city.Ad</option>
+                                        }
+                                    </select>
+                                    <span asp-validation-for="IlId" class="text-danger small"></span>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Posta Kodu</label>
+                                    <input type="text" class="form-control" asp-for="ZipCode" placeholder="Posta kodu">
+                                </div>
+
+                                <!-- Demo Request -->
+                                <div class="col-12">
+                                    <label class="form-label">Ek Notlar</label>
+                                    <textarea class="form-control" asp-for="RequestNote" rows="3" placeholder="Eklemek istedikleriniz..."></textarea>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Demo Süresi</label>
+                                    <select class="form-select" asp-for="DemoDays">
+                                        <option value="7" selected>7 Günlük Demo</option>
+                                    </select>
+                                </div>
+
+                                <!-- KVKK Approval -->
+                                <div class="col-12 mt-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" asp-for="KvkkApproval" required>
+                                        <label class="form-check-label small">
+                                            <a href="#" target="_blank" class="text-decoration-none">KVKK</a> aydınlatma metnini okudum ve onaylıyorum*.
+                                        </label>
+                                        <span asp-validation-for="KvkkApproval" class="text-danger small"></span>
+                                    </div>
+                                </div>
+
+                                <div class="col-12 mt-4">
+                                    <button type="submit" class="btn btn-primary w-100 py-2">
+                                        Demo Talebini Gönder
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    .demo-request-section {
+        background-color: #f8f9fa;
+    }
+    .card {
+        border-radius: 0.5rem;
+    }
+    .form-control, .form-select {
+        padding: 0.5rem 0.75rem;
+        border-radius: 0.25rem;
+    }
+    .form-label {
+        font-weight: 500;
+        margin-bottom: 0.25rem;
+        color: #495057;
+    }
+    .btn-primary {
+        font-weight: 500;
+        letter-spacing: 0.5px;
+    }
+    .text-danger {
+        font-size: 0.8rem;
+    }
+</style>

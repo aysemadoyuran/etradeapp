@@ -1,0 +1,676 @@
+@model ProductListViewModel
+@{
+    List<int> favoriteProductIds = ViewBag.FavoriteProductIds as List<int> ?? new List<int>();
+}
+
+<!-- Modern Alert -->
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show rounded-3 shadow-sm" role="alert">
+        <div class="d-flex align-items-center">
+            <i class="bx bx-check-circle me-2 fs-4"></i>
+            <div>@TempData["SuccessMessage"]</div>
+            <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    </div>
+}
+
+<div class="container-fluid px-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold mb-0">Ürün Yönetimi</h2>
+        <a href="/Admin/Product/ProductCreate" class="btn btn-primary rounded-pill shadow">
+            <i class='bx bx-plus'></i> Yeni Ürün Ekle
+        </a>
+    </div>
+
+    <!-- Search and Filter Card -->
+    <div class="card border-0 shadow-sm rounded-3 mb-4">
+        <div class="card-body p-4">
+            <form id="filterForm" method="get" action="@Url.Action("ProductList")">
+                <div class="row g-3">
+                    <!-- Search Bar -->
+                    <div class="col-md-6">
+                        <div class="input-group">
+                            <span class="input-group-text bg-transparent border-end-0">
+                                <i class="bx bx-search"></i>
+                            </span>
+                            <input type="text" id="productSearch" name="searchTerm"
+                                class="form-control border-start-0 ps-0" placeholder="Ürün ara..."
+                                value="@Context.Request.Query["searchTerm"]">
+                            <button class="btn btn-outline-primary" type="submit">
+                                Ara
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Filters -->
+                    <div class="col-md-6">
+                        <div class="row g-2">
+                            <div class="col">
+                                <select asp-for="CategoryId" name="categoryId" class="form-select">
+                                    <option value="">Kategori</option>
+                                    @foreach (var category in ViewData["Categories"] as List<Category>)
+                                    {
+                                        <option value="@category.Id"
+                                            selected="@(Context.Request.Query["categoryId"] == category.Id.ToString())">
+                                            @category.Name</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="col">
+                                <select asp-for="SubCategoryId" name="subCategoryId" class="form-select">
+                                    <option value="">Alt Kategori</option>
+                                    @foreach (var subCategory in ViewData["SubCategories"] as List<SubCategory>)
+                                    {
+                                        <option value="@subCategory.Id"
+                                            selected="@(Context.Request.Query["subCategoryId"] == subCategory.Id.ToString())">
+                                            @subCategory.Name</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-auto">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bx bx-filter"></i> Filtrele
+                                </button>
+                                <a href="@Url.Action("ProductList")" class="btn btn-outline-secondary">
+                                    <i class="bx bx-reset"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Product Table -->
+    <div class="card border-0 shadow-sm rounded-3 overflow-hidden">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0" id="productTable">
+                <thead class="bg-light bg-opacity-10">
+                    <tr>
+                        <th>Ürün Kodu</th>
+                        <th>Ürün Adı</th>
+                        <th class="text-center">Durum</th>
+                        <th class="text-center">Tamamlanma</th>
+                        <th class="text-end" width="150px">İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody id="productTableBody">
+                    @foreach (var product in Model.Products)
+                    {
+                        <tr class="product-row"
+                            data-search="@($"{product.ProductCode.ToLower()} {product.Name.ToLower()}")">
+                            <td>
+                                <span class="fw-semibold">@product.ProductCode</span>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div>
+                                        <h6 class="mb-0">@product.Name</h6>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="text-center">
+                                <div class="form-check form-switch d-inline-block">
+                                    <input class="form-check-input" type="checkbox" role="switch"
+                                        id="statusSwitch_@product.Id" @(product.IsActive ? "checked" : "")
+                                        onchange="toggleProductStatus(@product.Id, this)">
+                                </div>
+                                <span
+                                    class="badge rounded-pill bg-@(product.IsActive ? "success" : "danger")-subtle text-@(product.IsActive ? "success" : "danger")">
+                                    @(product.IsActive ? "Aktif" : "Pasif")
+                                </span>
+                            </td>
+                            <td class="text-center">
+                                <span
+                                    class="badge rounded-pill bg-@(product.Complete ? "success" : "warning")-subtle text-@(product.Complete ? "success" : "warning")">
+                                    @(product.Complete ? "Tamamlandı" : "Devam Ediyor")
+                                </span>
+                            </td>
+                            <td class="text-end">
+                                <div class="btn-group btn-group-sm" role="group">
+                                    <button class="btn btn-outline-primary btn-preview" data-id="@product.Id"
+                                        title="Önizleme">
+                                        <i class="bx bx-show"></i>
+                                    </button>
+                                    <a href="@Url.Action("ProductEdit", new { id = product.Id })"
+                                        class="btn btn-outline-secondary" title="Düzenle">
+                                        <i class="bx bx-edit"></i>
+                                    </a>
+                                    <a href="@Url.Action("ConfirmDelete", new { id = product.Id })"
+                                        class="btn btn-outline-danger" title="Sil">
+                                        <i class="bx bx-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="card-footer bg-transparent border-top-0">
+            <nav aria-label="Page navigation">
+                <ul class="pagination justify-content-center mb-0">
+                    @if (Model.CurrentPage > 1)
+                    {
+                        <li class="page-item">
+                            <a class="page-link"
+                                href="@Url.Action("ProductList", new { page = Model.CurrentPage - 1, searchTerm = Context.Request.Query["searchTerm"], categoryId = Context.Request.Query["categoryId"], subCategoryId = Context.Request.Query["subCategoryId"] })"
+                                aria-label="Previous">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+                    }
+
+                    @for (int i = 1; i <= Model.TotalPages; i++)
+                    {
+                        <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+                            <a class="page-link"
+                                href="@Url.Action("ProductList", new { page = i, searchTerm = Context.Request.Query["searchTerm"], categoryId = Context.Request.Query["categoryId"], subCategoryId = Context.Request.Query["subCategoryId"] })">@i</a>
+                        </li>
+                    }
+
+                    @if (Model.CurrentPage < Model.TotalPages)
+                    {
+                        <li class="page-item">
+                            <a class="page-link"
+                                href="@Url.Action("ProductList", new { page = Model.CurrentPage + 1, searchTerm = Context.Request.Query["searchTerm"], categoryId = Context.Request.Query["categoryId"], subCategoryId = Context.Request.Query["subCategoryId"] })"
+                                aria-label="Next">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                    }
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+<!-- Modern Preview Modal -->
+<div class="modal fade" id="productModal" tabindex="-1" role="dialog" aria-labelledby="productModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Ürün Detayları</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
+            </div>
+            <div class="modal-body">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-lg-4">
+                            <div class="tab-content" id="productImagesContainer">
+                                <!-- JS Tarafından Eklenecek -->
+                            </div>
+                            <ul class="nav nav-pills nav-justified" id="productThumbnails">
+                                <!-- JS Tarafından Eklenecek -->
+                            </ul>
+                        </div>
+                        <!-- end col -->
+                        <div class="col-lg-8">
+                            <div class="ps-xl-3 mt-3 mt-xl-0">
+                                <h6>
+
+                                    <span class="mb-3" id="productCategory"></span> /<span class="mb-3"
+                                        id="productSubCategory"></span>
+
+                                </h6>
+
+                                <h3 class="mb-3" id="productModalLabel"></h3>
+                                <h4 class="mb-3" id="productPrice"></h4>
+                                <p id="productStock"></p>
+
+                                <h4>
+                                    <span id="productStock" class="badge badge-soft-success mb-3"></span>
+                                </h4>
+                                <form class="d-flex flex-wrap align-items-center mb-3">
+                                    <div class="row align-items-center">
+                                        <div class="col-auto">
+                                            <label class="my-1 me-2" for="color">Renk:</label>
+                                            <select class="form-select form-select-sm my-1" id="color"></select>
+                                        </div>
+                                        <div class="col-auto">
+                                            <label class="my-1 me-2" for="sizeinput">Beden:</label>
+                                            <select class="form-select form-select-sm my-1" id="sizeinput"></select>
+                                        </div>
+                                    </div>
+
+                                </form>
+                                <div class="mb-3">
+                                    <h5>Ürün Hakkında:</h5>
+                                    <p id="productDescription" class="text-muted mb-1"></p>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- end col -->
+                    </div>
+                    <!-- end row -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+<style>
+    /* Özel Stiller */
+
+
+    .card {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+    }
+
+    .table th {
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.5px;
+        color: #64748b;
+        border-top: none;
+    }
+
+    .table td {
+        vertical-align: middle;
+        padding: 1rem 0.75rem;
+        border-top: 1px solid #f1f5f9;
+    }
+
+    .btn {
+        transition: all 0.2s ease;
+    }
+
+    .btn-outline-primary {
+        border-color: #e2e8f0;
+    }
+
+    .form-control,
+    .form-select {
+        border-color: #e2e8f0;
+        padding: 0.5rem 1rem;
+    }
+
+    .form-control:focus,
+    .form-select:focus {
+        border-color: #93c5fd;
+        box-shadow: 0 0 0 0.25rem rgba(147, 197, 253, 0.25);
+    }
+
+    .badge {
+        font-weight: 500;
+        padding: 0.35em 0.65em;
+    }
+
+    /* Pagination */
+    .page-item.active .page-link {
+        background-color: #3b82f6;
+        border-color: #3b82f6;
+    }
+
+    .page-link {
+        color: #3b82f6;
+        border-color: #e2e8f0;
+        margin: 0 5px;
+        border-radius: 6px !important;
+    }
+
+    /* Modal */
+    .modal-content {
+        border: none;
+        border-radius: 12px;
+    }
+
+    /* Switch Button */
+    .form-switch .form-check-input {
+        width: 2.5em;
+        height: 1.3em;
+        cursor: pointer;
+    }
+</style>
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+
+    <script>
+        // Arama Fonksiyonu
+        $(document).ready(function () {
+            // Anında arama
+            $('#productSearch').on('input', function () {
+                const searchTerm = $(this).val().toLowerCase().trim();
+                let hasResults = false;
+
+                $('.product-row').each(function () {
+                    const searchData = $(this).data('search');
+                    if (searchData.includes(searchTerm)) {
+                        $(this).show();
+                        hasResults = true;
+                    } else {
+                        $(this).hide();
+                    }
+                });
+
+                // Sonuç yoksa mesaj göster
+                $('#noResultsRow').remove();
+                if (!hasResults && searchTerm.length > 0) {
+                    $('#productTableBody').append(
+                        '<tr id="noResultsRow"><td colspan="5" class="text-center py-4">Aramanızla eşleşen ürün bulunamadı</td></tr>'
+                    );
+                }
+            });
+
+            
+
+            // Kategori-Alt Kategori İlişkisi
+            $('#CategoryId').change(function () {
+                const categoryId = $(this).val();
+                const $subCategory = $('#SubCategoryId');
+
+                $subCategory.html('<option value="">Yükleniyor...</option>');
+
+                if (categoryId) {
+                    $.get('/Admin/Product/GetSubCategories', { categoryId: categoryId }, function (data) {
+                        $subCategory.html('<option value="">Alt Kategori Seçin</option>');
+                        $.each(data, function (i, item) {
+                            $subCategory.append(`<option value="${item.id}">${item.name}</option>`);
+                        });
+                    });
+                } else {
+                    $subCategory.html('<option value="">Alt Kategori Seçin</option>');
+                }
+            });
+        });
+
+        // Ürün Durum Değiştirme
+        function toggleProductStatus(productId, checkbox) {
+            const isActive = checkbox.checked;
+
+            $.post('/Admin/Product/SetActive', {
+                id: productId,
+                isActive: isActive
+            }, function (response) {
+                if (response.success) {
+                    const badge = $(checkbox).closest('td').find('.badge');
+                    if (isActive) {
+                        badge.removeClass('bg-danger-subtle text-danger')
+                            .addClass('bg-success-subtle text-success')
+                            .text('Aktif');
+                    } else {
+                        badge.removeClass('bg-success-subtle text-success')
+                            .addClass('bg-danger-subtle text-danger')
+                            .text('Pasif');
+                    }
+
+                    Toastify({
+                        text: "Ürün durumu güncellendi",
+                        duration: 3000,
+                        close: true,
+                        gravity: "top",
+                        position: "right",
+                        backgroundColor: "#4CAF50",
+                    }).showToast();
+                } else {
+                    checkbox.checked = !isActive; // Değişikliği geri al
+                    Toastify({
+                        text: "Hata: " + response.message,
+                        duration: 3000,
+                        close: true,
+                        gravity: "top",
+                        position: "right",
+                        backgroundColor: "#F44336",
+                    }).showToast();
+                }
+            }).fail(function () {
+                checkbox.checked = !isActive; // Değişikliği geri al
+                Toastify({
+                    text: "İşlem sırasında bir hata oluştu",
+                    duration: 3000,
+                    close: true,
+                    gravity: "top",
+                    position: "right",
+                    backgroundColor: "#F44336",
+                }).showToast();
+            });
+        }
+    </script>
+<script>
+    function adjustThumbnailSize() {
+        let thumbnails = document.querySelectorAll("#productThumbnails img");
+
+        if (thumbnails.length === 1) {
+            thumbnails[0].style.maxWidth = "50px";
+            thumbnails[0].style.height = "auto";
+        } else {
+            thumbnails.forEach(img => {
+                img.style.maxWidth = "75px";
+                img.style.height = "auto";
+            });
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        let currentProduct = null;
+        let productModal = null;
+
+        // Modal'ı başlat ve kapanış event'ını ekle
+        const modalElement = document.getElementById("productModal");
+        if (modalElement) {
+            productModal = new bootstrap.Modal(modalElement);
+            
+            modalElement.addEventListener('hidden.bs.modal', function () {
+                // Modal kapanırken backdrop'u temizle
+                const backdrops = document.querySelectorAll('.modal-backdrop');
+                backdrops.forEach(backdrop => backdrop.remove());
+                
+                // Body class'larını düzelt
+                document.body.classList.remove('modal-open');
+                document.body.style.paddingRight = '';
+                document.body.style.overflow = '';
+            });
+        }
+
+        document.querySelectorAll(".btn-preview").forEach(button => {
+            button.addEventListener("click", function () {
+                let productId = this.getAttribute("data-id");
+
+                if (!productId) {
+                    console.error("Ürün ID'si alınamadı!");
+                    return;
+                }
+
+                fetch(`/Admin/api/productapi/${productId}`)
+                    .then(response => response.json())
+                    .then(product => {
+                        if (!product) {
+                            console.error("Ürün bilgisi alınamadı!");
+                            return;
+                        }
+
+                        console.log("Gelen API Yanıtı:", product);
+                        currentProduct = product;
+
+                        document.querySelector("#productModalLabel").innerText = product.name || "Ürün Detayları";
+                        document.querySelector("#productPrice").innerHTML = `Fiyat: <b>${product.price || "0"} TL</b>`;
+                        document.querySelector("#productDescription").innerHTML = product.description || "Açıklama bulunmamaktadır.";
+                        
+                        document.querySelector("#productCategory").innerHTML = `Kategori: <b>${product.categoryName || "Bilinmiyor"}</b>`;
+                        document.querySelector("#productSubCategory").innerHTML = `Alt Kategori: <b>${product.subCategoryName || "Bilinmiyor"}</b>`;
+
+                        let colorSelect = document.querySelector("#color");
+                        colorSelect.innerHTML = `<option value="">Renk Seçiniz</option>`;
+
+                        let uniqueColors = product.variants.map(v => v.colorName);
+
+                        if (uniqueColors.length > 0) {
+                            uniqueColors.forEach(color => {
+                                colorSelect.innerHTML += `<option value="${color}">${color}</option>`;
+                            });
+                        }
+
+                        updateSizesAndStock(product, "");
+                        updateImages(product);
+
+                        adjustThumbnailSize();
+                        
+                        if (productModal) {
+                            productModal.show();
+                        }
+                    })
+                    .catch(error => console.error("Ürün verisi getirilirken hata oluştu:", error));
+            });
+        });
+
+        function updateSizesAndStock(product, selectedColor) {
+            if (!product) return;
+
+            let sizeSelect = document.querySelector("#sizeinput");
+            let stockInfo = document.querySelector("#productStock");
+            sizeSelect.innerHTML = `<option value="">Beden Seçiniz</option>`;
+            stockInfo.innerHTML = "";
+
+            let totalStock = 0;
+
+            if (!selectedColor) {
+                product.variants.forEach(variant => {
+                    variant.sizes.forEach(size => {
+                        totalStock += size.stock;
+                    });
+                });
+                stockInfo.innerHTML = `Toplam Stok: <b>${totalStock} adet</b>`;
+                return;
+            }
+
+            let selectedVariant = product.variants.find(v => v.colorName === selectedColor);
+            if (!selectedVariant) return;
+
+            selectedVariant.sizes.forEach(size => {
+                sizeSelect.innerHTML += `<option value="${size.sizeName}" data-stock="${size.stock}">${size.sizeName}</option>`;
+                totalStock += size.stock;
+            });
+
+            stockInfo.innerHTML = `Toplam Stok: <b>${totalStock} adet</b>`;
+        }
+
+        function updateImages(product) {
+            let imageContainer = document.querySelector("#productImagesContainer");
+            let thumbnails = document.querySelector("#productThumbnails");
+
+            imageContainer.innerHTML = "";
+            thumbnails.innerHTML = "";
+
+            let allImages = [];
+
+            product.variants.forEach(variant => {
+                allImages = allImages.concat(variant.imageUrls);
+            });
+
+            if (allImages.length > 0) {
+                allImages.forEach((image, index) => {
+                    let isActive = index === 0 ? "active show" : "";
+
+                    imageContainer.innerHTML += `
+                                <div class="tab-pane ${isActive}" id="product-${index}-item">
+                                    <img src="${image}" class="img-fluid mx-auto d-block rounded" alt="Ürün Görseli"/>
+                                </div>
+                            `;
+
+                    thumbnails.innerHTML += `
+                                <li class="nav-item">
+                                    <a href="#product-${index}-item" data-bs-toggle="tab" class="nav-link product-thumb ${isActive}">
+                                        <img src="${image}" class="img-fluid mx-auto rounded" alt="Thumbnail"/>
+                                    </a>
+                                </li>
+                            `;
+                });
+            } else {
+                imageContainer.innerHTML = `<p>Görsel bulunmamaktadır.</p>`;
+            }
+
+            adjustThumbnailSize();
+        }
+
+        document.querySelector("#sizeinput").addEventListener("change", function () {
+            let selectedOption = this.options[this.selectedIndex];
+            let stock = selectedOption.getAttribute("data-stock");
+            let stockInfo = document.querySelector("#productStock");
+
+            if (stock) {
+                stockInfo.innerHTML = `Stok: <b>${stock} adet</b>`;
+            } else {
+                // Total stock bilgisini koru
+                let totalStock = 0;
+                if (currentProduct) {
+                    currentProduct.variants.forEach(variant => {
+                        variant.sizes.forEach(size => {
+                            totalStock += size.stock;
+                        });
+                    });
+                }
+                stockInfo.innerHTML = `Toplam Stok: <b>${totalStock} adet</b>`;
+            }
+        });
+
+        document.querySelector("#color").addEventListener("change", function () {
+            let selectedColor = this.value;
+
+            if (currentProduct) {
+                updateSizesAndStock(currentProduct, selectedColor);
+                updateImagesByColor(currentProduct, selectedColor);
+            } else {
+                console.error("Ürün bilgisi bulunamadı, renk değişimi yapılamıyor!");
+            }
+        });
+
+        function updateImagesByColor(product, selectedColor) {
+            let imageContainer = document.querySelector("#productImagesContainer");
+            let thumbnails = document.querySelector("#productThumbnails");
+
+            imageContainer.innerHTML = "";
+            thumbnails.innerHTML = "";
+
+            if (!selectedColor) {
+                updateImages(product);
+                return;
+            }
+
+            let selectedVariant = product.variants.find(v => v.colorName === selectedColor);
+            if (!selectedVariant) return;
+
+            if (selectedVariant.imageUrls.length > 0) {
+                selectedVariant.imageUrls.forEach((image, index) => {
+                    let isActive = index === 0 ? "active show" : "";
+
+                    imageContainer.innerHTML += `
+                                <div class="tab-pane ${isActive}" id="product-${index}-item">
+                                    <img src="${image}" class="img-fluid mx-auto d-block rounded" alt="Ürün Görseli"/>
+                                </div>
+                            `;
+
+                    thumbnails.innerHTML += `
+                                <li class="nav-item">
+                                    <a href="#product-${index}-item" data-bs-toggle="tab" class="nav-link product-thumb ${isActive}">
+                                        <img src="${image}" class="img-fluid mx-auto rounded" alt="Thumbnail"/>
+                                    </a>
+                                </li>
+                            `;
+                });
+            } else {
+                imageContainer.innerHTML = `<p>Görsel bulunmamaktadır.</p>`;
+            }
+
+            adjustThumbnailSize();
+        }
+    });
+</script>
+
+}

@@ -1,0 +1,467 @@
+
+    <!-- Bootstrap CSS -->
+    <!-- Box Icons -->
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        :root {
+            --primary: #4e73df;
+            --secondary: #858796;
+            --success: #1cc88a;
+            --info: #36b9cc;
+            --warning: #f6c23e;
+            --danger: #e74a3b;
+            --light: #f8f9fc;
+            --dark: #5a5c69;
+            --pink: #e83e8c;
+        }
+        
+
+        
+        /* Arama Alanı Stilleri */
+        .search-container {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+        
+        .search-input {
+            padding-left: 2.5rem;
+            border-radius: 0.25rem;
+            border: 1px solid #d1d3e2;
+            transition: all 0.3s;
+        }
+        
+        .search-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25);
+        }
+        
+        .search-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #b7b9cc;
+        }
+        
+        /* Durum Badge Stilleri */
+        .status-badge {
+            padding: 0.35em 0.65em;
+            font-size: 75%;
+            font-weight: 700;
+            border-radius: 0.25rem;
+            white-space: nowrap;
+        }
+        
+        .badge-pending {
+            color: #856404;
+            background-color: #fff3cd;
+        }
+        
+        .badge-approved {
+            color: #155724;
+            background-color: #d4edda;
+        }
+        
+        .badge-prepared {
+            color: #004085;
+            background-color: #cce5ff;
+        }
+        
+        .badge-shipped {
+            color: #0c5460;
+            background-color: #d1ecf1;
+        }
+        
+        .badge-delivered {
+            color: #721c24;
+            background-color: #f8d7da;
+        }
+        
+        .badge-cancelled {
+            color: #383d41;
+            background-color: #e2e3e5;
+        }
+        
+        /* Buton Stilleri */
+        .btn-status {
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+        
+        .btn-status:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        }
+        
+        .btn-status.active {
+            box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25);
+        }
+        
+        /* Tablo Stilleri */
+        .order-table {
+            font-size: 0.85rem;
+        }
+        
+        .order-table th {
+            border-top: none;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.7rem;
+            letter-spacing: 0.5px;
+            color: var(--dark);
+        }
+        
+        .order-table tr:hover {
+            background-color: rgba(78, 115, 223, 0.03);
+        }
+        
+        .details-btn {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+        }
+        
+        /* Sayfalama Stilleri */
+        .pagination-btn {
+            min-width: 100px;
+        }
+        
+        /* Yükleme Spinner */
+        .loading-spinner {
+            display: none;
+            width: 3rem;
+            height: 3rem;
+        }
+        
+        /* Responsive Düzen */
+        @@media (max-width: 768px) {
+            .btn-group-responsive {
+                flex-wrap: wrap;
+            }
+            
+            .btn-group-responsive .btn {
+                flex: 0 0 50%;
+                margin-bottom: 0.5rem;
+            }
+        }
+    </style>
+    <div class="container-fluid py-4">
+        <!-- Sipariş Yönetim Paneli -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                <h6 class="m-0 font-weight-bold text-primary">Sipariş Yönetimi</h6>
+                <div class="spinner-border spinner-border-sm text-primary order-spinner" style="display: none;"></div>
+            </div>
+            <div class="card-body">
+                <!-- Arama Alanı -->
+                <div class="search-container">
+                    <i class='bx bx-search search-icon'></i>
+                    <input type="text" id="orderSearchInput" class="form-control search-input" 
+                           placeholder="Sipariş ID, Müşteri Adı veya Telefon ile ara..." 
+                           onkeyup="searchOrders()">
+                </div>
+
+                <!-- Sipariş Durumu Filtreleme Butonları -->
+                <div class="mb-4">
+                    <div class="btn-group btn-group-responsive w-100 mb-3" role="group" aria-label="Order Status Buttons">
+                        <button class="btn btn-status btn-secondary" onclick="loadOrdersByStatus()">
+                            <i class='bx bx-menu'></i> Tüm Siparişler
+                        </button>
+                        <button class="btn btn-status btn-warning" id="btnPending" onclick="loadOrdersByStatus('Beklemede')">
+                            <i class='bx bx-time-five'></i> Bekleyen
+                        </button>
+                        <button class="btn btn-status btn-success" id="btnApproved" onclick="loadOrdersByStatus('Onaylandı')">
+                            <i class='bx bx-select-multiple'></i> Onaylanan
+                        </button>
+                        <button class="btn btn-status btn-primary" id="btnPrepared" onclick="loadOrdersByStatus('Hazırlanıyor')">
+                            <i class='bx bx-cart-download'></i> Hazırlanan
+                        </button>
+                        <button class="btn btn-status btn-info" id="btnShipped" onclick="loadOrdersByStatus('Kargoya Verildi')">
+                            <i class='bx bxs-ambulance'></i> Kargoda
+                        </button>
+                        <button class="btn btn-status btn-pink" id="btnDelivered" onclick="loadOrdersByStatus('Teslim Edildi')">
+                            <i class='bx bxs-paper-plane'></i> Teslim Edildi
+                        </button>
+                        <button class="btn btn-status btn-danger" id="btnCancelled" onclick="loadOrdersByStatus('İptal Edildi')">
+                            <i class='bx bx-trash'></i> İptal Edilen
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Sipariş Tablosu -->
+                <div class="table-responsive">
+                    <div id="orderTableContainer"></div>
+                </div>
+
+                <!-- Sayfalama Butonları -->
+                <div class="d-flex justify-content-center mt-4">
+                    <nav>
+                        <ul class="pagination">
+                            <li class="page-item">
+                                <button class="page-link pagination-btn" id="prevPage" onclick="changePage('prev')" disabled>
+                                    <i class="bi bi-arrow-left-circle"></i> Önceki
+                                </button>
+                            </li>
+                            <li class="page-item disabled">
+                                <span class="page-link bg-light" id="currentPage">1</span>
+                            </li>
+                            <li class="page-item">
+                                <button class="page-link pagination-btn" id="nextPage" onclick="changePage('next')" disabled>
+                                    Sonraki <i class="bi bi-arrow-right-circle"></i>
+                                </button>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let currentPage = 1;
+        const ordersPerPage = 10;
+        let selectedStatus = 'Beklemede';
+        const apiBaseUrl = '/Admin/Order';
+        let allOrders = [];
+        let isSearching = false;
+
+        // Yükleme spinner'ını göster/gizle
+        function showLoading(show, type = 'orders') {
+            try {
+                if (type === 'orders') {
+                    const spinner = document.querySelector('.order-spinner');
+                    if (spinner) spinner.style.display = show ? 'inline-block' : 'none';
+                }
+            } catch (error) {
+                console.warn('Loading spinner error:', error);
+            }
+        }
+
+        // API'den veri çekme fonksiyonu
+        async function fetchData(url, options = {}) {
+            try {
+                const response = await fetch(url, options);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                return await response.json();
+            } catch (error) {
+                console.error('Fetch error:', error);
+                showError(error.message);
+                return null;
+            }
+        }
+
+        // Hata mesajı göster
+        function showError(message) {
+            const alertContainer = document.createElement('div');
+            alertContainer.innerHTML = `
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <strong>Hata!</strong> ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            `;
+            const cardBody = document.querySelector('.card-body');
+            if (cardBody) cardBody.prepend(alertContainer.firstChild);
+        }
+
+        // Buton aktif durumunu ayarla
+        function setActiveButton(status) {
+            try {
+                document.querySelectorAll('.btn-status').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                
+                if (status === '') {
+                    const allBtn = document.querySelector('.btn-status.btn-secondary');
+                    if (allBtn) allBtn.classList.add('active');
+                } else {
+                    const btnId = `btn${status.replace(/ /g, '').replace('ı', 'i')}`;
+                    const statusBtn = document.getElementById(btnId);
+                    if (statusBtn) statusBtn.classList.add('active');
+                }
+            } catch (error) {
+                console.warn('Button activation error:', error);
+            }
+        }
+
+        // Arama fonksiyonu
+        function searchOrders() {
+            const searchTerm = document.getElementById('orderSearchInput').value.toLowerCase();
+            isSearching = searchTerm.length > 0;
+
+            if (!isSearching) {
+                loadOrdersByStatus(selectedStatus);
+                return;
+            }
+
+            const filteredOrders = allOrders.filter(order => {
+                return (
+                    order.orderId.toString().includes(searchTerm) ||
+                    (order.customerName && order.customerName.toLowerCase().includes(searchTerm)) ||
+                    (order.phoneNumber && order.phoneNumber.includes(searchTerm))
+                );
+            });
+
+            renderOrdersTable(filteredOrders, filteredOrders.length);
+        }
+
+        // Siparişleri yükle
+        async function loadOrdersByStatus(status = '') {
+            showLoading(true);
+            selectedStatus = status;
+            currentPage = 1;
+            
+            try {
+                setActiveButton(status);
+                
+                const data = await fetchData(
+                    `${apiBaseUrl}/GetOrders?status=${encodeURIComponent(status)}&page=${currentPage}&pageSize=${ordersPerPage}`
+                );
+                
+                if (!data) return;
+                
+                allOrders = data.orders;
+                renderOrdersTable(data.orders, data.totalCount);
+            } catch (error) {
+                console.error('Error loading orders:', error);
+                showError('Siparişler yüklenirken hata oluştu');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // Tabloyu oluştur
+        function renderOrdersTable(orders, totalCount) {
+            const tableContainer = document.getElementById('orderTableContainer');
+            if (!tableContainer) return;
+            
+            if (!orders || orders.length === 0) {
+                tableContainer.innerHTML = `
+                    <div class="alert alert-info">
+                        <i class='bx bx-info-circle'></i> Gösterilecek sipariş bulunamadı
+                    </div>
+                `;
+                updatePaginationButtons(true, true);
+                return;
+            }
+
+            let tableHTML = `
+                <table class="order-table table table-bordered" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>Sipariş ID</th>
+                            <th>Toplam Tutar</th>
+                            <th>Durum</th>
+                            <th>Tarih</th>
+                            <th>İşlemler</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            orders.forEach(order => {
+                const statusClass = {
+                    'Beklemede': 'badge-pending',
+                    'Onaylandı': 'badge-approved',
+                    'Hazırlanıyor': 'badge-prepared',
+                    'Kargoya Verildi': 'badge-shipped',
+                    'Teslim Edildi': 'badge-delivered',
+                    'İptal Edildi': 'badge-cancelled'
+                }[order.orderStatus] || '';
+                
+                tableHTML += `
+                    <tr>
+                        <td class="font-weight-bold">#${order.orderId}</td>
+                        <td>${order.totalPrice.toFixed(2)} ₺</td>
+                        <td><span class="status-badge ${statusClass}">${order.orderStatus}</span></td>
+                        <td>${new Date(order.orderDate).toLocaleDateString('tr-TR')}</td>
+                        <td>
+                            <button class="details-btn btn btn-primary btn-sm" onclick="viewOrderDetails(${order.orderId})">
+                                <i class='bx bx-show'></i> Detaylar
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            tableHTML += '</tbody></table>';
+            tableContainer.innerHTML = tableHTML;
+
+            document.getElementById('currentPage').textContent = currentPage;
+            updatePaginationButtons(
+                currentPage <= 1,
+                (currentPage * ordersPerPage) >= totalCount || isSearching
+            );
+        }
+
+        // Sayfalama butonlarını güncelle
+        function updatePaginationButtons(prevDisabled, nextDisabled) {
+            const prevPageBtn = document.getElementById('prevPage');
+            const nextPageBtn = document.getElementById('nextPage');
+            
+            if (prevPageBtn) prevPageBtn.disabled = prevDisabled;
+            if (nextPageBtn) nextPageBtn.disabled = nextDisabled;
+        }
+
+        // Sayfa değiştir
+        async function changePage(direction) {
+            if (isSearching) return;
+            
+            showLoading(true);
+            try {
+                if (direction === 'prev' && currentPage > 1) {
+                    currentPage--;
+                } else if (direction === 'next') {
+                    currentPage++;
+                }
+                
+                const data = await fetchData(
+                    `${apiBaseUrl}/GetOrders?status=${encodeURIComponent(selectedStatus)}&page=${currentPage}&pageSize=${ordersPerPage}`
+                );
+                
+                if (data) {
+                    allOrders = data.orders;
+                    renderOrdersTable(data.orders, data.totalCount);
+                }
+            } catch (error) {
+                console.error('Error changing page:', error);
+                showError('Sayfa değiştirilirken hata oluştu');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // Sipariş detaylarını göster
+        function viewOrderDetails(orderId) {
+            window.location.href = `${apiBaseUrl}/Details/${orderId}`;
+        }
+
+        // Sayfa yüklendiğinde çalıştır
+        function initialize() {
+            // Buton event listener'larını ekle
+            document.querySelectorAll('.btn-status').forEach(btn => {
+                const status = btn.getAttribute('onclick')?.match(/loadOrdersByStatus\('?(.*?)'?\)/)?.[1] || '';
+                btn.addEventListener('click', () => {
+                    document.getElementById('orderSearchInput').value = '';
+                    isSearching = false;
+                    loadOrdersByStatus(status);
+                });
+            });
+            
+            // İlk verileri yükle
+            loadOrdersByStatus(selectedStatus);
+            
+            // 30 saniyede bir verileri yenile
+            setInterval(() => {
+                if (!isSearching) {
+                    loadOrderStats();
+                    loadOrdersByStatus(selectedStatus);
+                }
+            }, 30000);
+        }
+
+        // DOM yüklendiğinde başlat
+        document.addEventListener('DOMContentLoaded', initialize);
+    </script>

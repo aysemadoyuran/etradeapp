@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+
+<!--[if IE 8 ]><html class="ie" xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-US" lang="en-US"> <![endif]-->
+<!--[if (gte IE 9)|!(IE)]><!-->
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-US" lang="en-US">
+<!--<![endif]-->
+
+
+<!-- Mirrored from themesflat.co/html/modave/FAQs.html by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 25 Feb 2025 06:53:59 GMT -->
+
+<head>
+    <meta charset="utf-8">
+    <title>Modave - Multipurpose eCommerce</title>
+
+    <meta name="author" content="themesflat.com">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta name="description" content="Themesflat Modave, Multipurpose eCommerce Template">
+
+    <!-- font -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="/temp/modave/fonts/fonts.css">
+    <link rel="stylesheet" href="/temp/modave/fonts/font-icons.css">
+    <link rel="stylesheet" href="/temp/modave/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/temp/modave/css/drift-basic.min.css">
+    <link rel="stylesheet" href="/temp/modave/css/photoswipe.css">
+    <link rel="stylesheet" href="/temp/modave/css/swiper-bundle.min.css">
+    <link rel="stylesheet" href="/temp/modave/css/animate.css">
+    <link rel="stylesheet" href="/temp/modave/../../../sibforms.com/forms/end-form/build/sib-styles.css">
+    <link rel="stylesheet" type="text/css" href="/temp/modave/css/styles.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- Favicon and Touch Icons  -->
+    <link rel="shortcut icon" href="/temp/modave/images/logo/favicon.png">
+    <link rel="apple-touch-icon-precomposed" href="/temp/modave/images/logo/favicon.png">
+
+    <style>
+        /* Bildirim Stilleri */
+        .dropdown-notification {
+            border: 1px solid rgba(0, 0, 0, 0.1) !important;
+        }
+
+        .notification-item {
+            border-left: none;
+            border-right: none;
+            padding: 12px 16px;
+            transition: background-color 0.15s ease;
+        }
+
+        .notification-item:hover {
+            background-color: #f9f9f9;
+        }
+
+        .notification-item.unread {
+            background-color: #f9f9f9;
+        }
+
+        .notification-icon {
+            width: 20px;
+            height: 20px;
+            margin-right: 12px;
+            color: #666;
+        }
+
+        .notification-message {
+            font-size: 14px;
+            line-height: 1.4;
+            color: #333;
+        }
+    </style>
+</head>
+
+<body class="preload-wrapper">
+
+    <!-- RTL -->
+    <!-- /RTL  -->
+
+    <!-- Scroll Top -->
+    <button id="scroll-top">
+        <svg width="24" height="25" viewBox="0 0 24 25" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <g clip-path="url(#clip0_15741_24194)">
+                <path
+                    d="M3 11.9175L12 2.91748L21 11.9175H16.5V20.1675C16.5 20.3664 16.421 20.5572 16.2803 20.6978C16.1397 20.8385 15.9489 20.9175 15.75 20.9175H8.25C8.05109 20.9175 7.86032 20.8385 7.71967 20.6978C7.57902 20.5572 7.5 20.3664 7.5 20.1675V11.9175H3Z"
+                    stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+            </g>
+            <defs>
+                <clipPath id="clip0_15741_24194">
+                    <rect width="24" height="24" fill="white" transform="translate(0 0.66748)" />
+                </clipPath>
+            </defs>
+        </svg>
+    </button>
+
+    <!-- preload -->
+    <div class="preload preload-container">
+        <div class="preload-logo">
+            <div class="spinner"></div>
+        </div>
+    </div>
+    <!-- /preload -->
+
+    <!-- #wrapper -->
+    <div id="wrapper">
+
+        <!-- Top Bar-->
+        <!-- /Top Bar -->
+
+        <!-- header -->
+        <header id="header" class="header-default">
+            <div class="container">
+                <div class="row wrapper-header align-items-center">
+                    <div class="col-md-4 col-3 d-xl-none">
+                        <a href="#mobileMenu" class="mobile-menu" data-bs-toggle="offcanvas" aria-controls="mobileMenu">
+                            <i class="icon icon-categories"></i>
+                        </a>
+                    </div>
+                    <div class="col-xl-3 col-md-4 col-6">
+                        <a href="/Shop/Home/Index" class="logo-header">
+                            <img src="/temp/modave/images/logo/logo.svg" id="logo-dark" alt="logo" class="logo">
+                        </a>
+                    </div>
+                    <div class="col-xl-6 d-none d-xl-block">
+                        <nav class="box-navigation text-center">
+                            <ul class="box-nav-ul d-flex align-items-center justify-content-center">
+                                <!-- Menü buraya AJAX ile gelecek -->
+                            </ul>
+                        </nav>
+                    </div>
+                    <div class="col-xl-3 col-md-4 col-sm-12">
+                        <ul class="nav-icon d-flex d-sm-flex justify-content-end align-items-center">
+
+                            <li class="nav-item dropdown ms-3">
+                                <!-- Bildirim İkonu -->
+                                <a class="nav-link position-relative p-0" href="#" role="button"
+                                    data-bs-toggle="dropdown" aria-expanded="false">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <path
+                                            d="M12 22C13.1046 22 14 21.1046 14 20H10C10 21.1046 10.8954 22 12 22ZM18 16V11C18 7.68629 16.2091 5 14 5C13.4477 5 13 5.44772 13 6V7C13 7.55228 12.5523 8 12 8C11.4477 8 11 7.55228 11 7V6C11 4.34315 12.3431 3 14 3C16.2091 3 18 4.68629 18 7V16H19C19.553 16 20 16.4477 20 17C20 17.5523 19.553 18 19 18H5C4.44772 18 4 17.5523 4 17C4 16.4477 4.44772 16 5 16H6V7C6 4.79086 7.79086 3 10 3C12.2091 3 14 4.79086 14 7V8C14 8.55228 13.5523 9 13 9C12.4477 9 12 8.55228 12 8V7C12 6.44772 12.4477 6 13 6C13.5523 6 14 6.44772 14 7V6C14 5.44772 13.5523 5 13 5C13 5 12 5.44772 12 6C11.4477 6 11 5.44772 11 5H5"
+                                            stroke="#333" stroke-width="2" stroke-linecap="round"
+                                            stroke-linejoin="round" />
+                                    </svg>
+                                    <!-- Bildirim Sayacı -->
+                                    <span
+                                        class="position-absolute top-0 start-100 translate-middle badge rounded-circle bg-danger"
+                                        id="notification-badge"
+                                        style="display: none; font-size: 10px; width: 18px; height: 18px; align-items: center; justify-content: center;">
+                                        <!-- Sayı buraya dinamik olarak eklenecek -->
+                                    </span>
+                                </a>
+
+                                <!-- Bildirim Dropdown -->
+                                <div class="dropdown-menu dropdown-menu-end dropdown-notification p-0 border-0 shadow"
+                                    aria-labelledby="navbarDropdown" style="width: 300px;">
+                                    <!-- Başlık -->
+                                    <div class="d-flex justify-content-between align-items-center p-3 border-bottom">
+                                        <h6 class="mb-0 fw-bold">Bildirimler</h6>
+                                        <a href="/Shop/Home/Notifications" class="small text-decoration-none">Tümü</a>
+                                    </div>
+
+                                    <!-- Bildirim Listesi -->
+                                    <div class="list-group list-group-flush" id="notification-list"
+                                        style="max-height: 400px; overflow-y: auto;">
+                                        <!-- İçerik dinamik olarak yüklenecek -->
+                                    </div>
+                                </div>
+                            </li>
+
+
+
+
+                            <li class="nav-account">
+                                <a href="#" class="nav-icon-item">
+                                    <svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <path
+                                            d="M20 21V19C20 17.9391 19.5786 16.9217 18.8284 16.1716C18.0783 15.4214 17.0609 15 16 15H8C6.93913 15 5.92172 15.4214 5.17157 16.1716C4.42143 16.9217 4 17.9391 4 19V21"
+                                            stroke="#181818" stroke-width="2" stroke-linecap="round"
+                                            stroke-linejoin="round" />
+                                        <path
+                                            d="M12 11C14.2091 11 16 9.20914 16 7C16 4.79086 14.2091 3 12 3C9.79086 3 8 4.79086 8 7C8 9.20914 9.79086 11 12 11Z"
+                                            stroke="#181818" stroke-width="2" stroke-linecap="round"
+                                            stroke-linejoin="round" />
+                                    </svg>
+                                </a>
+
+                                @inject IHttpContextAccessor HttpContextAccessor
+
+                                @{
+                                    bool IsCustomerAuthenticated()
+                                    {
+                                        var authResult =
+                                        HttpContextAccessor.HttpContext.AuthenticateAsync("ShopCookie").Result;
+                                        return authResult.Succeeded && authResult.Principal.Identity.IsAuthenticated;
+                                    }
+                                }
+
+                                @if (IsCustomerAuthenticated())
+                                {
+                                    <!-- Kullanıcı giriş yapmışsa gösterilecek dropdown -->
+                                    <div class="dropdown-account dropdown-logged-in">
+                                        <ul class="list-menu-item">
+                                            <li>
+                                                <a href="/Shop/Profile/MyAccount">
+                                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                                                        <path
+                                                            d="M12 14C9.23858 14 7 16.2386 7 19H17C17 16.2386 14.7614 14 12 14Z"
+                                                            stroke="#181818" stroke-width="2" stroke-linecap="round"
+                                                            stroke-linejoin="round" />
+                                                        <path
+                                                            d="M12 11C13.6569 11 15 9.65685 15 8C15 6.34315 13.6569 5 12 5C10.3431 5 9 6.34315 9 8C9 9.65685 10.3431 11 12 11Z"
+                                                            stroke="#181818" stroke-width="2" stroke-linecap="round"
+                                                            stroke-linejoin="round" />
+                                                    </svg>
+                                                    Profilim
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a href="/Shop/Order/Index">
+                                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                                                        <path d="M3 4H21" stroke="#181818" stroke-width="2"
+                                                            stroke-linecap="round" />
+                                                        <path d="M3 10H21" stroke="#181818" stroke-width="2"
+                                                            stroke-linecap="round" />
+                                                        <path d="M3 16H21" stroke="#181818" stroke-width="2"
+                                                            stroke-linecap="round" />
+                                                    </svg>
+                                                    Siparişlerim
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a href="/Shop/Refund/List">
+                                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                                                        xmlns="http://www.w3.org/2000/svg">
+                                                        <path
+                                                            d="M20 7H4V17C4 18.6569 5.34315 20 7 20H17C18.6569 20 20 18.6569 20 17V7Z"
+                                                            stroke="#181818" stroke-width="2" />
+                                                        <path
+                                                            d="M8 7V4C8 3.44772 8.44772 3 9 3H15C15.5523 3 16 3.44772 16 4V7"
+                                                            stroke="#181818" stroke-width="2" />
+                                                        <path d="M12 11V16M12 16L15 13M12 16L9 13" stroke="#181818"
+                                                            stroke-width="2" stroke-linecap="round" />
+                                                    </svg>
+                                                    İadelerim
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a href="/Shop/Comment/Index">
+                                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                                                        <path
+                                                            d="M12 17L15.09 19.26L14.18 15.47L17 13.24L13.45 12.97L12 9.7L10.55 12.97L7 13.24L9.82 15.47L8.91 19.26L12 17Z"
+                                                            stroke="#181818" stroke-width="2" stroke-linecap="round"
+                                                            stroke-linejoin="round" />
+                                                    </svg>
+                                                    Yorumlarım
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <form action="/Shop/Account/Logout" method="post"
+                                                    style="margin: 0; padding: 0; display: inline;">
+                                                    <button type="submit">Çıkış Yap</button>
+                                                </form>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <!-- Kullanıcı giriş yapmamışsa gösterilecek dropdown -->
+                                    <div class="dropdown-account dropdown-login">
+                                        <div class="sub-top">
+                                            <a href="/Shop/Account/Login" class="tf-btn btn-reset btn-">Giriş Yap</a>
+                                            <p class="text-center text-secondary-2"><a href="/Shop/Account/Register">Kayıt
+                                                    Ol</a></p>
+                                        </div>
+                                    </div>
+                                }
+                            </li>
+
+                            <li class="nav-wishlist">
+                                <a href="/Shop/Favorite/Index" class="nav-icon-item">
+                                    <svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <path
+                                            d="M20.8401 4.60987C20.3294 4.09888 19.7229 3.69352 19.0555 3.41696C18.388 3.14039 17.6726 2.99805 16.9501 2.99805C16.2276 2.99805 15.5122 3.14039 14.8448 3.41696C14.1773 3.69352 13.5709 4.09888 13.0601 4.60987L12.0001 5.66987L10.9401 4.60987C9.90843 3.57818 8.50915 2.99858 7.05012 2.99858C5.59109 2.99858 4.19181 3.57818 3.16012 4.60987C2.12843 5.64156 1.54883 7.04084 1.54883 8.49987C1.54883 9.95891 2.12843 11.3582 3.16012 12.3899L4.22012 13.4499L12.0001 21.2299L19.7801 13.4499L20.8401 12.3899C21.3511 11.8791 21.7565 11.2727 22.033 10.6052C22.3096 9.93777 22.4519 9.22236 22.4519 8.49987C22.4519 7.77738 22.3096 7.06198 22.033 6.39452C21.7565 5.72706 21.3511 5.12063 20.8401 4.60987V4.60987Z"
+                                            stroke="#181818" stroke-width="2" stroke-linecap="round"
+                                            stroke-linejoin="round" />
+                                    </svg>
+
+                                </a>
+                            </li>
+
+
+
+
+                            <li class="nav-cart">
+                                <a href="/Shop/Basket/Index" class="nav-icon-item">
+                                    <svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <path
+                                            d="M16.5078 10.8734V6.36686C16.5078 5.17166 16.033 4.02541 15.1879 3.18028C14.3428 2.33514 13.1965 1.86035 12.0013 1.86035C10.8061 1.86035 9.65985 2.33514 8.81472 3.18028C7.96958 4.02541 7.49479 5.17166 7.49479 6.36686V10.8734M4.11491 8.62012H19.8877L21.0143 22.1396H2.98828L4.11491 8.62012Z"
+                                            stroke="#181818" stroke-width="2" stroke-linecap="round"
+                                            stroke-linejoin="round" />
+                                    </svg>
+                                    <span class="count-box" id="inactiveItemCount">0</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </header>
+        <!-- header -->
+
+        <!-- tf-add-cart-success -->
+
+
+        @RenderBody()
+        <!-- Footer -->
+        <footer id="footer" class="footer bg-dark text-white pt-5 pb-4">
+            <div class="container">
+                <div class="row g-4">
+                    <!-- Logo ve İletişim Bilgileri -->
+                    <div class="col-lg-4 mb-4 mb-lg-0">
+                        <div class="pe-lg-4">
+                            <div class="mb-4">
+                                <a href="/Shop/Home/Index" class="d-inline-block">
+                                    <img src="/temp/modave/images/logo/logo_white.svg" id="logo-white" alt="Logo"
+                                        style="height: 35px; width: auto;">
+                                </a>
+                            </div>
+
+                            <div class="mb-4">
+                                <p class="mb-3 text-white" id="footer-address"></p>
+                                <a href="#" id="footer-button" class="btn btn-outline-light btn-sm">
+                                    İletişime Geç <i class="bi bi-arrow-up-right ms-1"></i>
+                                </a>
+                            </div>
+
+                            <ul class="list-unstyled mb-4">
+                                <li class="d-flex align-items-center mb-2">
+                                    <i class="bi bi-envelope me-2"></i>
+                                    <span id="footer-mail"></span>
+                                </li>
+                                <li class="d-flex align-items-center">
+                                    <i class="bi bi-telephone me-2"></i>
+                                    <span id="footer-phone"></span>
+                                </li>
+                            </ul>
+
+                            <div class="d-flex gap-3">
+                                <a href="#" class="text-white"><i class="bi bi-facebook"></i></a>
+                                <a href="#" class="text-white"><i class="bi bi-twitter-x"></i></a>
+                                <a href="#" class="text-white"><i class="bi bi-instagram"></i></a>
+                                <a href="#" class="text-white"><i class="bi bi-tiktok"></i></a>
+                                <a href="#" class="text-white"><i class="bi bi-pinterest"></i></a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Menü Bölümleri -->
+                    <div class="col-lg-8">
+                        <div class="row">
+                            <!-- Information Column -->
+                            <div class="col-md-6 mb-4 mb-md-0">
+                                <h6 class="text-white-50 text-decoration-none mb-3">Site Haritası</h6>
+                                <ul class="list-unstyled" id="site-map-links">
+                                    <!-- Dinamik site haritası linkleri buraya eklenecek -->
+                                </ul>
+                            </div>
+
+                            <!-- Customer Services Column -->
+                            <div class="col-md-6">
+                                <h5 class="text-white-50 text-decoration-none mb-3">Politikalarımız</h5>
+                                <ul class="list-unstyled" id="policy-links">
+                                    <!-- Dinamik politika linkleri buraya eklenecek -->
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Alt Kısım -->
+                <div class="row pt-4 mt-4 border-top border-secondary">
+                    <div class="col-md-6 mb-3 mb-md-0">
+                        <p class="mb-0 text-white-50 small">&copy; 2025 Modave. Tümü Hakları Saklıdır.</p>
+                    </div>
+                    <div class="col-md-6 text-md-end">
+                        <div class="d-flex gap-2 justify-content-md-end">
+                            <img src="/images/payments/iyzco.svg" alt="Iyzco" width="40">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </footer>
+        <!-- /Footer -->
+        <!-- toolbar-bottom -->
+        <div class="tf-toolbar-bottom">
+            <div class="toolbar-item">
+                <a href="/Shop/Category/Index">
+                    <div class="toolbar-icon">
+                        <svg class="icon" width="20" height="20" viewBox="0 0 20 20" fill="none"
+                            xmlns="http://www.w3.org/2000/svg">
+                            <path
+                                d="M8.125 3.125H4.375C4.04348 3.125 3.72554 3.2567 3.49112 3.49112C3.2567 3.72554 3.125 4.04348 3.125 4.375V8.125C3.125 8.45652 3.2567 8.77446 3.49112 9.00888C3.72554 9.2433 4.04348 9.375 4.375 9.375H8.125C8.45652 9.375 8.77446 9.2433 9.00888 9.00888C9.2433 8.77446 9.375 8.45652 9.375 8.125V4.375C9.375 4.04348 9.2433 3.72554 9.00888 3.49112C8.77446 3.2567 8.45652 3.125 8.125 3.125ZM8.125 8.125H4.375V4.375H8.125V8.125ZM15.625 3.125H11.875C11.5435 3.125 11.2255 3.2567 10.9911 3.49112C10.7567 3.72554 10.625 4.04348 10.625 4.375V8.125C10.625 8.45652 10.7567 8.77446 10.9911 9.00888C11.2255 9.2433 11.5435 9.375 11.875 9.375H15.625C15.9565 9.375 16.2745 9.2433 16.5089 9.00888C16.7433 8.77446 16.875 8.45652 16.875 8.125V4.375C16.875 4.04348 16.7433 3.72554 16.5089 3.49112C16.2745 3.2567 15.9565 3.125 15.625 3.125ZM15.625 8.125H11.875V4.375H15.625V8.125ZM8.125 10.625H4.375C4.04348 10.625 3.72554 10.7567 3.49112 10.9911C3.2567 11.2255 3.125 11.5435 3.125 11.875V15.625C3.125 15.9565 3.2567 16.2745 3.49112 16.5089C3.72554 16.7433 4.04348 16.875 4.375 16.875H8.125C8.45652 16.875 8.77446 16.7433 9.00888 16.5089C9.2433 16.2745 9.375 15.9565 9.375 15.625V11.875C9.375 11.5435 9.2433 11.2255 9.00888 10.9911C8.77446 10.7567 8.45652 10.625 8.125 10.625ZM8.125 15.625H4.375V11.875H8.125V15.625ZM15.625 10.625H11.875C11.5435 10.625 11.2255 10.7567 10.9911 10.9911C10.7567 11.2255 10.625 11.5435 10.625 11.875V15.625C10.625 15.9565 10.7567 16.2745 10.9911 16.5089C11.2255 16.7433 11.5435 16.875 11.875 16.875H15.625C15.9565 16.875 16.2745 16.7433 16.5089 16.5089C16.7433 16.2745 16.875 15.9565 16.875 15.625V11.875C16.875 11.5435 16.7433 11.2255 16.5089 10.9911C16.2745 10.7567 15.9565 10.625 15.625 10.625ZM15.625 15.625H11.875V11.875H15.625V15.625Z"
+                                fill="#4D4E4F" />
+                        </svg>
+                    </div>
+                    <div class="toolbar-label">Kategoriler</div>
+                </a>
+            </div>
+
+            <div class="toolbar-item">
+                <a href="/Shop/Favorite/Index" data-bs-toggle="modal">
+                    <div class="toolbar-icon">
+                        <svg class="icon" width="20" height="20" viewBox="0 0 20 20" fill="none"
+                            xmlns="http://www.w3.org/2000/svg">
+                            <path
+                                d="M17.4215 4.45326C16.5724 3.60627 15.4225 3.12997 14.2231 3.1285C13.0238 3.12704 11.8727 3.60054 11.0215 4.44545L9.99965 5.39467L8.97699 4.44232C8.12602 3.59373 6.9728 3.11795 5.77103 3.11963C4.56926 3.12132 3.41738 3.60034 2.56879 4.45131C1.7202 5.30228 1.24441 6.4555 1.2461 7.65727C1.24778 8.85904 1.7268 10.0109 2.57777 10.8595L9.55824 17.9423C9.6164 18.0014 9.68572 18.0483 9.76217 18.0803C9.83862 18.1123 9.92067 18.1288 10.0036 18.1288C10.0864 18.1288 10.1685 18.1123 10.2449 18.0803C10.3214 18.0483 10.3907 18.0014 10.4489 17.9423L17.4215 10.8595C18.2707 10.0098 18.7477 8.85768 18.7477 7.65639C18.7477 6.45509 18.2707 5.30296 17.4215 4.45326ZM16.5348 9.98139L9.99965 16.6095L3.46059 9.97514C2.8452 9.35975 2.49948 8.52511 2.49948 7.65482C2.49948 6.78454 2.8452 5.9499 3.46059 5.33451C4.07597 4.71913 4.91061 4.37341 5.7809 4.37341C6.65118 4.37341 7.48583 4.71913 8.10121 5.33451L8.11684 5.35014L9.57387 6.7056C9.68953 6.81324 9.84166 6.87307 9.99965 6.87307C10.1576 6.87307 10.3098 6.81324 10.4254 6.7056L11.8825 5.35014L11.8981 5.33451C12.5139 4.71954 13.3488 4.37438 14.219 4.37497C15.0893 4.37555 15.9237 4.72184 16.5387 5.33764C17.1537 5.95344 17.4988 6.78831 17.4983 7.6586C17.4977 8.52888 17.1514 9.36329 16.5356 9.97826L16.5348 9.98139Z"
+                                fill="#4D4E4F" />
+                        </svg>
+                        <!-- <div class="toolbar-count">1</div> -->
+                    </div>
+                    <div class="toolbar-label">Favoriler</div>
+                </a>
+            </div>
+            <div class="toolbar-item">
+                <a href="/Shop/Basket/Index" data-bs-toggle="modal">
+                    <div class="toolbar-icon">
+                        <svg class="icon" width="20" height="20" viewBox="0 0 20 20" fill="none"
+                            xmlns="http://www.w3.org/2000/svg">
+                            <path
+                                d="M13.75 8.23389V4.48389C13.75 3.48932 13.3549 2.5355 12.6517 1.83224C11.9484 1.12897 10.9946 0.733887 10 0.733887C9.00544 0.733887 8.05161 1.12897 7.34835 1.83224C6.64509 2.5355 6.25 3.48932 6.25 4.48389V8.23389M3.4375 6.35889H16.5625L17.5 17.6089H2.5L3.4375 6.35889Z"
+                                stroke="#4D4E4F" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                    </div>
+                    <div class="toolbar-label">Sepetim</div>
+                </a>
+            </div>
+        </div>
+        <!-- /toolbar-bottom -->
+
+    </div>
+    <!-- /wrapper -->
+
+
+
+    <!-- mobile menu -->
+    <div class="offcanvas offcanvas-start canvas-mb" id="mobileMenu">
+        <span class="icon-close icon-close-popup" data-bs-dismiss="offcanvas" aria-label="Close"></span>
+        <div class="mb-canvas-content">
+            <div class="mb-body">
+                <div class="mb-content-top">
+                    <ul class="nav-ul-mb" id="wrapper-menu-navigation">
+                        <!-- Menü linkleri buraya gömülecek -->
+                    </ul>
+                    <div class="mb-other-content">
+
+                        <div class="mb-notice">
+                            <a href="#" class="text-need" id="mb-address-title">Mağaza Adresi</a>
+                        </div>
+                        <div class="mb-contact">
+                            <p class="text-caption-1" id="mb-address">549 Oak St.Crystal Lake, IL 60014</p>
+                            <a href="contact.html" class="tf-btn-default text-btn-uppercase" id="mb-contact-btn">Bize
+                                Ulaşın<i class="icon-arrowUpRight"></i></a>
+                        </div>
+                        <ul class="mb-info">
+                            <li>
+                                <i class="icon icon-mail"></i>
+                                <p id="mb-mail">themesflat@gmail.com</p>
+                            </li>
+                            <li>
+                                <i class="icon icon-phone"></i>
+                                <p id="mb-phone">315-666-6688</p>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- /mobile menu -->
+
+    <!-- /modal share social -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $.ajax({
+                url: '/Shop/Home/GetTopBarLinks', // Menü verisini alacağınız URL
+                type: 'GET',
+                success: function (data) {
+                    const topbarLinks = data; // Gelen JSON verisini alıyoruz
+                    let topbarHtml = ''; // Menü için HTML içeriği
+
+                    if (topbarLinks && topbarLinks.length > 0) {
+                        topbarLinks.forEach(link => {
+                            topbarHtml += `
+                        <li class="menu-item">
+                            <a href="${link.url}" class="item-link">${link.text}</a>
+                        </li>`;
+                        });
+
+                        $('.box-nav-ul').html(topbarHtml); // HTML'deki Topbar <ul>'sını bul ve içeriği ekle
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.log("AJAX Hatası: " + error);  // Hata mesajını konsola yazdır
+                }
+            });
+        });
+    </script>
+    <script>
+        $(document).ready(function () {
+            // Footer verilerini API'den çekme
+            $.ajax({
+                url: '/SHop/Home/GetFooterAndSiteMapAndPolicies',  // API endpointi
+                method: 'GET',
+                success: function (data) {
+                    // API'den dönen verileri kullanarak HTML'yi güncelleme
+                    // Adres ve iletişim bilgilerini güncelleme
+                    $('#footer-address').text(data.footer.address);
+                    $('#footer-mail').text(data.footer.mail);
+                    $('#footer-phone').text(data.footer.phone);
+                    $('#footer-button').text(data.footer.buttonTitle).attr('href', data.footer.buttonUrl);
+
+                    // Site haritası links
+                    var siteMapLinks = '';
+                    $.each(data.siteMaps.links, function (index, link) {
+                        siteMapLinks += '<li class="mb-2"><a href="' + link.url + '" class="text-white-50 text-decoration-none">' + link.text + '</a></li>';
+                    });
+                    $('#site-map-links').html(siteMapLinks);
+
+                    // Politika links
+                    var policyLinks = '';
+                    $.each(data.policies.links, function (index, link) {
+                        policyLinks += '<li class="mb-2"><a href="' + link.url + '" class="text-white-50 text-decoration-none">' + link.text + '</a></li>';
+                    });
+                    $('#policy-links').html(policyLinks);
+                },
+                error: function (xhr, status, error) {
+                    console.log('API Hatası:', error);
+                }
+            });
+        });
+    </script>
+    <script>
+        $(document).ready(function () {
+            $.ajax({
+                url: '/Shop/Home/GetStoreJsonSettings',
+                method: 'GET',
+                dataType: 'json',
+                success: function (data) {
+                    console.log("Gelen veri:", data);
+
+                    // 1. MobileMenu Kısmı (DEĞİŞMEDİ)
+                    const mobile = data.mobileMenu;
+                    console.log("MobileMenu objesi:", mobile);
+
+                    let mobileMenuHtml = '';
+                    if (mobile.links && mobile.links.length > 0) {
+                        mobile.links.forEach(link => {
+                            mobileMenuHtml += `<li class="nav-mb-item"><a href="${link.url}" class="collapsed mb-menu-link">${link.text}</a></li>`;
+                        });
+                        $('#wrapper-menu-navigation').html(mobileMenuHtml);
+                    } else {
+                        console.error("MobileMenu.Links boş veya tanımsız!");
+                    }
+
+                    $('#mb-address-title').text(mobile.addressTitle || '');
+                    $('#mb-address').text(mobile.address || '');
+
+                    if (mobile.ButtonUrl && mobile.buttonTitle) {
+                        $('#mb-contact-btn')
+                            .attr('href', mobile.buttonUrl)
+                            .html(`${mobile.buttonTitle} <i class="icon-arrowUpRight"></i>`);
+                    }
+
+                    $('#mb-mail').text(mobile.mail || '');
+                    $('#mb-phone').text(mobile.phone || '');
+                },
+                error: function (xhr) {
+                    console.error('AJAX hatası:', xhr.responseText);
+                }
+            });
+        });
+    </script>
+    <script>
+        // Veritabanından logo yollarını alıyoruz
+        fetch('/Shop/Home/GetStoreLogos')
+            .then(response => response.json())
+            .then(data => {
+                // Logo yollarını HTML img etiketlerine yerleştiriyoruz
+                if (data.logoDarkPath) {
+                    document.getElementById('logo-dark').src = data.logoDarkPath;
+                }
+                if (data.logoLightPath) {
+                    document.getElementById('logo-white').src = data.logoLightPath;
+                }
+            })
+            .catch(error => {
+                console.error('Logo verisi alınırken hata oluştu:', error);
+            });
+    </script>
+    <script>
+        // Sayfa yüklendiğinde API'den veri çekme
+        fetch('/Shop/Product/GetInactiveBasketItemCount')
+            .then(response => response.json())
+            .then(data => {
+                // Sayıyı count-box'a ekleyin
+                document.getElementById('inactiveItemCount').textContent = data;
+            })
+            .catch(error => console.log('Hata:', error));
+
+    </script>
+    <!-- SweetAlert2 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.10/dist/sweetalert2.min.css" rel="stylesheet">
+
+    <!-- SweetAlert2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.10/dist/sweetalert2.all.min.js"></script>
+    <!-- Javascript -->
+    <script type="text/javascript" src="/temp/modave/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="/temp/modave/js/jquery.min.js"></script>
+    <script type="text/javascript" src="/temp/modave/js/swiper-bundle.min.js"></script>
+    <script type="text/javascript" src="/temp/modave/js/carousel.js"></script>
+    <script type="text/javascript" src="/temp/modave/js/bootstrap-select.min.js"></script>
+    <script type="text/javascript" src="/temp/modave/js/lazysize.min.js"></script>
+    <script type="text/javascript" src="/temp/modave/js/count-down.js"></script>
+    <script type="text/javascript" src="/temp/modave/js/wow.min.js"></script>
+    <script type="text/javascript" src="/temp/modave/js/multiple-modal.js"></script>
+    <script type="text/javascript" src="/temp/modave/js/nouislider.min.js"></script>
+    <script type="text/javascript" src="/temp/modave/js/shop.js"></script>
+    <script type="text/javascript" src="/temp/modave/js/main.js"></script>
+    <script src="/temp/modave/js/sibforms.js" defer></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            loadNotifications();
+        });
+
+        function loadNotifications() {
+            const notificationList = document.getElementById('notification-list');
+            const notificationBadge = document.getElementById('notification-badge');
+
+            // Yükleniyor spinner'ını göster
+            notificationList.innerHTML = getLoadingTemplate();
+
+            fetch('/Shop/Home/GetUnreadNotifications')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Yükleniyor spinner'ını kaldır
+                    notificationList.innerHTML = '';
+
+                    // Toplam okunmamış bildirim sayısını al
+                    const totalUnreadCount = data.totalUnreadCount || data.length;
+
+                    // Badge'i güncelle (tüm okunmamışların sayısı)
+                    if (totalUnreadCount > 0) {
+                        notificationBadge.textContent = totalUnreadCount > 99 ? '99+' : totalUnreadCount;
+                        notificationBadge.style.display = 'flex';
+                    } else {
+                        notificationBadge.style.display = 'none';
+                    }
+
+                    // Sadece son 7 okunmamış bildirimi göster
+                    const lastUnreadNotifications = data.notifications ?
+                        data.notifications.slice(0, 7) :
+                        data.slice(0, 7);
+
+                    // Eğer veri yoksa boş liste göster
+                    if (lastUnreadNotifications.length === 0) {
+                        notificationList.innerHTML = getEmptyNotificationTemplate();
+                        return;
+                    }
+
+                    // Listeyi oluştur
+                    notificationList.innerHTML = lastUnreadNotifications.map(notification =>
+                        getNotificationTemplate(notification)
+                    ).join('');
+                })
+                .catch(error => {
+                    console.error('Bildirim yüklenirken hata:', error);
+                    notificationList.innerHTML = getErrorTemplate();
+                    notificationBadge.style.display = 'none';
+                });
+        }
+
+        function getLoadingTemplate() {
+            return `
+        <div class="list-group-item text-center py-3">
+            <div class="spinner-border spinner-border-sm text-secondary" role="status">
+                <span class="visually-hidden">Yükleniyor...</span>
+            </div>
+        </div>`;
+        }
+
+        function getNotificationTemplate(notification) {
+            return `
+        <div class="list-group-item notification-item">
+            <div class="d-flex align-items-start">
+                <div class="flex-shrink-0 pt-1">
+                    <i class="${getNotificationIcon(notification.type)} notification-icon"></i>
+                </div>
+                <div class="flex-grow-1">
+                    <p class="notification-message mb-0">${notification.message}</p>
+                    <small class="text-muted">${formatDate(notification.createdDate)}</small>
+                </div>
+            </div>
+        </div>`;
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return '';
+            const date = new Date(dateString);
+            return date.toLocaleString('tr-TR', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        function getEmptyNotificationTemplate() {
+            return `
+        <div class="list-group-item text-center py-4">
+            <i class="far fa-bell-slash mb-2" style="font-size: 1.5rem; color: #ccc;"></i>
+            <p class="text-muted small mb-0">Yeni bildiriminiz yok</p>
+        </div>`;
+        }
+
+        function getErrorTemplate() {
+            return `
+        <div class="list-group-item text-center py-3 text-muted small">
+            <i class="fas fa-exclamation-circle me-1"></i>
+            Bildirimler yüklenirken hata oluştu
+        </div>`;
+        }
+
+        function getNotificationIcon(type) {
+            const icons = {
+                'order': 'fas fa-shopping-bag',
+                'message': 'fas fa-envelope',
+                'system': 'fas fa-cog',
+                'promotion': 'fas fa-tag'
+            };
+            return icons[type] || 'fas fa-bell';
+        }
+    </script>
+
+
+</body>
+
+
+@RenderSection("Scripts", required: false)
+
+</html>

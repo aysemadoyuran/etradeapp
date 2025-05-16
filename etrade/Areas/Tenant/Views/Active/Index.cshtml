@@ -1,0 +1,250 @@
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Lisans Aktifleştirme</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            padding: 2rem;
+            max-width: 600px;
+            margin: 0 auto;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        input[type="text"],
+        input[type="number"] {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 1rem;
+        }
+
+        button {
+            width: 100%;
+            padding: 0.75rem;
+            background-color: #4a6ee0;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        button:hover {
+            background-color: #3a5bc7;
+        }
+
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+
+        .info-box {
+            background: #f8f9fa;
+            padding: 1.25rem;
+            margin-top: 1.5rem;
+            border-radius: 8px;
+            border-left: 4px solid #4a6ee0;
+            display: none;
+        }
+
+        .info-item {
+            margin-bottom: 0.75rem;
+        }
+
+        .info-label {
+            font-weight: 500;
+            color: #495057;
+        }
+
+        .error-message {
+            color: #dc3545;
+            margin-top: 0.5rem;
+            font-size: 0.875rem;
+            display: none;
+        }
+
+        .success-message {
+            color: #28a745;
+            margin: 1rem 0;
+            text-align: center;
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Lisans Aktifleştirme</h1>
+
+    <div class="form-group">
+        <label for="freezeCode">Dondurma Kodu</label>
+        <input type="text" id="freezeCode" placeholder="FRZ-XXXX-XXXX-XXXX" />
+        <div class="error-message" id="codeError">Geçerli bir dondurma kodu giriniz</div>
+    </div>
+
+    <div class="info-box" id="licenseInfo">
+        <div class="info-item">
+            <span class="info-label">Lisans Sahibi:</span>
+            <span id="licenseName"></span>
+        </div>
+        <div class="info-item">
+            <span class="info-label">Dondurma Tarihi:</span>
+            <span id="frozenDate"></span>
+        </div>
+        <div class="info-item">
+            <span class="info-label">Aktifleştirilebilir Tarih:</span>
+            <span id="availableDate"></span>
+        </div>
+
+        <div class="form-group" style="margin-top: 1.5rem;">
+            <label for="months">Lisans Süresi (Ay)</label>
+            <input type="number" id="months" min="1" max="36" placeholder="1-36 arası değer giriniz" />
+            <div class="error-message" id="monthError">Geçerli bir ay sayısı giriniz (1-36)</div>
+        </div>
+
+        <button id="activateBtn" onclick="activateLicense()" disabled>Lisansı Aktifleştir</button>
+    </div>
+
+    <div class="success-message" id="successMessage">
+        Lisans başarıyla aktifleştirildi! Yönlendiriliyorsunuz...
+    </div>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <script>
+        const freezeCodeInput = document.getElementById("freezeCode");
+        const licenseInfo = document.getElementById("licenseInfo");
+        const activateBtn = document.getElementById("activateBtn");
+        const monthsInput = document.getElementById("months");
+        const codeError = document.getElementById("codeError");
+        const monthError = document.getElementById("monthError");
+        const successMessage = document.getElementById("successMessage");
+
+        freezeCodeInput.addEventListener("input", function () {
+            const code = this.value.trim();
+            codeError.style.display = "none";
+
+            if (code.length >= 10) {
+                fetchLicenseInfo(code);
+            } else {
+                licenseInfo.style.display = "none";
+                activateBtn.disabled = true;
+            }
+        });
+
+        monthsInput.addEventListener("input", function () {
+            const months = parseInt(this.value);
+            monthError.style.display = "none";
+
+            if (months >= 1 && months <= 36) {
+                activateBtn.disabled = false;
+            } else {
+                activateBtn.disabled = true;
+                monthError.style.display = "block";
+            }
+        });
+
+        function fetchLicenseInfo(code) {
+            fetch(`/Tenant/Active/GetLicenseByCode?code=${encodeURIComponent(code)}`)
+                .then(res => {
+                    if (!res.ok) throw new Error('Sunucudan geçerli bir yanıt alınamadı.');
+                    return res.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById("licenseName").textContent = data.name || "Bilinmiyor";
+                        document.getElementById("frozenDate").textContent = data.frozenDate || "Bilinmiyor";
+                        document.getElementById("availableDate").textContent = data.canBeActivatedDate || "Bilinmiyor";
+                        licenseInfo.style.display = "block";
+                        codeError.style.display = "none";
+                    } else {
+                        licenseInfo.style.display = "none";
+                        codeError.style.display = "block";
+                        activateBtn.disabled = true;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    licenseInfo.style.display = "none";
+                    codeError.style.display = "block";
+                    activateBtn.disabled = true;
+                });
+        }
+
+        function activateLicense() {
+            const code = freezeCodeInput.value.trim();
+            const months = parseInt(monthsInput.value);
+
+            if (!code || code.length < 10) {
+                codeError.style.display = "block";
+                return;
+            }
+
+            if (isNaN(months) || months < 1 || months > 36) {
+                monthError.style.display = "block";
+                return;
+            }
+
+            activateBtn.disabled = true;
+            activateBtn.textContent = "İşlem yapılıyor...";
+
+            fetch('/Tenant/Active/ActivateLicense', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+                },
+                body: JSON.stringify({
+                    Code: code,
+                    Months: months
+                })
+            })
+                .then(async res => {
+                    const data = await res.json();
+                    if (!res.ok || !data.success) {
+                        throw new Error(data.message || 'Aktifleştirme başarısız');
+                    }
+                    return data;
+                })
+                .then(data => {
+                    successMessage.style.display = "block";
+                    licenseInfo.style.display = "none";
+                    setTimeout(() => {
+                        window.location.href = "/";
+                    }, 3000);
+                })
+                .catch(error => {
+                    alert(error.message);
+                    activateBtn.disabled = false;
+                    activateBtn.textContent = "Lisansı Aktifleştir";
+                });
+        }
+    </script>
+</body>
+
+</html>

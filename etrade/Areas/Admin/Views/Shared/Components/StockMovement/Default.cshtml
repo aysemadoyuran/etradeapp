@@ -1,0 +1,48 @@
+@model etrade.Models.StockMovementViewModel
+
+<form id="filterForm" method="get" asp-route-filter="@Model.Filter">
+    <select id="dateFilter" class="form-control" name="filter" onchange="this.form.submit()">
+        @foreach (var option in Model.FilterOptions)
+        {
+            <option value="@option.Value" selected="@(Model.Filter == option.Value ? "selected" : null)">
+                @option.Text
+            </option>
+        }
+    </select>
+</form>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Tarih</th>
+            <th>Ürün</th>
+            <th>Adet</th>
+            <th>Fiyat</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var movement in Model.StockMovements)
+        {
+            <tr>
+                <td>@movement.Date.ToString("yyyy-MM-dd")</td>
+                <td>@movement.ProductVariant.Product.Name</td>
+                <td>@movement.Quantity</td>
+                <td>@movement.ProductVariant.Product.Price.ToString("C")</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<div class="pagination">
+    @if (Model.CurrentPage > 1)
+    {
+        <a href="@Url.Action("Index", new { filter = Model.Filter, page = Model.CurrentPage - 1 })" class="btn btn-primary">Önceki</a>
+    }
+
+    <span>Sayfa @Model.CurrentPage / @Model.TotalPages</span>
+
+    @if (Model.CurrentPage < Model.TotalPages)
+    {
+        <a href="@Url.Action("Index", new { filter = Model.Filter, page = Model.CurrentPage + 1 })" class="btn btn-primary">Sonraki</a>
+    }
+</div>

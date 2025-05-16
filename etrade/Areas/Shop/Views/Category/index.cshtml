@@ -1,0 +1,49 @@
+<section class="flat-spacing">
+    <div class="container">
+        <div class="tf-grid-layout tf-col-2 lg-col-4" id="categoriesList">
+            <!-- Kategoriler buraya eklenecek -->
+        </div>
+    </div>
+</section>
+<!-- jQuery CDN -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+$(document).ready(function () {
+    // Kategorileri çekiyoruz
+    $.ajax({
+        url: '@Url.Action("GetCategoriesWithProductCount", "Category", new { area = "Shop" })', // Backend action URL'si
+        method: 'GET',
+        success: function (data) {
+            console.log('Backend verisi:', data); // Veriyi kontrol etmek için log ekledim
+            var categoriesList = $('#categoriesList');
+            categoriesList.empty(); // Listeyi temizliyoruz
+            
+
+            // Her kategori için HTML içeriği oluşturuyoruz
+            data.forEach(function (category) {
+                console.log('Kategori:', category); // Her bir kategori verisini kontrol et
+                var categoryItem = `
+    <div class="collection-position-2 radius-lg style-3 hover-img">
+        <a href="/Shop/Product/List?categoryIds=${category.id}" class="img-style">
+            <img class="lazyload" data-src="${category.imageUrl}" src="${category.imageUrl}" alt="${category.name}">
+        </a>
+        <div class="content">
+            <a href="/Shop/Product/List?categoryIds=${category.id}" class="cls-btn">
+                <h6 class="text">${category.name}</h6> 
+                <span class="count-item text-secondary">${category.productCount} Ürün</span> 
+                <i class="icon icon-arrowUpRight"></i>
+            </a>
+        </div>
+    </div>
+`;
+
+                categoriesList.append(categoryItem); // Kategori öğesini listeye ekliyoruz
+            });
+        },
+        error: function (xhr, status, error) {
+            console.log('Kategoriler alınırken bir hata oluştu: ' + error);
+        }
+    });
+});
+</script>

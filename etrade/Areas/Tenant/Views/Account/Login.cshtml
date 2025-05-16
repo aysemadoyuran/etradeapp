@@ -1,0 +1,146 @@
+@model etrade.Areas.Tenant.Controllers.LoginViewModel
+@{
+    ViewData["Title"] = "Tenant Giriş";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>Tenant Giriş</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Tenant giriş sayfası"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+    <!-- App favicon -->
+    <link rel="shortcut icon" href="/dusty/assets/images/favicon.ico">
+
+    <!-- App css -->
+    <link href="/temp/dusty/assets/css/app.min.css" rel="stylesheet" type="text/css" id="app-style" />
+
+    <!-- Icons -->
+    <link href="/temp/dusty/assets/css/icons.min.css" rel="stylesheet" type="text/css" />
+
+    <script src="/temp/dusty/assets/js/head.js"></script>
+</head>
+
+<body>
+    <!-- Begin page -->
+    <div class="account-page">
+        <div class="container-fluid p-0">
+            <div class="row align-items-center g-0 px-3 py-3 vh-100">
+
+                <div class="col-xl-5">
+                    <div class="row">
+                        <div class="col-md-8 mx-auto">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="mb-0 p-0 p-lg-3">
+                                        <div class="mb-0 border-0 p-md-4 p-lg-0">
+                                            <div class="mb-3 p-0 text-center">
+                                                <div class="auth-brand">
+                                                    <a class='logo logo-light' href='index.html'>
+                                                        <span class="logo-lg">
+                                                            <img src="/dusty/assets/images/logo-light.png" alt="" height="24">
+                                                        </span>
+                                                    </a>
+                                                    <a class='logo logo-dark' href='index.html'>
+                                                        <span class="logo-lg">
+                                                            <img src="/dusty/assets/images/logo-dark.png" alt="" height="24">
+                                                        </span>
+                                                    </a>
+                                                </div>
+                                            </div>
+        
+                                            <div class="auth-title-section mb-4 text-center">
+                                                <h3 class="text-primary fw-semibold mb-1">Hoş Geldiniz!</h3>
+                                                <p class="text-muted fs-14 mb-0">Hesabınıza giriş yapmak için bilgilerinizi girin.</p>
+                                            </div>
+        
+                                            <div class="pt-0">
+                                                <form asp-action="Login" asp-route-returnUrl="@Context.Request.Query["ReturnUrl"]" method="post" class="my-4">
+                                                    @Html.AntiForgeryToken()
+                                                    
+                                                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                                                    
+                                                    <div class="form-group mb-3">
+                                                        <label asp-for="Username" class="form-label"></label>
+                                                        <input asp-for="Username" class="form-control" placeholder="Kullanıcı adınızı girin">
+                                                        <span asp-validation-for="Username" class="text-danger"></span>
+                                                    </div>
+                            
+                                                    <div class="form-group mb-3">
+                                                        <label asp-for="Password" class="form-label"></label>
+                                                        <input asp-for="Password" class="form-control" placeholder="Şifrenizi girin">
+                                                        <span asp-validation-for="Password" class="text-danger"></span>
+                                                    </div>
+                            
+                                                    <div class="form-group d-flex mb-3">
+                                                        <div class="col-sm-6">
+                                                            <div class="form-check">
+                                                                <input asp-for="RememberMe" class="form-check-input" />
+                                                                <label asp-for="RememberMe" class="form-check-label"></label>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-sm-6 text-end">
+                                                            <a class='text-muted fs-14' href='#'>Şifremi Unuttum?</a>                             
+                                                        </div>
+                                                    </div>
+                                                        
+                                                    <div class="form-group mb-0 row">
+                                                        <div class="col-12">
+                                                            <div class="d-grid">
+                                                                <button class="btn btn-primary fw-semibold" type="submit">Giriş Yap</button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </form>
+
+                                                @if (ViewBag.ErrorMessage != null)
+                                                {
+                                                    <div class="alert alert-danger">
+                                                        @ViewBag.ErrorMessage
+                                                    </div>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div> 
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xl-7 d-none d-xl-inline-block">
+                    <div class="account-page-bg rounded-4">
+                        <div class="text-center">
+                            <div class="auth-image">
+                                <img src="/temp/dusty/assets/images/auth-images.svg" class="mx-auto img-fluid" alt="images">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+    
+    <!-- Vendor -->
+    <script src="/temp/dusty/assets/libs/jquery/jquery.min.js"></script>
+    <script src="/temp/dusty/assets/libs/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="/temp/dusty/assets/libs/iconify-icon/iconify-icon.min.js"></script>
+    <script src="/temp/dusty/assets/libs/simplebar/simplebar.min.js"></script>
+    <script src="/temp/dusty/assets/libs/node-waves/waves.min.js"></script>
+    <script src="/temp/dusty/assets/libs/waypoints/lib/jquery.waypoints.min.js"></script>
+    <script src="/temp/dusty/assets/libs/jquery.counterup/jquery.counterup.min.js"></script>
+    <script src="/temp/dusty/assets/libs/feather-icons/feather.min.js"></script>
+
+    <!-- App js-->
+    <script src="/temp/dusty/assets/js/app.js"></script>
+    
+    <!-- Validation scripts -->
+    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+</body>
+</html>

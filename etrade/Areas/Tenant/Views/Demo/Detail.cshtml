@@ -1,0 +1,315 @@
+@model DemoRequest
+@{
+    ViewData["Title"] = "Demo Talep Detayı";
+}
+
+<div class="container-fluid py-4">
+    <div class="card shadow-lg">
+        <div class="card-header bg-primary text-white">
+            <div class="d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">Demo Talep Detayı</h4>
+                <span class="badge bg-white text-primary fs-6">ID: @Model.Id</span>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <!-- Sol Taraf Bilgiler -->
+                <div class="col-lg-6">
+                    <div class="info-card mb-4">
+                        <div class="info-card-header bg-light-primary">
+                            <i class="fas fa-user-tie me-2"></i> Müşteri Bilgileri
+                        </div>
+                        <div class="info-card-body">
+                            <div class="info-item">
+                                <span class="info-label"><i class="fas fa-user me-2"></i>Ad Soyad:</span>
+                                <span class="info-value fw-semibold">@Model.TenantCustomer.FullName</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label"><i class="fas fa-clock me-2"></i>Talep Tarihi:</span>
+                                <span class="info-value">@Model.RequestDate.ToString("dd.MM.yyyy HH:mm")</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="info-card mb-4">
+                        <div class="info-card-header bg-light-primary">
+                            <i class="fas fa-calendar-check me-2"></i> Demo Süreci
+                        </div>
+                        <div class="info-card-body">
+                            <div class="info-item">
+                                <span class="info-label"><i class="fas fa-tasks me-2"></i>Talep Durumu:</span>
+                                <span class="info-value">
+                                    <span class="badge @GetStatusBadgeClass(Model.RequestStatus) py-2 px-3">
+                                        @Model.RequestStatus
+                                    </span>
+                                </span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label"><i class="fas fa-clock me-2"></i>Demo Süresi:</span>
+                                <span class="info-value">@Model.DemoDays gün</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label"><i class="fas fa-play-circle me-2"></i>Başlangıç:</span>
+                                <span class="info-value">@(Model.DemoStartDate?.ToString("dd.MM.yyyy") ?? "-")</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label"><i class="fas fa-stop-circle me-2"></i>Bitiş:</span>
+                                <span class="info-value">@(Model.DemoEndDate?.ToString("dd.MM.yyyy") ?? "-")</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label"><i class="fas fa-power-off me-2"></i>Aktiflik:</span>
+                                <span class="info-value">
+                                    @if (Model.IsActive)
+                                    {
+                                        <span class="badge bg-success py-2 px-3"><i class="fas fa-check-circle me-1"></i> Aktif</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary py-2 px-3"><i class="fas fa-times-circle me-1"></i> Pasif</span>
+                                    }
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sağ Taraf İşlemler -->
+                <div class="col-lg-6">
+                    <div class="info-card mb-4">
+                        <div class="info-card-header bg-light-primary">
+                            <i class="fas fa-clipboard me-2"></i> Talep Notu
+                        </div>
+                        <div class="info-card-body">
+                            <div class="notes-box p-3 bg-light rounded">
+                                @if (!string.IsNullOrEmpty(Model.RequestNote))
+                                {
+                                    <div class="note-content">
+                                        @Model.RequestNote
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="text-muted fst-italic">
+                                        <i class="fas fa-info-circle me-2"></i>Not girilmemiş
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Durum Güncelleme Formu -->
+                    <div class="info-card mb-4">
+                        <div class="info-card-header bg-light-primary">
+                            <i class="fas fa-cogs me-2"></i> Talep Yönetimi
+                        </div>
+                        <div class="info-card-body">
+                            <form asp-action="Detail" method="post" class="status-form">
+                                <input type="hidden" name="id" value="@Model.Id" />
+
+                                <div class="form-floating mb-3">
+                                    <select name="newStatus" class="form-select" id="statusSelect" required>
+                                        <option value="Beklemede" selected="@("Beklemede" == Model.RequestStatus)">Beklemede</option>
+                                        <option value="İşleme Alındı" selected="@("İşleme Alındı" == Model.RequestStatus)">İşleme Alındı</option>
+                                    </select>
+                                    <label for="statusSelect"><i class="fas fa-sync-alt me-2"></i>Durum Güncelle</label>
+                                </div>
+
+                                <button type="submit" class="btn btn-primary w-100 py-2">
+                                    <i class="fas fa-save me-2"></i> Durumu Kaydet
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Lisans Oluşturma Formu (Sadece İşleme Alındı durumunda göster) -->
+                    @if (Model.RequestStatus == "İşleme Alındı" && Model.IsActive)
+                    {
+                        <div class="info-card" id="licenseForm">
+                            <div class="info-card-header bg-light-success">
+                                <i class="fas fa-certificate me-2"></i> Demo Lisansı Oluştur
+                            </div>
+                            <div class="info-card-body">
+                                <form method="post" action="@Url.Action("CreateLicense", "Demo", new { area = "Tenant", id = Model.Id })">
+                                    <div class="mb-3">
+                                        <label for="storeId" class="form-label"><i class="fas fa-store me-2"></i>Mağaza Seçin</label>
+                                        <select name="storeId" id="storeId" class="form-select py-2" required>
+                                            <option value="">-- Mağaza Seçin --</option>
+                                            @foreach (var store in ViewBag.Stores as SelectList)
+                                            {
+                                                <option value="@store.Value">@store.Text</option>
+                                            }
+                                        </select>
+                                        <div class="form-text">Lisansın tanımlanacağı mağazayı seçin</div>
+                                    </div>
+
+                                    <div class="mb-4">
+                                        <label for="startDate" class="form-label"><i class="fas fa-calendar-day me-2"></i>Başlangıç Tarihi</label>
+                                        <input type="date" name="startDate" id="startDate" class="form-control py-2" required 
+                                               min="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                                        <div class="form-text">Demo lisansının başlayacağı tarihi seçin</div>
+                                    </div>
+
+                                    <button type="submit" class="btn btn-success w-100 py-2">
+                                        <i class="fas fa-plus-circle me-2"></i> Lisansı Oluştur
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="toast-container position-fixed bottom-0 end-0 p-3">
+            <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="toast-header bg-success text-white">
+                    <strong class="me-auto">Bilgi</strong>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+                <div class="toast-body">
+                    @TempData["Success"]
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@functions {
+    string GetStatusBadgeClass(string status)
+    {
+        switch (status)
+        {
+            case "Beklemede": return "bg-warning text-dark";
+            case "İşleme Alındı": return "bg-info text-white";
+            case "Tamamlandı": return "bg-success text-white";
+            default: return "bg-secondary text-white";
+        }
+    }
+}
+
+<style>
+    .card {
+        border: none;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.08);
+    }
+    
+    .card-header {
+        padding: 1.25rem 1.5rem;
+        font-weight: 600;
+    }
+    
+    .info-card {
+        border-radius: 10px;
+        border: 1px solid rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+    
+    .info-card:hover {
+        box-shadow: 0 0.125rem 0.5rem rgba(0, 0, 0, 0.1);
+        transform: translateY(-2px);
+    }
+    
+    .info-card-header {
+        padding: 1rem 1.5rem;
+        font-weight: 500;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
+    
+    .bg-light-primary {
+        background-color: rgba(13, 110, 253, 0.1);
+        color: #0d6efd;
+    }
+    
+    .bg-light-success {
+        background-color: rgba(25, 135, 84, 0.1);
+        color: #198754;
+    }
+    
+    .info-card-body {
+        padding: 1.25rem;
+    }
+    
+    .info-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        align-items: center;
+    }
+    
+    .info-item:last-child {
+        border-bottom: none;
+    }
+    
+    .info-label {
+        font-weight: 500;
+        color: #6c757d;
+        display: flex;
+        align-items: center;
+    }
+    
+    .info-value {
+        font-weight: 400;
+        color: #212529;
+        text-align: right;
+    }
+    
+    .notes-box {
+        background-color: rgba(248, 249, 250, 0.8);
+        border-radius: 8px;
+        padding: 1rem;
+        min-height: 120px;
+        white-space: pre-line;
+        border: 1px dashed #dee2e6;
+    }
+    
+    .note-content {
+        line-height: 1.6;
+    }
+    
+    .form-select, .form-control {
+        border-radius: 8px;
+        padding: 0.75rem 1rem;
+        border: 1px solid #dee2e6;
+    }
+    
+    .form-select:focus, .form-control:focus {
+        border-color: #86b7fe;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    }
+    
+    .badge {
+        padding: 0.5em 0.8em;
+        font-weight: 500;
+        letter-spacing: 0.5px;
+        border-radius: 8px;
+    }
+    
+    .toast {
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    }
+</style>
+
+@section Scripts {
+    <script>
+        // Toast otomatik kapanma
+        $(document).ready(function(){
+            if($('.toast').length > 0){
+                setTimeout(function(){
+                    $('.toast').toast('hide');
+                }, 5000);
+            }
+            
+            // Başlangıç tarihi için bugünün tarihini varsayılan yap
+            document.getElementById('startDate').valueAsDate = new Date();
+        });
+    </script>
+}

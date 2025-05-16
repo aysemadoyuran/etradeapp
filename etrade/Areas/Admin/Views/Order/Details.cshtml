@@ -1,0 +1,573 @@
+<div class="row justify-content-center mt-4">
+    <div class="col-12 col-lg-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <button id="back-btn" class="btn btn-outline-secondary" onclick="window.location.href='/Admin/Order/Index';">
+                <i class="fas fa-arrow-left me-2"></i> Geri Dön
+            </button>
+            
+            <div class="d-flex">
+                @if (User.IsInRole("admin"))
+                {
+                    <button id="cancelOrderBtn" class="btn btn-outline-danger me-2" style="display: none;">
+                        <i class="fas fa-ban me-2"></i> İptal Et
+                    </button>
+                    <button id="update-status-btn" class="btn btn-primary">
+                        <i class="fas fa-arrow-right me-2"></i> <span class="btn-text">Sonraki Adım</span>
+                    </button>
+                }
+            </div>
+        </div>
+
+        <!-- Minimalist Progress Bar -->
+        <div class="progress-container mb-5">
+            <div class="progress-steps">
+                <div class="step" data-status="Beklemede">
+                    <div class="step-icon"><i class="far fa-clock"></i></div>
+                    <div class="step-label">Beklemede</div>
+                </div>
+                <div class="step" data-status="Onaylandı">
+                    <div class="step-icon"><i class="far fa-check-circle"></i></div>
+                    <div class="step-label">Onaylandı</div>
+                </div>
+                <div class="step" data-status="Hazırlanıyor">
+                    <div class="step-icon"><i class="fas fa-box-open"></i></div>
+                    <div class="step-label">Hazırlanıyor</div>
+                </div>
+                <div class="step" data-status="Kargoya Verildi">
+                    <div class="step-icon"><i class="fas fa-shipping-fast"></i></div>
+                    <div class="step-label">Kargoya Verildi</div>
+                </div>
+                <div class="step" data-status="Teslim Edildi">
+                    <div class="step-icon"><i class="fas fa-home"></i></div>
+                    <div class="step-label">Teslim Edildi</div>
+                </div>
+                <div class="step cancel-status" data-status="İptal Edildi" style="display: none;">
+                    <div class="step-icon"><i class="fas fa-times"></i></div>
+                    <div class="step-label">İptal Edildi</div>
+                </div>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill"></div>
+            </div>
+        </div>
+
+        <div id="order-details">
+            <p class="text-center py-5">Yükleniyor...</p>
+        </div>
+    </div>
+</div>
+
+<input type="hidden" id="orderId" value="@ViewData["OrderId"]" />
+
+<style>
+    /* Genel Stiller */
+    body {
+        background-color: #f8f9fa;
+        color: #333;
+    }
+    
+    /* Progress Bar Stilleri */
+    .progress-container {
+        position: relative;
+        margin: 0 auto;
+        max-width: 800px;
+    }
+    
+    .progress-steps {
+        display: flex;
+        justify-content: space-between;
+        position: relative;
+        z-index: 2;
+    }
+    
+    .step {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        position: relative;
+        flex: 1;
+    }
+    
+    .step-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background: #e9ecef;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #6c757d;
+        font-size: 18px;
+        margin-bottom: 8px;
+        transition: all 0.3s ease;
+        border: 2px solid #e9ecef;
+    }
+    
+    .step-label {
+        font-size: 14px;
+        font-weight: 500;
+        color: #6c757d;
+        text-align: center;
+        transition: all 0.3s ease;
+    }
+    
+    .progress-bar {
+        position: absolute;
+        top: 24px;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: #e9ecef;
+        z-index: 1;
+    }
+    
+    .progress-fill {
+        height: 100%;
+        background: #0d6efd;
+        width: 0%;
+        transition: width 0.5s ease;
+    }
+    
+    .step.active .step-icon {
+        background: #0d6efd;
+        color: white;
+        border-color: #0d6efd;
+        transform: scale(1.1);
+    }
+    
+    .step.active .step-label {
+        color: #0d6efd;
+        font-weight: 600;
+    }
+    
+    .step.completed .step-icon {
+        background: #0d6efd;
+        color: white;
+        border-color: #0d6efd;
+    }
+    
+    .step.completed .step-label {
+        color: #0d6efd;
+    }
+    
+    .cancel-status .step-icon {
+        background: #dc3545;
+        color: white;
+        border-color: #dc3545;
+    }
+    
+    .cancel-status .step-label {
+        color: #dc3545;
+        font-weight: 600;
+    }
+    
+    /* Kart Stilleri */
+    .card {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        margin-bottom: 24px;
+        overflow: hidden;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .card-header {
+        background-color: white;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        padding: 16px 20px;
+        font-weight: 600;
+        color: #333;
+    }
+    
+    .card-body {
+        padding: 20px;
+    }
+    
+    /* Tablo Stilleri */
+    .table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+    
+    .table th {
+        background-color: #f8f9fa;
+        color: #495057;
+        font-weight: 600;
+        padding: 12px 15px;
+        border-top: 1px solid #e9ecef;
+    }
+    
+    .table td {
+        padding: 12px 15px;
+        border-top: 1px solid #e9ecef;
+        vertical-align: middle;
+    }
+    
+    .table tr:last-child td {
+        border-bottom: 1px solid #e9ecef;
+    }
+    
+    /* Buton Stilleri */
+    .btn {
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        letter-spacing: 0.5px;
+    }
+    
+    .btn-outline-secondary {
+        border-color: #dee2e6;
+    }
+    
+    .btn-primary {
+        background-color: #0d6efd;
+        border-color: #0d6efd;
+    }
+    
+    .btn-outline-danger {
+        border-color: #dc3545;
+        color: #dc3545;
+    }
+    
+    .btn-outline-danger:hover {
+        background-color: #dc3545;
+        color: white;
+    }
+    
+    /* İptal Edilmiş Sipariş Stili */
+    .cancelled-overlay {
+        position: relative;
+    }
+    
+    .cancelled-overlay::after {
+        content: "İPTAL EDİLDİ";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255, 255, 255, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        font-weight: 700;
+        color: #dc3545;
+        z-index: 10;
+        pointer-events: none;
+    }
+    
+    /* Responsive Düzen */
+    @@media (max-width: 768px) {
+        .progress-steps {
+            flex-wrap: wrap;
+        }
+        
+        .step {
+            flex: 0 0 33.333%;
+            margin-bottom: 20px;
+        }
+        
+        .progress-bar {
+            display: none;
+        }
+    }
+</style>
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/js/all.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            var orderId = $('#orderId').val();
+
+            if (!orderId) {
+                $('#order-details').html('<div class="alert alert-danger">Geçerli bir sipariş ID\'si sağlanmadı.</div>');
+                return;
+            }
+
+            function loadOrderDetails() {
+                $.ajax({
+                    url: '/Admin/Order/GetDetails/' + orderId,
+                    type: 'GET',
+                    success: function (data) {
+                        displayOrderDetails(data);
+                        updateProgressBar(data.orderStatus);
+                        updateButtonState(data.orderStatus);
+                    },
+                    error: function () {
+                        $('#order-details').html('<div class="alert alert-danger">Bir hata oluştu, lütfen tekrar deneyin.</div>');
+                    }
+                });
+            }
+
+            function displayOrderDetails(data) {
+                var isCancelled = data.orderStatus === "İptal Edildi";
+                var cancelledClass = isCancelled ? "cancelled-overlay" : "";
+
+                var html = `
+                    <div class="${cancelledClass}">
+                        <!-- Sipariş Özeti -->
+                        <div class="card mb-4">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <span>Sipariş Özeti</span>
+                                <span class="badge bg-${isCancelled ? 'danger' : 'primary'}">${data.orderStatus}</span>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3 mb-md-0">
+                                        <div class="d-flex align-items-center mb-3">
+                                            <i class="fas fa-hashtag me-3 text-muted"></i>
+                                            <div>
+                                                <small class="text-muted">Sipariş No</small>
+                                                <div class="fw-bold">${data.orderId}</div>
+                                            </div>
+                                        </div>
+                                        <div class="d-flex align-items-center">
+                                            <i class="far fa-clock me-3 text-muted"></i>
+                                            <div>
+                                                <small class="text-muted">Sipariş Tarihi</small>
+                                                <div class="fw-bold">${data.orderDate}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="d-flex align-items-center mb-3">
+                                            <i class="fas fa-wallet me-3 text-muted"></i>
+                                            <div>
+                                                <small class="text-muted">Ödeme Yöntemi</small>
+                                                <div class="fw-bold">${data.paymentMethod?.paymentMethodType || 'Bilgi Yok'}</div>
+                                            </div>
+                                        </div>
+                                        <div class="d-flex align-items-center">
+                                            <i class="fas fa-money-bill-wave me-3 text-muted"></i>
+                                            <div>
+                                                <small class="text-muted">Toplam Tutar</small>
+                                                <div class="fw-bold">${data.totalPrice} ₺</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Müşteri ve Teslimat Bilgileri -->
+                        <div class="row mb-4">
+                            <div class="col-md-6 mb-3 mb-md-0">
+                                <div class="card h-100">
+                                    <div class="card-header">
+                                        <i class="fas fa-user me-2"></i> Müşteri Bilgileri
+                                    </div>
+                                    <div class="card-body">
+                                        ${data.shippingAddress ? `
+                                            <ul class="list-unstyled mb-0">
+                                                <li class="mb-2"><strong>Ad Soyad:</strong> ${data.shippingAddress.nameSurname}</li>
+                                                <li class="mb-2"><strong>Adres:</strong> ${data.shippingAddress.acikAdres}</li>
+                                                <li class="mb-2"><strong>Bölge:</strong> ${data.shippingAddress.il} / ${data.shippingAddress.ilce}</li>
+                                                <li><strong>Semt/Mahalle:</strong> ${data.shippingAddress.semt} / ${data.shippingAddress.mahalle}</li>
+                                            </ul>
+                                        ` : '<p class="text-muted mb-0">Teslimat adresi bulunmamaktadır.</p>'}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card h-100">
+                                    <div class="card-header">
+                                        <i class="fas fa-credit-card me-2"></i> Ödeme Bilgileri
+                                    </div>
+                                    <div class="card-body">
+                                        ${data.paymentMethod ? `
+                                            <ul class="list-unstyled mb-0">
+                                                <li class="mb-2"><strong>Durum:</strong> ${data.paymentMethod.paymentStatus}</li>
+                                                <li class="mb-2"><strong>Tutar:</strong> ${data.paymentMethod.amount} ₺</li>
+                                                <li class="mb-2"><strong>Referans No:</strong> ${data.paymentMethod.paymentMethodId}</li>
+                                                <li><strong>Tarih:</strong> ${new Date(data.paymentMethod.paymentDate).toLocaleString()}</li>
+                                            </ul>
+                                        ` : '<p class="text-muted mb-0">Ödeme bilgisi bulunmamaktadır.</p>'}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Sipariş Ürünleri -->
+                        <div class="card">
+                            <div class="card-header">
+                                <i class="fas fa-box-open me-2"></i> Sipariş Ürünleri
+                            </div>
+                            <div class="card-body p-0">
+                                ${data.orderItems.length > 0 ? `
+                                    <div class="table-responsive">
+                                        <table class="table table-hover mb-0">
+                                            <thead>
+                                                <tr>
+                                                    <th>Ürün</th>
+                                                    <th>Renk/Beden</th>
+                                                    <th>Fiyat</th>
+                                                    <th>Adet</th>
+                                                    <th>Toplam</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                ${data.orderItems.map(item => `
+                                                    <tr>
+                                                        <td>
+                                                            <div class="d-flex align-items-center">
+                                                                <div>
+                                                                    <div class="fw-bold">${item.product.name}</div>
+                                                                    <small class="text-muted">SKU: ${item.product.sku || 'Yok'}</small>
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                        <td>
+                                                            <span class="badge bg-light text-dark me-1">${item.product.color}</span>
+                                                            <span class="badge bg-light text-dark">${item.product.size}</span>
+                                                        </td>
+                                                        <td>${item.price} ₺</td>
+                                                        <td>${item.quantity}</td>
+                                                        <td class="fw-bold">${(item.price * item.quantity).toFixed(2)} ₺</td>
+                                                    </tr>
+                                                `).join('')}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                ` : '<div class="p-4 text-center text-muted">Ürün bulunmamaktadır.</div>'}
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                $('#order-details').html(html);
+            }
+
+            function updateProgressBar(orderStatus) {
+                // Reset all steps
+                $('.step').removeClass('active completed');
+                $('.cancel-status').hide();
+                $('.progress-fill').css('width', '0%');
+
+                if (orderStatus === "İptal Edildi") {
+                    $('.step[data-status="Beklemede"]').addClass('completed');
+                    $('.cancel-status').show().addClass('active');
+                    $('.progress-fill').css('width', '100%');
+                    return;
+                }
+
+                const statusOrder = ["Beklemede", "Onaylandı", "Hazırlanıyor", "Kargoya Verildi", "Teslim Edildi"];
+                const currentIndex = statusOrder.indexOf(orderStatus);
+                
+                if (currentIndex >= 0) {
+                    // Fill progress bar
+                    const progressPercentage = (currentIndex / (statusOrder.length - 1)) * 100;
+                    $('.progress-fill').css('width', progressPercentage + '%');
+                    
+                    // Mark steps
+                    $('.step').each(function(index) {
+                        if (index < currentIndex) {
+                            $(this).addClass('completed');
+                        } else if (index === currentIndex) {
+                            $(this).addClass('active');
+                        }
+                    });
+                }
+            }
+
+            function updateButtonState(orderStatus) {
+                const nextStatusMap = {
+                    "Beklemede": "Onaylandı",
+                    "Onaylandı": "Hazırlanıyor",
+                    "Hazırlanıyor": "Kargoya Verildi",
+                    "Kargoya Verildi": "Teslim Edildi"
+                };
+
+                if (orderStatus === "İptal Edildi" || orderStatus === "Teslim Edildi") {
+                    $('#update-status-btn').hide();
+                    $('#cancelOrderBtn').hide();
+                } else {
+                    $('#update-status-btn').show();
+                    $('#cancelOrderBtn').show();
+                    
+                    if (nextStatusMap[orderStatus]) {
+                        $('#update-status-btn .btn-text').text('Sonraki Adım: ' + nextStatusMap[orderStatus]);
+                    } else {
+                        $('#update-status-btn').hide();
+                    }
+                }
+
+                // Button event handlers
+                $('#update-status-btn').off('click').on('click', function() {
+                    const nextStatus = nextStatusMap[orderStatus];
+                    if (nextStatus) {
+                        updateOrderStatus(nextStatus);
+                    }
+                });
+
+                $('#cancelOrderBtn').off('click').on('click', function() {
+                    if (confirm("Bu siparişi iptal etmek istediğinize emin misiniz? Bu işlem geri alınamaz.")) {
+                        cancelOrder();
+                    }
+                });
+            }
+
+            function updateOrderStatus(newStatus) {
+                $.ajax({
+                    url: '/Admin/Order/UpdateStatus',
+                    type: 'POST',
+                    data: {
+                        orderId: orderId,
+                        newStatus: newStatus
+                    },
+                    success: function() {
+                        showAlert('success', 'Sipariş durumu başarıyla güncellendi.');
+                        loadOrderDetails();
+                    },
+                    error: function() {
+                        showAlert('danger', 'Durum güncellenirken bir hata oluştu.');
+                    }
+                });
+            }
+
+            function cancelOrder() {
+                $.ajax({
+                    url: '/Admin/Order/CancelOrder/' + orderId,
+                    method: 'POST',
+                    success: function(response) {
+                        showAlert('success', 'Sipariş başarıyla iptal edildi.');
+                        loadOrderDetails();
+                    },
+                    error: function(xhr) {
+                        const errorMsg = xhr.responseJSON?.message || "Sipariş iptal edilirken bir hata oluştu";
+                        showAlert('danger', errorMsg);
+                    }
+                });
+            }
+
+            function showAlert(type, message) {
+                const alertHtml = `
+                    <div class="alert alert-${type} alert-dismissible fade show mb-4" role="alert">
+                        <div class="d-flex align-items-center">
+                            <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'} me-2"></i>
+                            <div>${message}</div>
+                            <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    </div>
+                `;
+
+                $('#order-details').before(alertHtml);
+                
+                setTimeout(() => {
+                    $('.alert').alert('close');
+                }, 5000);
+            }
+
+            // Initial load
+            loadOrderDetails();
+        });
+    </script>
+}

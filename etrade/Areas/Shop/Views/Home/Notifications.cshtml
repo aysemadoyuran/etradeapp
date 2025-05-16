@@ -1,0 +1,390 @@
+@{
+    ViewData["Title"] = "Bildirimlerim";
+}
+
+<div class="container-fluid px-4 py-5">
+    <div class="row g-4 justify-content-center">
+        <div class="col-xl-8 col-lg-10">
+            <!-- Başlık ve Aksiyon Butonları -->
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-3">
+                <div>
+                </div>
+                
+                <div class="d-flex gap-2">
+
+                    <div class="dropdown">
+                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle d-flex align-items-center" type="button" id="filterDropdown" data-bs-toggle="dropdown">
+                            <i class="fas fa-sliders-h me-2"></i> Filtrele
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow">
+                            <li><a class="dropdown-item d-flex justify-content-between" href="#" onclick="loadNotifications('all')">
+                                <span>Tüm Bildirimler</span>
+                                <span class="badge bg-light text-dark ms-3" id="all-count"></span>
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item d-flex justify-content-between" href="#" onclick="loadNotifications('unread')">
+                                <span>Okunmamışlar</span>
+                                <span class="badge bg-primary ms-3" id="unread-count"></span>
+                            </a></li>
+                            <li><a class="dropdown-item d-flex justify-content-between" href="#" onclick="loadNotifications('read')">
+                                <span>Okunmuşlar</span>
+                                <span class="badge bg-light text-dark ms-3" id="read-count"></span>
+                            </a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bildirim Listesi -->
+            <div class="card border-0 shadow-sm overflow-hidden">
+                <div class="card-body p-0">
+                    <div id="notification-container">
+                        <!-- Yükleme Animasyonu -->
+                        <div class="d-flex flex-column align-items-center justify-content-center py-5">
+                            <div class="spinner-grow text-primary" style="width: 3rem; height: 3rem;" role="status">
+                                <span class="visually-hidden">Yükleniyor...</span>
+                            </div>
+                            <p class="mt-3 text-muted">Bildirimler yükleniyor...</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Sayfalama -->
+                <div class="card-footer bg-transparent border-top">
+                    <nav aria-label="Bildirim sayfalama">
+                        <ul class="pagination justify-content-center mb-0" id="pagination"></ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Özel Stiller */
+    .notification-item {
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.03);
+        transition: all 0.25s ease;
+        position: relative;
+    }
+    
+    .notification-item:last-child {
+        border-bottom: none;
+    }
+    
+    .notification-item:hover {
+        background-color: rgba(0, 0, 0, 0.01);
+        transform: translateX(2px);
+    }
+    
+    .notification-item.unread {
+        background-color: rgba(13, 110, 253, 0.03);
+        border-left: 3px solid #0d6efd;
+    }
+    
+    .notification-item.unread:after {
+        content: '';
+        position: absolute;
+        top: 1.25rem;
+        left: 1rem;
+        width: 8px;
+        height: 8px;
+        background-color: #0d6efd;
+        border-radius: 50%;
+    }
+    
+    .notification-icon {
+        width: 2.5rem;
+        height: 2.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        flex-shrink: 0;
+    }
+    
+    .notification-time {
+        font-size: 0.75rem;
+        color: #6c757d;
+        white-space: nowrap;
+    }
+    
+    .notification-content {
+        flex: 1;
+        min-width: 0;
+    }
+    
+    .notification-title {
+        font-weight: 500;
+        margin-bottom: 0.25rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    
+    .notification-message {
+        color: #495057;
+        margin-bottom: 0;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    
+    /* Dropdown Stilleri */
+    .dropdown-menu {
+        border: none;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+        border-radius: 0.5rem;
+    }
+    
+    .dropdown-item {
+        padding: 0.5rem 1rem;
+        border-radius: 0.25rem;
+        margin: 0.15rem 0.5rem;
+        width: auto;
+    }
+    
+    /* Sayfalama Stilleri */
+    .page-item.active .page-link {
+        background-color: #0d6efd;
+        border-color: #0d6efd;
+    }
+    
+    .page-link {
+        color: #0d6efd;
+        border: none;
+        padding: 0.5rem 0.75rem;
+        margin: 0 0.15rem;
+        border-radius: 0.25rem !important;
+    }
+    
+    .page-link:hover {
+        background-color: rgba(0, 0, 0, 0.05);
+    }
+    
+    /* Responsive Ayarlar */
+    @@media (max-width: 768px) {
+        .notification-item {
+            padding: 1rem;
+        }
+        
+        .notification-icon {
+            width: 2rem;
+            height: 2rem;
+            font-size: 0.9rem;
+        }
+    }
+</style>
+
+@section Scripts {
+    <script>
+        let currentPage = 1;
+        const pageSize = 8;
+
+        $(document).ready(function() {
+            loadNotifications();
+            updateNotificationCounts();
+        });
+
+        // Bildirimleri Yükle
+        async function loadNotifications(filter = 'all', page = 1) {
+            $('#notification-container').html(`
+                <div class="d-flex flex-column align-items-center justify-content-center py-5">
+                    <div class="spinner-grow text-primary" style="width: 3rem; height: 3rem;" role="status">
+                        <span class="visually-hidden">Yükleniyor...</span>
+                    </div>
+                    <p class="mt-3 text-muted">Bildirimler yükleniyor...</p>
+                </div>
+            `);
+
+            try {
+                const response = await fetch(`/Shop/Home/GetNotifications?filter=${filter}&page=${page}&pageSize=${pageSize}`);
+                const data = await response.json();
+
+                renderNotifications(data.items);
+                renderPagination(data.totalCount, page);
+                updateNotificationCounts();
+            } catch (error) {
+                $('#notification-container').html(`
+                    <div class="text-center py-5">
+                        <div class="mb-4">
+                            <i class="fas fa-exclamation-triangle fa-3x text-danger opacity-50"></i>
+                        </div>
+                        <h5 class="mb-3">Bildirimler yüklenirken hata oluştu</h5>
+                        <button class="btn btn-primary px-4" onclick="loadNotifications()">
+                            <i class="fas fa-sync-alt me-2"></i>Tekrar Dene
+                        </button>
+                    </div>
+                `);
+            }
+        }
+
+        // Bildirimleri Render Et
+        function renderNotifications(notifications) {
+            if (notifications.length === 0) {
+                $('#notification-container').html(`
+                    <div class="text-center py-5">
+                        <div class="mb-3">
+                            <i class="far fa-bell-slash fa-3x text-muted opacity-25"></i>
+                        </div>
+                        <h5 class="text-muted mb-2">Bildirim bulunamadı</h5>
+                        <p class="text-muted small">Yeni bildirimler burada görünecektir</p>
+                    </div>
+                `);
+                return;
+            }
+
+            let html = '';
+            notifications.forEach(not => {
+                html += `
+                <div class="notification-item ${not.isRead ? '' : 'unread'}" onclick="markAsRead('${not.id}', this)">
+                    <div class="d-flex align-items-start gap-3">
+                        <div class="notification-icon ${getNotificationBgClass(not.type)}">
+                            <i class="${getNotificationIcon(not.type)} fs-5 text-white"></i>
+                        </div>
+                        <div class="notification-content">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <h6 class="notification-title">${not.title}</h6>
+                                <small class="notification-time">${formatTime(not.createdDate)}</small>
+                            </div>
+                            <p class="notification-message">${not.message}</p>
+                        </div>
+                    </div>
+                </div>`;
+            });
+
+            $('#notification-container').html(html);
+        }
+
+        // Sayfalama
+        function renderPagination(totalCount, currentPage) {
+            const totalPages = Math.ceil(totalCount / pageSize);
+            
+            if (totalPages <= 1) {
+                $('#pagination').html('');
+                return;
+            }
+            
+            let html = '';
+            
+            // Önceki sayfa butonu
+            html += `
+            <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+                <a class="page-link" href="#" onclick="loadNotifications('all', ${currentPage - 1})" aria-label="Önceki">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>`;
+            
+            // Sayfa numaraları
+            const startPage = Math.max(1, currentPage - 2);
+            const endPage = Math.min(totalPages, currentPage + 2);
+            
+            for (let i = startPage; i <= endPage; i++) {
+                html += `
+                <li class="page-item ${i === currentPage ? 'active' : ''}">
+                    <a class="page-link" href="#" onclick="loadNotifications('all', ${i})">${i}</a>
+                </li>`;
+            }
+            
+            // Sonraki sayfa butonu
+            html += `
+            <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+                <a class="page-link" href="#" onclick="loadNotifications('all', ${currentPage + 1})" aria-label="Sonraki">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>`;
+            
+            $('#pagination').html(html);
+        }
+        
+        // Okundu olarak işaretle
+        async function markAsRead(notificationId, element) {
+            try {
+                await fetch(`/Shop/Home/MarkAsRead?id=${notificationId}`, {
+                    method: 'POST'
+                });
+                
+                if (element) {
+                    $(element).removeClass('unread');
+                    updateNotificationCounts();
+                }
+            } catch (error) {
+                console.error('Okundu işaretleme hatası:', error);
+            }
+        }
+        
+        // Tümünü okundu olarak işaretle
+        async function markAllAsRead() {
+            try {
+                await fetch('/Shop/Home/MarkAllAsRead', {
+                    method: 'POST'
+                });
+                
+                $('.notification-item').removeClass('unread');
+                updateNotificationCounts();
+                
+                // Toast bildirim göster
+                showToast('success', 'Başarılı', 'Tüm bildirimler okundu olarak işaretlendi');
+            } catch (error) {
+                console.error('Tümünü okundu işaretleme hatası:', error);
+                showToast('error', 'Hata', 'İşlem sırasında bir hata oluştu');
+            }
+        }
+        
+        // Bildirim sayılarını güncelle
+        async function updateNotificationCounts() {
+            try {
+                const response = await fetch('/Shop/Home/GetNotificationCounts');
+                const counts = await response.json();
+                
+                $('#all-count').text(counts.total);
+                $('#unread-count').text(counts.unread);
+                $('#read-count').text(counts.read);
+            } catch (error) {
+                console.error('Bildirim sayıları yüklenirken hata:', error);
+            }
+        }
+        
+        // Yardımcı Fonksiyonlar
+        function getNotificationIcon(type) {
+            const icons = {
+                'order': 'fas fa-shopping-bag',
+                'message': 'fas fa-envelope',
+                'system': 'fas fa-cog',
+                'promotion': 'fas fa-percentage',
+                'alert': 'fas fa-exclamation-triangle'
+            };
+            return icons[type] || 'fas fa-bell';
+        }
+        
+        function getNotificationBgClass(type) {
+            const bgClasses = {
+                'order': 'bg-primary',
+                'message': 'bg-info',
+                'system': 'bg-secondary',
+                'promotion': 'bg-success',
+                'alert': 'bg-warning'
+            };
+            return bgClasses[type] || 'bg-primary';
+        }
+
+        function formatTime(dateString) {
+            const date = new Date(dateString);
+            const now = new Date();
+            const diffInHours = Math.floor((now - date) / (1000 * 60 * 60));
+            
+            if (diffInHours < 24) {
+                return date.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+            } else {
+                return date.toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+            }
+        }
+        
+        function showToast(type, title, message) {
+            // Burada bir toast bildirim gösterimi ekleyebilirsiniz
+            console.log(`[${type}] ${title}: ${message}`);
+        }
+    </script>
+}
